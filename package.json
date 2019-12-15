@@ -1,0 +1,14 @@
+{
+  "name": "waterledger-core",
+  "version": "1.0.0",
+  "description": "Waterledger smart contracts and tests",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "author": "",
+  "license": "ISC"
+}
