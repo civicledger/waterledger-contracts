@@ -169,14 +169,14 @@
     "absolutePath": "/Users/mattb/Code/waterledger/contracts/contracts/TradingZones.sol",
     "exportedSymbols": {
       "TradingZones": [
-        4737
+        4750
       ]
     },
-    "id": 4738,
+    "id": 4751,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 4636,
+        "id": 4649,
         "literals": [
           "solidity",
           "^",
@@ -189,10 +189,10 @@
       {
         "absolutePath": "/Users/mattb/Code/waterledger/contracts/contracts/Ownable.sol",
         "file": "./Ownable.sol",
-        "id": 4637,
+        "id": 4650,
         "nodeType": "ImportDirective",
-        "scope": 4738,
-        "sourceUnit": 3374,
+        "scope": 4751,
+        "sourceUnit": 3387,
         "src": "26:23:14",
         "symbolAliases": [],
         "unitAlias": ""
@@ -203,45 +203,45 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 4638,
+              "id": 4651,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3373,
+              "referencedDeclaration": 3386,
               "src": "169:7:14",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$3373",
+                "typeIdentifier": "t_contract$_Ownable_$3386",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 4639,
+            "id": 4652,
             "nodeType": "InheritanceSpecifier",
             "src": "169:7:14"
           }
         ],
         "contractDependencies": [
-          3373
+          3386
         ],
         "contractKind": "contract",
         "documentation": "@title Stores details on water trading zones for a jurisdiction\n @author Civic Ledger",
         "fullyImplemented": true,
-        "id": 4737,
+        "id": 4750,
         "linearizedBaseContracts": [
-          4737,
-          3373
+          4750,
+          3386
         ],
         "name": "TradingZones",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "TradingZones.TradingZone",
-            "id": 4644,
+            "id": 4657,
             "members": [
               {
                 "constant": false,
-                "id": 4641,
+                "id": 4654,
                 "name": "name",
                 "nodeType": "VariableDeclaration",
-                "scope": 4644,
+                "scope": 4657,
                 "src": "213:11:14",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -250,7 +250,7 @@
                   "typeString": "string"
                 },
                 "typeName": {
-                  "id": 4640,
+                  "id": 4653,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
                   "src": "213:6:14",
@@ -264,10 +264,10 @@
               },
               {
                 "constant": false,
-                "id": 4643,
+                "id": 4656,
                 "name": "exists",
                 "nodeType": "VariableDeclaration",
-                "scope": 4644,
+                "scope": 4657,
                 "src": "234:11:14",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -276,7 +276,7 @@
                   "typeString": "bool"
                 },
                 "typeName": {
-                  "id": 4642,
+                  "id": 4655,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
                   "src": "234:4:14",
@@ -291,42 +291,42 @@
             ],
             "name": "TradingZone",
             "nodeType": "StructDefinition",
-            "scope": 4737,
+            "scope": 4750,
             "src": "184:68:14",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 4647,
+            "id": 4660,
             "name": "_tradingZones",
             "nodeType": "VariableDeclaration",
-            "scope": 4737,
+            "scope": 4750,
             "src": "258:27:14",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+              "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
               "typeString": "struct TradingZones.TradingZone[]"
             },
             "typeName": {
               "baseType": {
                 "contractScope": null,
-                "id": 4645,
+                "id": 4658,
                 "name": "TradingZone",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4644,
+                "referencedDeclaration": 4657,
                 "src": "258:11:14",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                  "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                   "typeString": "struct TradingZones.TradingZone"
                 }
               },
-              "id": 4646,
+              "id": 4659,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "258:13:14",
               "typeDescriptions": {
-                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage_ptr",
+                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage_ptr",
                 "typeString": "struct TradingZones.TradingZone[]"
               }
             },
@@ -335,7 +335,7 @@
           },
           {
             "body": {
-              "id": 4659,
+              "id": 4672,
               "nodeType": "Block",
               "src": "313:59:14",
               "statements": [
@@ -349,7 +349,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "",
-                            "id": 4654,
+                            "id": 4667,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -367,7 +367,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "66616c7365",
-                            "id": 4655,
+                            "id": 4668,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -394,18 +394,18 @@
                               "typeString": "bool"
                             }
                           ],
-                          "id": 4653,
+                          "id": 4666,
                           "name": "TradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4644,
+                          "referencedDeclaration": 4657,
                           "src": "342:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4644_storage_ptr_$",
+                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4657_storage_ptr_$",
                             "typeString": "type(struct TradingZones.TradingZone storage pointer)"
                           }
                         },
-                        "id": 4656,
+                        "id": 4669,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -415,7 +415,7 @@
                         "nodeType": "FunctionCall",
                         "src": "342:22:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       }
@@ -423,24 +423,24 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 4650,
+                        "id": 4663,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "323:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4652,
+                      "id": 4665,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -450,11 +450,11 @@
                       "referencedDeclaration": null,
                       "src": "323:18:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4644_storage_$returns$_t_uint256_$",
+                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4657_storage_$returns$_t_uint256_$",
                         "typeString": "function (struct TradingZones.TradingZone storage ref) returns (uint256)"
                       }
                     },
-                    "id": 4657,
+                    "id": 4670,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -468,14 +468,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 4658,
+                  "id": 4671,
                   "nodeType": "ExpressionStatement",
                   "src": "323:42:14"
                 }
               ]
             },
             "documentation": null,
-            "id": 4660,
+            "id": 4673,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -483,19 +483,19 @@
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4648,
+              "id": 4661,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "303:2:14"
             },
             "payable": false,
             "returnParameters": {
-              "id": 4649,
+              "id": 4662,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "313:0:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "292:80:14",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -503,7 +503,7 @@
           },
           {
             "body": {
-              "id": 4678,
+              "id": 4691,
               "nodeType": "Block",
               "src": "600:84:14",
               "statements": [
@@ -516,18 +516,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 4670,
+                      "id": 4683,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 4667,
+                        "id": 4680,
                         "name": "id",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4662,
+                        "referencedDeclaration": 4675,
                         "src": "617:2:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -540,18 +540,18 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4668,
+                          "id": 4681,
                           "name": "_tradingZones",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4647,
+                          "referencedDeclaration": 4660,
                           "src": "622:13:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                             "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                           }
                         },
-                        "id": 4669,
+                        "id": 4682,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
@@ -574,7 +574,7 @@
                     "falseExpression": {
                       "argumentTypes": null,
                       "hexValue": "66616c7365",
-                      "id": 4675,
+                      "id": 4688,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -589,7 +589,7 @@
                       },
                       "value": "false"
                     },
-                    "id": 4676,
+                    "id": 4689,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -602,25 +602,25 @@
                         "argumentTypes": null,
                         "baseExpression": {
                           "argumentTypes": null,
-                          "id": 4671,
+                          "id": 4684,
                           "name": "_tradingZones",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4647,
+                          "referencedDeclaration": 4660,
                           "src": "645:13:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                             "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                           }
                         },
-                        "id": 4673,
+                        "id": 4686,
                         "indexExpression": {
                           "argumentTypes": null,
-                          "id": 4672,
+                          "id": 4685,
                           "name": "id",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4662,
+                          "referencedDeclaration": 4675,
                           "src": "659:2:14",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
@@ -634,18 +634,18 @@
                         "nodeType": "IndexAccess",
                         "src": "645:17:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref"
                         }
                       },
-                      "id": 4674,
+                      "id": 4687,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "exists",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 4643,
+                      "referencedDeclaration": 4656,
                       "src": "645:24:14",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -657,15 +657,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 4666,
-                  "id": 4677,
+                  "functionReturnParameters": 4679,
+                  "id": 4690,
                   "nodeType": "Return",
                   "src": "610:67:14"
                 }
               ]
             },
             "documentation": "@dev Tests whether the trading zone exists\n @param id Id of the trading zone to test\n @return True if trading zone exists, false otherwise",
-            "id": 4679,
+            "id": 4692,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -673,15 +673,15 @@
             "name": "isTradingZone",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4663,
+              "id": 4676,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4662,
+                  "id": 4675,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4679,
+                  "scope": 4692,
                   "src": "562:10:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -690,7 +690,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4661,
+                    "id": 4674,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "562:7:14",
@@ -707,15 +707,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4666,
+              "id": 4679,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4665,
+                  "id": 4678,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4679,
+                  "scope": 4692,
                   "src": "594:4:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -724,7 +724,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 4664,
+                    "id": 4677,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "594:4:14",
@@ -739,7 +739,7 @@
               ],
               "src": "593:6:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "539:145:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -747,37 +747,37 @@
           },
           {
             "body": {
-              "id": 4709,
+              "id": 4722,
               "nodeType": "Block",
               "src": "897:206:14",
               "statements": [
                 {
                   "assignments": [
-                    4689
+                    4702
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 4689,
+                      "id": 4702,
                       "name": "tradingZone",
                       "nodeType": "VariableDeclaration",
-                      "scope": 4710,
+                      "scope": 4723,
                       "src": "907:30:14",
                       "stateVariable": false,
                       "storageLocation": "memory",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                         "typeString": "struct TradingZones.TradingZone"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 4688,
+                        "id": 4701,
                         "name": "TradingZone",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 4644,
+                        "referencedDeclaration": 4657,
                         "src": "907:11:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                           "typeString": "struct TradingZones.TradingZone"
                         }
                       },
@@ -785,7 +785,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 4702,
+                  "id": 4715,
                   "initialValue": {
                     "argumentTypes": null,
                     "condition": {
@@ -797,18 +797,18 @@
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           },
-                          "id": 4693,
+                          "id": 4706,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
                           "lValueRequested": false,
                           "leftExpression": {
                             "argumentTypes": null,
-                            "id": 4690,
+                            "id": 4703,
                             "name": "id",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4681,
+                            "referencedDeclaration": 4694,
                             "src": "941:2:14",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
@@ -821,18 +821,18 @@
                             "argumentTypes": null,
                             "expression": {
                               "argumentTypes": null,
-                              "id": 4691,
+                              "id": 4704,
                               "name": "_tradingZones",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4647,
+                              "referencedDeclaration": 4660,
                               "src": "947:13:14",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                                 "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                               }
                             },
-                            "id": 4692,
+                            "id": 4705,
                             "isConstant": false,
                             "isLValue": true,
                             "isPure": false,
@@ -853,7 +853,7 @@
                           }
                         }
                       ],
-                      "id": 4694,
+                      "id": 4707,
                       "isConstant": false,
                       "isInlineArray": false,
                       "isLValue": false,
@@ -870,25 +870,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 4698,
+                        "id": 4711,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "990:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4700,
+                      "id": 4713,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 4699,
+                        "id": 4712,
                         "name": "id",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4681,
+                        "referencedDeclaration": 4694,
                         "src": "1004:2:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -902,11 +902,11 @@
                       "nodeType": "IndexAccess",
                       "src": "990:17:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref"
                       }
                     },
-                    "id": 4701,
+                    "id": 4714,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -917,22 +917,22 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 4695,
+                        "id": 4708,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "971:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4697,
+                      "id": 4710,
                       "indexExpression": {
                         "argumentTypes": null,
                         "hexValue": "30",
-                        "id": 4696,
+                        "id": 4709,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -954,12 +954,12 @@
                       "nodeType": "IndexAccess",
                       "src": "971:16:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref"
                       }
                     },
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                      "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                       "typeString": "struct TradingZones.TradingZone storage pointer"
                     }
                   },
@@ -974,25 +974,25 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4703,
+                          "id": 4716,
                           "name": "tradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4689,
+                          "referencedDeclaration": 4702,
                           "src": "1038:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                            "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                             "typeString": "struct TradingZones.TradingZone memory"
                           }
                         },
-                        "id": 4704,
+                        "id": 4717,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
                         "lValueRequested": false,
                         "memberName": "name",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 4641,
+                        "referencedDeclaration": 4654,
                         "src": "1038:16:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_string_memory",
@@ -1003,25 +1003,25 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4705,
+                          "id": 4718,
                           "name": "tradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4689,
+                          "referencedDeclaration": 4702,
                           "src": "1068:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                            "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                             "typeString": "struct TradingZones.TradingZone memory"
                           }
                         },
-                        "id": 4706,
+                        "id": 4719,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
                         "lValueRequested": false,
                         "memberName": "exists",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 4643,
+                        "referencedDeclaration": 4656,
                         "src": "1068:18:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
@@ -1029,7 +1029,7 @@
                         }
                       }
                     ],
-                    "id": 4707,
+                    "id": 4720,
                     "isConstant": false,
                     "isInlineArray": false,
                     "isLValue": false,
@@ -1042,15 +1042,15 @@
                       "typeString": "tuple(string memory,bool)"
                     }
                   },
-                  "functionReturnParameters": 4687,
-                  "id": 4708,
+                  "functionReturnParameters": 4700,
+                  "id": 4721,
                   "nodeType": "Return",
                   "src": "1017:79:14"
                 }
               ]
             },
             "documentation": "@dev Retrieves a trading zone by its id\n @param id Id of the trading zone to return\n @return Trading zone details",
-            "id": 4710,
+            "id": 4723,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1058,15 +1058,15 @@
             "name": "tradingZoneById",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4682,
+              "id": 4695,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4681,
+                  "id": 4694,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "851:10:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1075,7 +1075,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4680,
+                    "id": 4693,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "851:7:14",
@@ -1092,15 +1092,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4687,
+              "id": 4700,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4684,
+                  "id": 4697,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "883:6:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1109,7 +1109,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 4683,
+                    "id": 4696,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "883:6:14",
@@ -1123,10 +1123,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 4686,
+                  "id": 4699,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "891:4:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1135,7 +1135,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 4685,
+                    "id": 4698,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "891:4:14",
@@ -1150,7 +1150,7 @@
               ],
               "src": "882:14:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "826:277:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -1158,7 +1158,7 @@
           },
           {
             "body": {
-              "id": 4718,
+              "id": 4731,
               "nodeType": "Block",
               "src": "1265:44:14",
               "statements": [
@@ -1167,18 +1167,18 @@
                     "argumentTypes": null,
                     "expression": {
                       "argumentTypes": null,
-                      "id": 4715,
+                      "id": 4728,
                       "name": "_tradingZones",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4647,
+                      "referencedDeclaration": 4660,
                       "src": "1282:13:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                        "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                       }
                     },
-                    "id": 4716,
+                    "id": 4729,
                     "isConstant": false,
                     "isLValue": true,
                     "isPure": false,
@@ -1192,15 +1192,15 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 4714,
-                  "id": 4717,
+                  "functionReturnParameters": 4727,
+                  "id": 4730,
                   "nodeType": "Return",
                   "src": "1275:27:14"
                 }
               ]
             },
             "documentation": "@dev Retrieves the number of trading zones registered\n @return Trading zones count",
-            "id": 4719,
+            "id": 4732,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1208,22 +1208,22 @@
             "name": "tradingZonesCount",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4711,
+              "id": 4724,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1233:2:14"
             },
             "payable": false,
             "returnParameters": {
-              "id": 4714,
+              "id": 4727,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4713,
+                  "id": 4726,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4719,
+                  "scope": 4732,
                   "src": "1256:7:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1232,7 +1232,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4712,
+                    "id": 4725,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1256:7:14",
@@ -1247,7 +1247,7 @@
               ],
               "src": "1255:9:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "1207:102:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -1255,7 +1255,7 @@
           },
           {
             "body": {
-              "id": 4735,
+              "id": 4748,
               "nodeType": "Block",
               "src": "1449:60:14",
               "statements": [
@@ -1268,11 +1268,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 4730,
+                            "id": 4743,
                             "name": "name",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4721,
+                            "referencedDeclaration": 4734,
                             "src": "1490:4:14",
                             "typeDescriptions": {
                               "typeIdentifier": "t_string_memory_ptr",
@@ -1282,7 +1282,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "74727565",
-                            "id": 4731,
+                            "id": 4744,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -1309,18 +1309,18 @@
                               "typeString": "bool"
                             }
                           ],
-                          "id": 4729,
+                          "id": 4742,
                           "name": "TradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4644,
+                          "referencedDeclaration": 4657,
                           "src": "1478:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4644_storage_ptr_$",
+                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4657_storage_ptr_$",
                             "typeString": "type(struct TradingZones.TradingZone storage pointer)"
                           }
                         },
-                        "id": 4732,
+                        "id": 4745,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -1330,7 +1330,7 @@
                         "nodeType": "FunctionCall",
                         "src": "1478:23:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       }
@@ -1338,24 +1338,24 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 4726,
+                        "id": 4739,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "1459:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4728,
+                      "id": 4741,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1365,11 +1365,11 @@
                       "referencedDeclaration": null,
                       "src": "1459:18:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4644_storage_$returns$_t_uint256_$",
+                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4657_storage_$returns$_t_uint256_$",
                         "typeString": "function (struct TradingZones.TradingZone storage ref) returns (uint256)"
                       }
                     },
-                    "id": 4733,
+                    "id": 4746,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1383,28 +1383,28 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 4734,
+                  "id": 4747,
                   "nodeType": "ExpressionStatement",
                   "src": "1459:43:14"
                 }
               ]
             },
             "documentation": "@dev Registers a new trading zone\n @param name Trading zone name",
-            "id": 4736,
+            "id": 4749,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [
               {
                 "arguments": null,
-                "id": 4724,
+                "id": 4737,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 4723,
+                  "id": 4736,
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3309,
+                  "referencedDeclaration": 3322,
                   "src": "1439:9:14",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -1418,15 +1418,15 @@
             "name": "addTradingZone",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4722,
+              "id": 4735,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4721,
+                  "id": 4734,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4736,
+                  "scope": 4749,
                   "src": "1419:11:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1435,7 +1435,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 4720,
+                    "id": 4733,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "1419:6:14",
@@ -1452,19 +1452,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4725,
+              "id": 4738,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1449:0:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "1395:114:14",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 4738,
+        "scope": 4751,
         "src": "144:1367:14"
       }
     ],
@@ -1474,14 +1474,14 @@
     "absolutePath": "/Users/mattb/Code/waterledger/contracts/contracts/TradingZones.sol",
     "exportedSymbols": {
       "TradingZones": [
-        4737
+        4750
       ]
     },
-    "id": 4738,
+    "id": 4751,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 4636,
+        "id": 4649,
         "literals": [
           "solidity",
           "^",
@@ -1494,10 +1494,10 @@
       {
         "absolutePath": "/Users/mattb/Code/waterledger/contracts/contracts/Ownable.sol",
         "file": "./Ownable.sol",
-        "id": 4637,
+        "id": 4650,
         "nodeType": "ImportDirective",
-        "scope": 4738,
-        "sourceUnit": 3374,
+        "scope": 4751,
+        "sourceUnit": 3387,
         "src": "26:23:14",
         "symbolAliases": [],
         "unitAlias": ""
@@ -1508,45 +1508,45 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 4638,
+              "id": 4651,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 3373,
+              "referencedDeclaration": 3386,
               "src": "169:7:14",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$3373",
+                "typeIdentifier": "t_contract$_Ownable_$3386",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 4639,
+            "id": 4652,
             "nodeType": "InheritanceSpecifier",
             "src": "169:7:14"
           }
         ],
         "contractDependencies": [
-          3373
+          3386
         ],
         "contractKind": "contract",
         "documentation": "@title Stores details on water trading zones for a jurisdiction\n @author Civic Ledger",
         "fullyImplemented": true,
-        "id": 4737,
+        "id": 4750,
         "linearizedBaseContracts": [
-          4737,
-          3373
+          4750,
+          3386
         ],
         "name": "TradingZones",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "TradingZones.TradingZone",
-            "id": 4644,
+            "id": 4657,
             "members": [
               {
                 "constant": false,
-                "id": 4641,
+                "id": 4654,
                 "name": "name",
                 "nodeType": "VariableDeclaration",
-                "scope": 4644,
+                "scope": 4657,
                 "src": "213:11:14",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1555,7 +1555,7 @@
                   "typeString": "string"
                 },
                 "typeName": {
-                  "id": 4640,
+                  "id": 4653,
                   "name": "string",
                   "nodeType": "ElementaryTypeName",
                   "src": "213:6:14",
@@ -1569,10 +1569,10 @@
               },
               {
                 "constant": false,
-                "id": 4643,
+                "id": 4656,
                 "name": "exists",
                 "nodeType": "VariableDeclaration",
-                "scope": 4644,
+                "scope": 4657,
                 "src": "234:11:14",
                 "stateVariable": false,
                 "storageLocation": "default",
@@ -1581,7 +1581,7 @@
                   "typeString": "bool"
                 },
                 "typeName": {
-                  "id": 4642,
+                  "id": 4655,
                   "name": "bool",
                   "nodeType": "ElementaryTypeName",
                   "src": "234:4:14",
@@ -1596,42 +1596,42 @@
             ],
             "name": "TradingZone",
             "nodeType": "StructDefinition",
-            "scope": 4737,
+            "scope": 4750,
             "src": "184:68:14",
             "visibility": "public"
           },
           {
             "constant": false,
-            "id": 4647,
+            "id": 4660,
             "name": "_tradingZones",
             "nodeType": "VariableDeclaration",
-            "scope": 4737,
+            "scope": 4750,
             "src": "258:27:14",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+              "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
               "typeString": "struct TradingZones.TradingZone[]"
             },
             "typeName": {
               "baseType": {
                 "contractScope": null,
-                "id": 4645,
+                "id": 4658,
                 "name": "TradingZone",
                 "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 4644,
+                "referencedDeclaration": 4657,
                 "src": "258:11:14",
                 "typeDescriptions": {
-                  "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                  "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                   "typeString": "struct TradingZones.TradingZone"
                 }
               },
-              "id": 4646,
+              "id": 4659,
               "length": null,
               "nodeType": "ArrayTypeName",
               "src": "258:13:14",
               "typeDescriptions": {
-                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage_ptr",
+                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage_ptr",
                 "typeString": "struct TradingZones.TradingZone[]"
               }
             },
@@ -1640,7 +1640,7 @@
           },
           {
             "body": {
-              "id": 4659,
+              "id": 4672,
               "nodeType": "Block",
               "src": "313:59:14",
               "statements": [
@@ -1654,7 +1654,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "",
-                            "id": 4654,
+                            "id": 4667,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -1672,7 +1672,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "66616c7365",
-                            "id": 4655,
+                            "id": 4668,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -1699,18 +1699,18 @@
                               "typeString": "bool"
                             }
                           ],
-                          "id": 4653,
+                          "id": 4666,
                           "name": "TradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4644,
+                          "referencedDeclaration": 4657,
                           "src": "342:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4644_storage_ptr_$",
+                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4657_storage_ptr_$",
                             "typeString": "type(struct TradingZones.TradingZone storage pointer)"
                           }
                         },
-                        "id": 4656,
+                        "id": 4669,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -1720,7 +1720,7 @@
                         "nodeType": "FunctionCall",
                         "src": "342:22:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       }
@@ -1728,24 +1728,24 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 4650,
+                        "id": 4663,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "323:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4652,
+                      "id": 4665,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -1755,11 +1755,11 @@
                       "referencedDeclaration": null,
                       "src": "323:18:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4644_storage_$returns$_t_uint256_$",
+                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4657_storage_$returns$_t_uint256_$",
                         "typeString": "function (struct TradingZones.TradingZone storage ref) returns (uint256)"
                       }
                     },
-                    "id": 4657,
+                    "id": 4670,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1773,14 +1773,14 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 4658,
+                  "id": 4671,
                   "nodeType": "ExpressionStatement",
                   "src": "323:42:14"
                 }
               ]
             },
             "documentation": null,
-            "id": 4660,
+            "id": 4673,
             "implemented": true,
             "isConstructor": true,
             "isDeclaredConst": false,
@@ -1788,19 +1788,19 @@
             "name": "",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4648,
+              "id": 4661,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "303:2:14"
             },
             "payable": false,
             "returnParameters": {
-              "id": 4649,
+              "id": 4662,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "313:0:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "292:80:14",
             "stateMutability": "nonpayable",
             "superFunction": null,
@@ -1808,7 +1808,7 @@
           },
           {
             "body": {
-              "id": 4678,
+              "id": 4691,
               "nodeType": "Block",
               "src": "600:84:14",
               "statements": [
@@ -1821,18 +1821,18 @@
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       },
-                      "id": 4670,
+                      "id": 4683,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
                       "lValueRequested": false,
                       "leftExpression": {
                         "argumentTypes": null,
-                        "id": 4667,
+                        "id": 4680,
                         "name": "id",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4662,
+                        "referencedDeclaration": 4675,
                         "src": "617:2:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -1845,18 +1845,18 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4668,
+                          "id": 4681,
                           "name": "_tradingZones",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4647,
+                          "referencedDeclaration": 4660,
                           "src": "622:13:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                             "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                           }
                         },
-                        "id": 4669,
+                        "id": 4682,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
@@ -1879,7 +1879,7 @@
                     "falseExpression": {
                       "argumentTypes": null,
                       "hexValue": "66616c7365",
-                      "id": 4675,
+                      "id": 4688,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": true,
@@ -1894,7 +1894,7 @@
                       },
                       "value": "false"
                     },
-                    "id": 4676,
+                    "id": 4689,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -1907,25 +1907,25 @@
                         "argumentTypes": null,
                         "baseExpression": {
                           "argumentTypes": null,
-                          "id": 4671,
+                          "id": 4684,
                           "name": "_tradingZones",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4647,
+                          "referencedDeclaration": 4660,
                           "src": "645:13:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                            "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                             "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                           }
                         },
-                        "id": 4673,
+                        "id": 4686,
                         "indexExpression": {
                           "argumentTypes": null,
-                          "id": 4672,
+                          "id": 4685,
                           "name": "id",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4662,
+                          "referencedDeclaration": 4675,
                           "src": "659:2:14",
                           "typeDescriptions": {
                             "typeIdentifier": "t_uint256",
@@ -1939,18 +1939,18 @@
                         "nodeType": "IndexAccess",
                         "src": "645:17:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref"
                         }
                       },
-                      "id": 4674,
+                      "id": 4687,
                       "isConstant": false,
                       "isLValue": true,
                       "isPure": false,
                       "lValueRequested": false,
                       "memberName": "exists",
                       "nodeType": "MemberAccess",
-                      "referencedDeclaration": 4643,
+                      "referencedDeclaration": 4656,
                       "src": "645:24:14",
                       "typeDescriptions": {
                         "typeIdentifier": "t_bool",
@@ -1962,15 +1962,15 @@
                       "typeString": "bool"
                     }
                   },
-                  "functionReturnParameters": 4666,
-                  "id": 4677,
+                  "functionReturnParameters": 4679,
+                  "id": 4690,
                   "nodeType": "Return",
                   "src": "610:67:14"
                 }
               ]
             },
             "documentation": "@dev Tests whether the trading zone exists\n @param id Id of the trading zone to test\n @return True if trading zone exists, false otherwise",
-            "id": 4679,
+            "id": 4692,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -1978,15 +1978,15 @@
             "name": "isTradingZone",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4663,
+              "id": 4676,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4662,
+                  "id": 4675,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4679,
+                  "scope": 4692,
                   "src": "562:10:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -1995,7 +1995,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4661,
+                    "id": 4674,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "562:7:14",
@@ -2012,15 +2012,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4666,
+              "id": 4679,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4665,
+                  "id": 4678,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4679,
+                  "scope": 4692,
                   "src": "594:4:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2029,7 +2029,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 4664,
+                    "id": 4677,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "594:4:14",
@@ -2044,7 +2044,7 @@
               ],
               "src": "593:6:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "539:145:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -2052,37 +2052,37 @@
           },
           {
             "body": {
-              "id": 4709,
+              "id": 4722,
               "nodeType": "Block",
               "src": "897:206:14",
               "statements": [
                 {
                   "assignments": [
-                    4689
+                    4702
                   ],
                   "declarations": [
                     {
                       "constant": false,
-                      "id": 4689,
+                      "id": 4702,
                       "name": "tradingZone",
                       "nodeType": "VariableDeclaration",
-                      "scope": 4710,
+                      "scope": 4723,
                       "src": "907:30:14",
                       "stateVariable": false,
                       "storageLocation": "memory",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                         "typeString": "struct TradingZones.TradingZone"
                       },
                       "typeName": {
                         "contractScope": null,
-                        "id": 4688,
+                        "id": 4701,
                         "name": "TradingZone",
                         "nodeType": "UserDefinedTypeName",
-                        "referencedDeclaration": 4644,
+                        "referencedDeclaration": 4657,
                         "src": "907:11:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                           "typeString": "struct TradingZones.TradingZone"
                         }
                       },
@@ -2090,7 +2090,7 @@
                       "visibility": "internal"
                     }
                   ],
-                  "id": 4702,
+                  "id": 4715,
                   "initialValue": {
                     "argumentTypes": null,
                     "condition": {
@@ -2102,18 +2102,18 @@
                             "typeIdentifier": "t_uint256",
                             "typeString": "uint256"
                           },
-                          "id": 4693,
+                          "id": 4706,
                           "isConstant": false,
                           "isLValue": false,
                           "isPure": false,
                           "lValueRequested": false,
                           "leftExpression": {
                             "argumentTypes": null,
-                            "id": 4690,
+                            "id": 4703,
                             "name": "id",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4681,
+                            "referencedDeclaration": 4694,
                             "src": "941:2:14",
                             "typeDescriptions": {
                               "typeIdentifier": "t_uint256",
@@ -2126,18 +2126,18 @@
                             "argumentTypes": null,
                             "expression": {
                               "argumentTypes": null,
-                              "id": 4691,
+                              "id": 4704,
                               "name": "_tradingZones",
                               "nodeType": "Identifier",
                               "overloadedDeclarations": [],
-                              "referencedDeclaration": 4647,
+                              "referencedDeclaration": 4660,
                               "src": "947:13:14",
                               "typeDescriptions": {
-                                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                                "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                                 "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                               }
                             },
-                            "id": 4692,
+                            "id": 4705,
                             "isConstant": false,
                             "isLValue": true,
                             "isPure": false,
@@ -2158,7 +2158,7 @@
                           }
                         }
                       ],
-                      "id": 4694,
+                      "id": 4707,
                       "isConstant": false,
                       "isInlineArray": false,
                       "isLValue": false,
@@ -2175,25 +2175,25 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 4698,
+                        "id": 4711,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "990:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4700,
+                      "id": 4713,
                       "indexExpression": {
                         "argumentTypes": null,
-                        "id": 4699,
+                        "id": 4712,
                         "name": "id",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4681,
+                        "referencedDeclaration": 4694,
                         "src": "1004:2:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_uint256",
@@ -2207,11 +2207,11 @@
                       "nodeType": "IndexAccess",
                       "src": "990:17:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref"
                       }
                     },
-                    "id": 4701,
+                    "id": 4714,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2222,22 +2222,22 @@
                       "argumentTypes": null,
                       "baseExpression": {
                         "argumentTypes": null,
-                        "id": 4695,
+                        "id": 4708,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "971:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4697,
+                      "id": 4710,
                       "indexExpression": {
                         "argumentTypes": null,
                         "hexValue": "30",
-                        "id": 4696,
+                        "id": 4709,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": true,
@@ -2259,12 +2259,12 @@
                       "nodeType": "IndexAccess",
                       "src": "971:16:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_struct$_TradingZone_$4644_storage",
+                        "typeIdentifier": "t_struct$_TradingZone_$4657_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref"
                       }
                     },
                     "typeDescriptions": {
-                      "typeIdentifier": "t_struct$_TradingZone_$4644_storage_ptr",
+                      "typeIdentifier": "t_struct$_TradingZone_$4657_storage_ptr",
                       "typeString": "struct TradingZones.TradingZone storage pointer"
                     }
                   },
@@ -2279,25 +2279,25 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4703,
+                          "id": 4716,
                           "name": "tradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4689,
+                          "referencedDeclaration": 4702,
                           "src": "1038:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                            "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                             "typeString": "struct TradingZones.TradingZone memory"
                           }
                         },
-                        "id": 4704,
+                        "id": 4717,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
                         "lValueRequested": false,
                         "memberName": "name",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 4641,
+                        "referencedDeclaration": 4654,
                         "src": "1038:16:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_string_memory",
@@ -2308,25 +2308,25 @@
                         "argumentTypes": null,
                         "expression": {
                           "argumentTypes": null,
-                          "id": 4705,
+                          "id": 4718,
                           "name": "tradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4689,
+                          "referencedDeclaration": 4702,
                           "src": "1068:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_struct$_TradingZone_$4644_memory_ptr",
+                            "typeIdentifier": "t_struct$_TradingZone_$4657_memory_ptr",
                             "typeString": "struct TradingZones.TradingZone memory"
                           }
                         },
-                        "id": 4706,
+                        "id": 4719,
                         "isConstant": false,
                         "isLValue": true,
                         "isPure": false,
                         "lValueRequested": false,
                         "memberName": "exists",
                         "nodeType": "MemberAccess",
-                        "referencedDeclaration": 4643,
+                        "referencedDeclaration": 4656,
                         "src": "1068:18:14",
                         "typeDescriptions": {
                           "typeIdentifier": "t_bool",
@@ -2334,7 +2334,7 @@
                         }
                       }
                     ],
-                    "id": 4707,
+                    "id": 4720,
                     "isConstant": false,
                     "isInlineArray": false,
                     "isLValue": false,
@@ -2347,15 +2347,15 @@
                       "typeString": "tuple(string memory,bool)"
                     }
                   },
-                  "functionReturnParameters": 4687,
-                  "id": 4708,
+                  "functionReturnParameters": 4700,
+                  "id": 4721,
                   "nodeType": "Return",
                   "src": "1017:79:14"
                 }
               ]
             },
             "documentation": "@dev Retrieves a trading zone by its id\n @param id Id of the trading zone to return\n @return Trading zone details",
-            "id": 4710,
+            "id": 4723,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2363,15 +2363,15 @@
             "name": "tradingZoneById",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4682,
+              "id": 4695,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4681,
+                  "id": 4694,
                   "name": "id",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "851:10:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2380,7 +2380,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4680,
+                    "id": 4693,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "851:7:14",
@@ -2397,15 +2397,15 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4687,
+              "id": 4700,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4684,
+                  "id": 4697,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "883:6:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2414,7 +2414,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 4683,
+                    "id": 4696,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "883:6:14",
@@ -2428,10 +2428,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 4686,
+                  "id": 4699,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4710,
+                  "scope": 4723,
                   "src": "891:4:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2440,7 +2440,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 4685,
+                    "id": 4698,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "891:4:14",
@@ -2455,7 +2455,7 @@
               ],
               "src": "882:14:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "826:277:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -2463,7 +2463,7 @@
           },
           {
             "body": {
-              "id": 4718,
+              "id": 4731,
               "nodeType": "Block",
               "src": "1265:44:14",
               "statements": [
@@ -2472,18 +2472,18 @@
                     "argumentTypes": null,
                     "expression": {
                       "argumentTypes": null,
-                      "id": 4715,
+                      "id": 4728,
                       "name": "_tradingZones",
                       "nodeType": "Identifier",
                       "overloadedDeclarations": [],
-                      "referencedDeclaration": 4647,
+                      "referencedDeclaration": 4660,
                       "src": "1282:13:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                        "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                         "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                       }
                     },
-                    "id": 4716,
+                    "id": 4729,
                     "isConstant": false,
                     "isLValue": true,
                     "isPure": false,
@@ -2497,15 +2497,15 @@
                       "typeString": "uint256"
                     }
                   },
-                  "functionReturnParameters": 4714,
-                  "id": 4717,
+                  "functionReturnParameters": 4727,
+                  "id": 4730,
                   "nodeType": "Return",
                   "src": "1275:27:14"
                 }
               ]
             },
             "documentation": "@dev Retrieves the number of trading zones registered\n @return Trading zones count",
-            "id": 4719,
+            "id": 4732,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": true,
@@ -2513,22 +2513,22 @@
             "name": "tradingZonesCount",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4711,
+              "id": 4724,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1233:2:14"
             },
             "payable": false,
             "returnParameters": {
-              "id": 4714,
+              "id": 4727,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4713,
+                  "id": 4726,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4719,
+                  "scope": 4732,
                   "src": "1256:7:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2537,7 +2537,7 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 4712,
+                    "id": 4725,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
                     "src": "1256:7:14",
@@ -2552,7 +2552,7 @@
               ],
               "src": "1255:9:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "1207:102:14",
             "stateMutability": "view",
             "superFunction": null,
@@ -2560,7 +2560,7 @@
           },
           {
             "body": {
-              "id": 4735,
+              "id": 4748,
               "nodeType": "Block",
               "src": "1449:60:14",
               "statements": [
@@ -2573,11 +2573,11 @@
                         "arguments": [
                           {
                             "argumentTypes": null,
-                            "id": 4730,
+                            "id": 4743,
                             "name": "name",
                             "nodeType": "Identifier",
                             "overloadedDeclarations": [],
-                            "referencedDeclaration": 4721,
+                            "referencedDeclaration": 4734,
                             "src": "1490:4:14",
                             "typeDescriptions": {
                               "typeIdentifier": "t_string_memory_ptr",
@@ -2587,7 +2587,7 @@
                           {
                             "argumentTypes": null,
                             "hexValue": "74727565",
-                            "id": 4731,
+                            "id": 4744,
                             "isConstant": false,
                             "isLValue": false,
                             "isPure": true,
@@ -2614,18 +2614,18 @@
                               "typeString": "bool"
                             }
                           ],
-                          "id": 4729,
+                          "id": 4742,
                           "name": "TradingZone",
                           "nodeType": "Identifier",
                           "overloadedDeclarations": [],
-                          "referencedDeclaration": 4644,
+                          "referencedDeclaration": 4657,
                           "src": "1478:11:14",
                           "typeDescriptions": {
-                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4644_storage_ptr_$",
+                            "typeIdentifier": "t_type$_t_struct$_TradingZone_$4657_storage_ptr_$",
                             "typeString": "type(struct TradingZones.TradingZone storage pointer)"
                           }
                         },
-                        "id": 4732,
+                        "id": 4745,
                         "isConstant": false,
                         "isLValue": false,
                         "isPure": false,
@@ -2635,7 +2635,7 @@
                         "nodeType": "FunctionCall",
                         "src": "1478:23:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       }
@@ -2643,24 +2643,24 @@
                     "expression": {
                       "argumentTypes": [
                         {
-                          "typeIdentifier": "t_struct$_TradingZone_$4644_memory",
+                          "typeIdentifier": "t_struct$_TradingZone_$4657_memory",
                           "typeString": "struct TradingZones.TradingZone memory"
                         }
                       ],
                       "expression": {
                         "argumentTypes": null,
-                        "id": 4726,
+                        "id": 4739,
                         "name": "_tradingZones",
                         "nodeType": "Identifier",
                         "overloadedDeclarations": [],
-                        "referencedDeclaration": 4647,
+                        "referencedDeclaration": 4660,
                         "src": "1459:13:14",
                         "typeDescriptions": {
-                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4644_storage_$dyn_storage",
+                          "typeIdentifier": "t_array$_t_struct$_TradingZone_$4657_storage_$dyn_storage",
                           "typeString": "struct TradingZones.TradingZone storage ref[] storage ref"
                         }
                       },
-                      "id": 4728,
+                      "id": 4741,
                       "isConstant": false,
                       "isLValue": false,
                       "isPure": false,
@@ -2670,11 +2670,11 @@
                       "referencedDeclaration": null,
                       "src": "1459:18:14",
                       "typeDescriptions": {
-                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4644_storage_$returns$_t_uint256_$",
+                        "typeIdentifier": "t_function_arraypush_nonpayable$_t_struct$_TradingZone_$4657_storage_$returns$_t_uint256_$",
                         "typeString": "function (struct TradingZones.TradingZone storage ref) returns (uint256)"
                       }
                     },
-                    "id": 4733,
+                    "id": 4746,
                     "isConstant": false,
                     "isLValue": false,
                     "isPure": false,
@@ -2688,28 +2688,28 @@
                       "typeString": "uint256"
                     }
                   },
-                  "id": 4734,
+                  "id": 4747,
                   "nodeType": "ExpressionStatement",
                   "src": "1459:43:14"
                 }
               ]
             },
             "documentation": "@dev Registers a new trading zone\n @param name Trading zone name",
-            "id": 4736,
+            "id": 4749,
             "implemented": true,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [
               {
                 "arguments": null,
-                "id": 4724,
+                "id": 4737,
                 "modifierName": {
                   "argumentTypes": null,
-                  "id": 4723,
+                  "id": 4736,
                   "name": "onlyOwner",
                   "nodeType": "Identifier",
                   "overloadedDeclarations": [],
-                  "referencedDeclaration": 3309,
+                  "referencedDeclaration": 3322,
                   "src": "1439:9:14",
                   "typeDescriptions": {
                     "typeIdentifier": "t_modifier$__$",
@@ -2723,15 +2723,15 @@
             "name": "addTradingZone",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 4722,
+              "id": 4735,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 4721,
+                  "id": 4734,
                   "name": "name",
                   "nodeType": "VariableDeclaration",
-                  "scope": 4736,
+                  "scope": 4749,
                   "src": "1419:11:14",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -2740,7 +2740,7 @@
                     "typeString": "string"
                   },
                   "typeName": {
-                    "id": 4720,
+                    "id": 4733,
                     "name": "string",
                     "nodeType": "ElementaryTypeName",
                     "src": "1419:6:14",
@@ -2757,19 +2757,19 @@
             },
             "payable": false,
             "returnParameters": {
-              "id": 4725,
+              "id": 4738,
               "nodeType": "ParameterList",
               "parameters": [],
               "src": "1449:0:14"
             },
-            "scope": 4737,
+            "scope": 4750,
             "src": "1395:114:14",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 4738,
+        "scope": 4751,
         "src": "144:1367:14"
       }
     ],
@@ -2781,7 +2781,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.19",
-  "updatedAt": "2019-11-19T19:29:26.690Z",
+  "updatedAt": "2020-01-13T18:08:58.637Z",
   "devdoc": {
     "author": "Civic Ledger",
     "methods": {

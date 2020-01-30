@@ -44,4 +44,5 @@ module.exports = async (deployer, environment) => {
   await waterInstance.setOrderBook(orderBookInstance.address);
   await statsInstance.addWriter(orderBookInstance.address);
   await historyInstance.addWriter(orderBookInstance.address);
+
 };

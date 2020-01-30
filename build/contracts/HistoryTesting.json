@@ -492,8 +492,8 @@
         ],
         "contractDependencies": [
           1368,
-          3373,
-          4032
+          3386,
+          4045
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -502,8 +502,8 @@
         "linearizedBaseContracts": [
           1407,
           1368,
-          3373,
-          4032
+          3386,
+          4045
         ],
         "name": "HistoryTesting",
         "nodeType": "ContractDefinition",
@@ -1015,8 +1015,8 @@
         ],
         "contractDependencies": [
           1368,
-          3373,
-          4032
+          3386,
+          4045
         ],
         "contractKind": "contract",
         "documentation": null,
@@ -1025,8 +1025,8 @@
         "linearizedBaseContracts": [
           1407,
           1368,
-          3373,
-          4032
+          3386,
+          4045
         ],
         "name": "HistoryTesting",
         "nodeType": "ContractDefinition",
@@ -1489,7 +1489,7 @@
   },
   "networks": {},
   "schemaVersion": "3.0.19",
-  "updatedAt": "2019-11-19T19:29:26.673Z",
+  "updatedAt": "2020-01-13T18:08:58.617Z",
   "devdoc": {
     "methods": {}
   },

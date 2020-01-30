@@ -44,6 +44,10 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         _tradingZones = TradingZones(tradingZonesContract);
     }
 
+    function getBuyOrderStructByIndex(uint index) public view returns (Order) {
+        return _buys[index];
+    }
+
     function getTradingZone() public view returns(uint256, string) {
         if(_tradingZoneId > 0) {
             (string memory tradingZoneName, ) = _tradingZones.tradingZoneById(_tradingZoneId);
