@@ -4,34 +4,42 @@ import "./SafeMath.sol";
 import "./ERC20.sol";
 import "./Ownable.sol";
 
-contract Water is ERC20, Ownable {
+contract Zone is ERC20, Ownable {
     using SafeMath for uint;
 
-    // Public variables of the token
-    string public _name = "Water Ledger Water";
-    string public _symbol = "CLW";
-    uint8 public _decimals = 12; //megalitres
+    bytes32 public _name = '';
+    bytes32 public _symbol = "CLW";
+    uint8 public _decimals = 12;
 
-    address public _orderBook;
-    address public _waterLicenceAddress;
+    uint256 public _min = 0;
+    uint256 public _max = 0;
 
-    constructor(uint256 supply) public {
+    Zone public _groupedWith;
+    uint256 public _groupMin = 0;
+    uint256 public _groupMax = 0;
+
+    address private _orderBook;
+
+    constructor(uint256 supply, bytes32 name) public {
         _totalSupply = supply;
         _balances[msg.sender] = supply;
+        _name = name;
     }
 
-    function allocate(address to, uint256 amount) external {
-        require(msg.sender == _waterLicenceAddress, "Only water licence can allocate water.");
-
-        _balances[owner()] = _balances[owner()].sub(amount);
-        _balances[to] = _balances[to].add(amount);
-
-        emit Allocation(to, amount);
+    function setGroup(address groupedWith, uint256 groupMin, uint256 groupMax) public onlyOwner {
+        _groupedWith = Zone(groupedWith);
+        _groupMin = groupMin;
+        _groupMax = groupMax;
     }
 
-    function setWaterLicence(address _address) public onlyOwner {
-        _waterLicenceAddress = _address;
-    }
+    // function allocate(address to, uint256 amount) external {
+    //     require(msg.sender == _waterLicenceAddress, "Only water licence can allocate water.");
+
+    //     _balances[owner()] = _balances[owner()].sub(amount);
+    //     _balances[to] = _balances[to].add(amount);
+
+    //     emit Allocation(to, amount);
+    // }
 
     function setOrderBook(address orderBook) public {
         _orderBook = orderBook;

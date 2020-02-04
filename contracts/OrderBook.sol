@@ -1,24 +1,22 @@
 pragma solidity ^0.4.24;
 
 import "./Ownable.sol";
-import "./Water.sol";
+import "./Zone.sol";
 import "./Stats.sol";
 import "./AUD.sol";
-import "./IERC20.sol";
 import "./IOrderBook.sol";
 import "./QuickSort.sol";
 import "./SafeMath.sol";
 import "./History.sol";
-import "./TradingZones.sol";
 
 contract OrderBook is IOrderBook, QuickSort, Ownable {
     using SafeMath for uint;
 
-    IERC20 public _water;
-    IERC20 public _aud;
+    Zone[] public _zones;
+    bytes32[] public _zoneNames;
+    AUD public _aud;
     Stats public _stats;
     History public _history;
-    TradingZones public _tradingZones;
 
     enum OrderType { Sell, Buy }
 
@@ -29,46 +27,32 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         uint256 quantity;
         uint256 timeStamp;
         uint256 matchedTimeStamp;
+        uint8 zone;
     }
 
     Order[] public _buys;
     Order[] public _sells;
 
-    uint256 private _tradingZoneId;
-
-    constructor (address audContract, address historyContract, address statsContract, address waterContract, address tradingZonesContract) public {
+    constructor (address audContract, address historyContract, address statsContract) public {
         _aud = AUD(audContract);
         _history = History(historyContract);
         _stats = Stats(statsContract);
-        _water = Water(waterContract);
-        _tradingZones = TradingZones(tradingZonesContract);
     }
 
-    function getBuyOrderStructByIndex(uint index) public view returns (Order) {
-        return _buys[index];
+    function addZone(bytes32 name, address zoneContract) public onlyOwner {
+        _zones.push(Zone(zoneContract));
+        _zoneNames.push(name);
     }
 
-    function getTradingZone() public view returns(uint256, string) {
-        if(_tradingZoneId > 0) {
-            (string memory tradingZoneName, ) = _tradingZones.tradingZoneById(_tradingZoneId);
-            return (_tradingZoneId, tradingZoneName);
-        }
-        return (_tradingZoneId, "");
-    }
-
-    function setTradingZone(uint256 tradingZoneId) public onlyOwner {
-        require(tradingZoneId < _tradingZones.tradingZonesCount(), "Invalid trading zone");
-        _tradingZoneId = tradingZoneId;
-    }
-
-    function addSellLimitOrder(uint256 price, uint256 quantity) public {
+    function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
+        Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        require(_water.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
+        require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
 
-        uint256 sellCount = _sells.push(Order(OrderType.Sell, msg.sender, price, quantity, now, 0));
+        uint256 sellCount = _sells.push(Order(OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = sellCount - 1;
-        _stats.updateVolumeAvailable(quantity);
-        _water.orderBookDebit(msg.sender, quantity);
+        //_stats.updateVolumeAvailable(quantity);
+        zone.orderBookDebit(msg.sender, quantity);
 
         emit OrderAdded(msg.sender);
 
@@ -89,10 +73,10 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                     _aud.orderBookCredit(msg.sender, _buys[j].quantity * price);
 
                     //Credit the buyer with water
-                    _water.orderBookCredit(_buys[j].owner, _buys[j].quantity);
+                    zone.orderBookCredit(_buys[j].owner, _buys[j].quantity);
 
-                    _stats.reduceVolumeAvailable(quantity);
-                    _stats.setLastTradePrice(price);
+                    // _stats.reduceVolumeAvailable(quantity);
+                    // _stats.setLastTradePrice(price);
 
                     _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity);
                     _buys[j].matchedTimeStamp = now;
@@ -100,7 +84,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
 
                     matchedQuantity += _buys[j].quantity;
 
-                    emit Matched(_buys[j].owner, _buys[j].price, _buys[j].quantity);
+                    emit Matched(_buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone);
                 }
 
                 i++;
@@ -108,12 +92,13 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         }
     }
 
-    function addBuyLimitOrder(uint256 price, uint256 quantity) public {
+    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
+        Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(_aud.balanceOf(msg.sender) >= price * quantity, "Insufficient AUD allocation");
 
         //Push to array first
-        uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0));
+        uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = buyCount - 1;
         _aud.orderBookDebit(msg.sender, price * quantity);
 
@@ -142,12 +127,12 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                     _aud.orderBookCredit(_sells[j].owner, _sells[j].quantity * price);
 
                     //Credit the buyer with water
-                    _water.orderBookCredit(msg.sender, _sells[j].quantity);
+                    zone.orderBookCredit(msg.sender, _sells[j].quantity);
 
-                    _stats.reduceVolumeAvailable(quantity);
-                    _stats.setLastTradePrice(price);
+                    // _stats.reduceVolumeAvailable(quantity);
+                    // _stats.setLastTradePrice(price);
 
-                    emit Matched(_sells[j].owner, _sells[j].price, _sells[j].quantity);
+                    emit Matched(_sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex);
                 }
 
                 i++;
@@ -359,5 +344,5 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     }
 
     event OrderAdded(address _stats);
-    event Matched(address indexed owner, uint256 price, uint256 quantity);
+    event Matched(address indexed owner, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
 }

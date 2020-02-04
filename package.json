@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "date-fns": "^2.9.0"
+    "date-fns": "^2.9.0",
+    "solc": "^0.4.24"
   }
 }

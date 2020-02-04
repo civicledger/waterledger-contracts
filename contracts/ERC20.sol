@@ -10,7 +10,7 @@ import "./SafeMath.sol";
 * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
 * Originally based on code by FirstBlood: https://github.com/Firstbloodio/token/blob/master/smart_contract/FirstBloodToken.sol
 */
-contract ERC20 is IERC20 {
+contract ERC20 {
     using SafeMath for uint256;
 
     mapping (address => uint256) public _balances;
@@ -194,4 +194,16 @@ contract ERC20 is IERC20 {
         _allowed[account][msg.sender] = _allowed[account][msg.sender].sub(amount);
         _burn(account, amount);
     }
+
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 value
+    );
+
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }
