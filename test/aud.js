@@ -8,20 +8,20 @@ contract("AUD", function(accounts) {
 
   let contractInstance;
 
-  describe('Contract with zero AUD', () => {
+  xdescribe('Contract with zero AUD', () => {
 
     beforeEach(async () => ( contractInstance = await Token.new(0) ) );
-    
+
     it("total supply should be 0", async function () {
       const actual = await contractInstance.totalSupply();
       assert.equal(Number(actual), 0, "Total supply should be 0");
     });
-  
+
     it("owner balance should be 0", async function () {
       const actual = await contractInstance.balanceOf(OWNER);
       assert.equal(Number(actual), 0, "Balance should be 0");
     });
-  
+
     it("should mint 2000 tokens", async function () {
       await contractInstance.mint(2000);
       const balance = await contractInstance.balanceOf(OWNER);
@@ -34,11 +34,11 @@ contract("AUD", function(accounts) {
       assert.equal(Number(balance), 1000, "Balance should be 1000");
     });
   });
-  
-  describe('Contract with 2000 AUD', () => {
+
+  xdescribe('Contract with 2000 AUD', () => {
 
     beforeEach(async () => ( contractInstance = await Token.new(2000) ) );
-  
+
     it("should burn 10 tokens", async function () {
       await contractInstance.burn(10);
 

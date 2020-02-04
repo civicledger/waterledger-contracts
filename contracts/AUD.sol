@@ -76,4 +76,16 @@ contract AUD is ERC20, Ownable  {
     event Minted(uint256 value);
     event MintedTo(address indexed to, uint256 value);
     event Burned(uint256 value);
+
+    event Transfer(
+        address indexed from,
+        address indexed to,
+        uint256 value
+    );
+
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
 }

@@ -2,9 +2,9 @@ pragma solidity ^0.4.24;
 
 interface IOrderBook {
 
-    function addBuyLimitOrder(uint256 price, uint256 quantity) external;
+    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zone) external;
 
-    function addSellLimitOrder(uint256 price, uint256 quantity) external;
+    function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zone) external;
 
     function getOrderBookBuys(uint256 numberOfOrders) external view returns (
         uint256[],
