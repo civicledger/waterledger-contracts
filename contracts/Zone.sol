@@ -20,10 +20,11 @@ contract Zone is ERC20, Ownable {
 
     address private _orderBook;
 
-    constructor(uint256 supply, bytes32 name) public {
+    constructor(uint256 supply, bytes32 name, address orderBook) public {
         _totalSupply = supply;
         _balances[msg.sender] = supply;
         _name = name;
+        _orderBook = orderBook;
     }
 
     function setGroup(address groupedWith, uint256 groupMin, uint256 groupMax) public onlyOwner {

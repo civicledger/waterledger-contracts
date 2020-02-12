@@ -1,65 +1,58 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
 
 import "./Ownable.sol";
 
-/// @title Maintains application-wide list of users
-/// @author Civic Ledger
 contract Users is Ownable {
 
     struct User {
-        uint256 userId;
         bool userExists;
+        bytes32 name;
+        address[] licenceAddresses;
+        mapping(address => Licence) licences;
     }
 
-    User[] private _users;
-    mapping(address => uint256) private _userAddresses;
-
-    constructor() public {
-        _users.push(User(0, false));
+    struct Licence {
+        bytes32 licenceId;
+        address ethAccount;
+        uint8 zoneIndex;
+        bytes32 zoneString;
     }
 
-    /// @dev Tests whether the address is a registered user address
-    /// @param userAddress The address to test whether it is a user address
-    /// @return True if address is a registered user, false otherwise
-    function isUser(address userAddress) public view returns(bool) {
-        uint256 userId = _userAddresses[userAddress];
-        return _users[userId].userExists;
+    User[] public _users;
+    mapping(address => uint256) public _licenceAddressToUser;
+    mapping(bytes32 => address) public _licenceIdToAddress;
+
+    function addUser(bytes32 name) public onlyOwner returns (uint256) {
+        _users.push(User(true, name, new address[](0)));
+        return _users.length - 1;
     }
 
-    /// @dev Retrieves the user details given its id
-    /// @param userId Id of the user to retrieves its details
-    /// @return User details
-    function userById(uint256 userId) public view returns(uint256, bool) {
-        User memory user = (userId >= _users.length) ? _users[0] : _users[userId];
-        return (
-            user.userId,
-            user.userExists
-        );
+    function addUserLicence(uint256 userIndex, bytes32 licenceId, address ethAccount, uint8 zoneIndex, bytes32 zoneString)
+        public onlyOwner returns (Licence) {
+        _users[userIndex].licences[ethAccount] = Licence(licenceId, ethAccount, zoneIndex, zoneString);
+        _users[userIndex].licenceAddresses.push(ethAccount);
+        _licenceAddressToUser[ethAccount] = userIndex;
+        _licenceIdToAddress[licenceId] = ethAccount;
+        return _users[userIndex].licences[ethAccount];
     }
 
-    /// @dev Returns the number of users for enumeration
-    /// @return Count of users
-    function userCount() public view returns(uint256) {
-        return _users.length;
+    function getLicenceForLicenceId(bytes32 licenceId) public view returns (Licence) {
+        address ethAccount = _licenceIdToAddress[licenceId];
+        return _users[_licenceAddressToUser[ethAccount]].licences[ethAccount];
     }
 
-    /// @dev Retrieves the user details given its id
-    /// @param userAddress Address of the user to retrieves its details
-    /// @return User details
-    function userByAddress(address userAddress) public view returns(uint256, bool) {
-        uint256 userId = _userAddresses[userAddress];
-        return (
-            _users[userId].userId,
-            _users[userId].userExists
-        );
-    }
+    function getLicencesForUser(uint256 userIndex) public view returns (Licence[]) {
+        uint256 licenceLength = _users[userIndex].licenceAddresses.length;
+        require(licenceLength > 0, "There are no licences for this user");
 
-    /// @dev Adds a new registered user
-    /// @param userAddress The address of the user
-    function addUser(address userAddress) public onlyOwner {
-        uint256 userId = _users.length;
-        _users.push(User(userId, true));
-        _userAddresses[userAddress] = userId;
+        Licence[] memory licenceArray = new Licence[](licenceLength);
+
+        for(uint i = 0; i <= licenceLength; i++) {
+            licenceArray[i] = _users[userIndex].licences[_users[userIndex].licenceAddresses[i]];
+        }
+
+        return licenceArray;
     }
 
 }

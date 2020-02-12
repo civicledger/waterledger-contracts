@@ -18,50 +18,9 @@ contract History is QuickSort, Ownable {
     Trade[] public _history;
     mapping(address => bool) private _allowedWriters;
 
-    constructor() public {
+    constructor(address orderBook) public {
         _allowedWriters[msg.sender] = true;
-    }
-
-    function averageValueTradedInPeriod(uint256 from, uint256 to) public view returns(uint256) {
-        uint256 total = 0;
-        uint256 numberOfMatches = 0;
-
-        for (uint i = 0; i < _history.length; i++) {
-            if (_history[i].timeStamp >= from && _history[i].timeStamp <= to) {
-                total = total.add(_history[i].averagePrice);
-                numberOfMatches++;
-            }
-        }
-
-        if (numberOfMatches == 0) {
-            return 0;
-        }
-
-        return total.div(numberOfMatches);
-    }
-
-    function totalValueTradedInPeriod(uint256 from, uint256 to) public view returns(uint256) {
-        uint256 total = 0;
-
-        for (uint i = 0; i < _history.length; i++) {
-            if (_history[i].timeStamp >= from && _history[i].timeStamp <= to) {
-                total = total.add(_history[i].averagePrice);
-            }
-        }
-
-        return total;
-    }
-
-    function totalVolumeTradedInPeriod(uint256 from, uint256 to) public view returns(uint256) {
-        uint256 total = 0;
-
-        for (uint i = 0; i < _history.length; i++) {
-            if (_history[i].timeStamp >= from && _history[i].timeStamp <= to) {
-                total = total.add(_history[i].quantity);
-            }
-        }
-
-        return total;
+        _allowedWriters[orderBook] = true;
     }
 
     function getHistory(uint256 numberOfTrades) public view returns(address[], address[], uint256[], uint256[], uint256[]) {
@@ -112,12 +71,13 @@ contract History is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function addHistory(address buyer, address seller, uint256 price, uint256 quantity) external onlyWriters("Only writers can add history") {
+    function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone)
+            external onlyWriters("Only writers can add history") {
         require(buyer != address(0), "Invalid address");
         require(seller != address(0), "Invalid address");
         _history.push(Trade(buyer, seller, price, quantity, now));
 
-        emit HistoryAdded(buyer, seller, price, quantity);
+        emit HistoryAdded(buyer, seller, price, quantity, fromZone, toZone);
     }
 
     function addWriter(address who) public onlyOwner {
@@ -133,5 +93,5 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(address buyer, address seller, uint256 price, uint256 quantity);
+    event HistoryAdded(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
 }

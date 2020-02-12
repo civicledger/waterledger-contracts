@@ -2,21 +2,19 @@ pragma solidity ^0.4.24;
 
 import "./Ownable.sol";
 import "./Zone.sol";
-import "./Stats.sol";
-import "./AUD.sol";
 import "./IOrderBook.sol";
 import "./QuickSort.sol";
 import "./SafeMath.sol";
 import "./History.sol";
+import "./Users.sol";
 
 contract OrderBook is IOrderBook, QuickSort, Ownable {
     using SafeMath for uint;
 
     Zone[] public _zones;
     bytes32[] public _zoneNames;
-    AUD public _aud;
-    Stats public _stats;
     History public _history;
+    Users public _users;
 
     enum OrderType { Sell, Buy }
 
@@ -33,15 +31,17 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     Order[] public _buys;
     Order[] public _sells;
 
-    constructor (address audContract, address historyContract, address statsContract) public {
-        _aud = AUD(audContract);
-        _history = History(historyContract);
-        _stats = Stats(statsContract);
-    }
-
     function addZone(bytes32 name, address zoneContract) public onlyOwner {
         _zones.push(Zone(zoneContract));
         _zoneNames.push(name);
+    }
+
+    function addHistoryContract(address historyContract) public onlyOwner {
+        _history = History(historyContract);
+    }
+
+    function addUsersContract(address usersContract) public onlyOwner {
+        _users = Users(usersContract);
     }
 
     function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
@@ -70,15 +70,15 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity) {
 
                     //Credit the seller with AUD
-                    _aud.orderBookCredit(msg.sender, _buys[j].quantity * price);
+                    //zone.orderBookCredit(msg.sender, _buys[j].quantity * price);
 
                     //Credit the buyer with water
-                    zone.orderBookCredit(_buys[j].owner, _buys[j].quantity);
+                    //zone.orderBookCredit(_buys[j].owner, _buys[j].quantity);
 
                     // _stats.reduceVolumeAvailable(quantity);
                     // _stats.setLastTradePrice(price);
 
-                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity);
+                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, zoneIndex);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
@@ -95,12 +95,12 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        require(_aud.balanceOf(msg.sender) >= price * quantity, "Insufficient AUD allocation");
+        require(zone.balanceOf(msg.sender) >= price * quantity, "Insufficient AUD allocation");
 
         //Push to array first
         uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = buyCount - 1;
-        _aud.orderBookDebit(msg.sender, price * quantity);
+        zone.orderBookDebit(msg.sender, price * quantity);
 
         emit OrderAdded(msg.sender);
 
@@ -116,7 +116,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == (quantity - matchedQuantity)) {
-                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity);
+                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, zoneIndex, zoneIndex);
 
                     _sells[j].matchedTimeStamp = now;
                     _buys[buyIndex].matchedTimeStamp = now;
@@ -124,10 +124,10 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                     matchedQuantity += _sells[j].quantity;
 
                     //Credit the seller with AUD
-                    _aud.orderBookCredit(_sells[j].owner, _sells[j].quantity * price);
+                    //zone.orderBookCredit(_sells[j].owner, _sells[j].quantity * price);
 
                     //Credit the buyer with water
-                    zone.orderBookCredit(msg.sender, _sells[j].quantity);
+                    //zone.orderBookCredit(msg.sender, _sells[j].quantity);
 
                     // _stats.reduceVolumeAvailable(quantity);
                     // _stats.setLastTradePrice(price);
