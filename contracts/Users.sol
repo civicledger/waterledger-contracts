@@ -37,6 +37,12 @@ contract Users is Ownable {
         return _users[userIndex].licences[ethAccount];
     }
 
+    function getUserIndexForLicenceId(bytes32 licenceId) public view returns (uint256) {
+        address ethAccount = _licenceIdToAddress[licenceId];
+        return _licenceAddressToUser[ethAccount];
+    }
+
+
     function getLicenceForLicenceId(bytes32 licenceId) public view returns (Licence) {
         address ethAccount = _licenceIdToAddress[licenceId];
         return _users[_licenceAddressToUser[ethAccount]].licences[ethAccount];

@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
 
 import "./Ownable.sol";
 import "./Zone.sol";
@@ -51,7 +52,6 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
 
         uint256 sellCount = _sells.push(Order(OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = sellCount - 1;
-        //_stats.updateVolumeAvailable(quantity);
         zone.orderBookDebit(msg.sender, quantity);
 
         emit OrderAdded(msg.sender);
@@ -68,16 +68,6 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity) {
-
-                    //Credit the seller with AUD
-                    //zone.orderBookCredit(msg.sender, _buys[j].quantity * price);
-
-                    //Credit the buyer with water
-                    //zone.orderBookCredit(_buys[j].owner, _buys[j].quantity);
-
-                    // _stats.reduceVolumeAvailable(quantity);
-                    // _stats.setLastTradePrice(price);
-
                     _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, zoneIndex);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
@@ -123,15 +113,6 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
 
                     matchedQuantity += _sells[j].quantity;
 
-                    //Credit the seller with AUD
-                    //zone.orderBookCredit(_sells[j].owner, _sells[j].quantity * price);
-
-                    //Credit the buyer with water
-                    //zone.orderBookCredit(msg.sender, _sells[j].quantity);
-
-                    // _stats.reduceVolumeAvailable(quantity);
-                    // _stats.setLastTradePrice(price);
-
                     emit Matched(_sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex);
                 }
 
@@ -140,52 +121,27 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         }
     }
 
-    function getOrderBook() public view returns (
-        OrderType[],
-        address[],
-        uint256[],
-        uint256[],
-        uint256[]
-    ) {
+    function getOrderBook() public view returns (Order[]) {
         uint256 totalLength = getUnmatchedSellsCount() + getUnmatchedBuysCount();
 
-        OrderType[] memory orderTypes = new OrderType[](totalLength);
-
-        address[] memory owners = new address[](totalLength);
-        uint256[] memory prices = new uint256[](totalLength);
-        uint256[] memory quantities = new uint256[](totalLength);
-        uint256[] memory timeStamps = new uint256[](totalLength);
+        Order[] memory returnedOrders = new Order[](totalLength);
 
         for(uint256 i = 0; i < _sells.length; i++) {
             if (_sells[i].matchedTimeStamp == 0) {
-                orderTypes[i] = _sells[i].orderType;
-                owners[i] = _sells[i].owner;
-                prices[i] = _sells[i].price;
-                quantities[i] = _sells[i].quantity;
-                timeStamps[i] = _sells[i].timeStamp;
+                returnedOrders[i] = _sells[i];
             }
         }
 
         for(uint256 j = 0; j < _buys.length; j++) {
             if (_buys[j].matchedTimeStamp == 0) {
-                orderTypes[_sells.length + j] = _buys[j].orderType;
-                owners[_sells.length + j] = _buys[j].owner;
-                prices[_sells.length + j] = _buys[j].price;
-                quantities[_sells.length + j] = _buys[j].quantity;
-                timeStamps[_sells.length + j] = _buys[j].timeStamp;
+                returnedOrders[_sells.length + j] = _buys[j];
             }
         }
 
-        return (orderTypes, owners, prices, quantities, timeStamps);
+        return returnedOrders;
     }
 
-    function getOrderBookSells(uint256 numberOfOrders) public view returns (
-        OrderType[],
-        address[],
-        uint256[],
-        uint256[],
-        uint256[]
-    ) {
+    function getOrderBookSells(uint256 numberOfOrders) public view returns (Order[]) {
 
         uint256 max = getUnmatchedSellsCount() < numberOfOrders ? getUnmatchedSellsCount() : numberOfOrders;
 
@@ -195,30 +151,16 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
 
         uint256[] memory sortedIndexes = getPriceTimeSellOrders();
 
-        OrderType[] memory orderTypes = new OrderType[](max);
-        address[] memory owners = new address[](max);
-        uint256[] memory prices = new uint256[](max);
-        uint256[] memory quantities = new uint256[](max);
-        uint256[] memory timeStamps = new uint256[](max);
+        Order[] memory returnedOrders = new Order[](max);
 
         for(uint256 i = 0; i < max; i++) {
-            orderTypes[i] = _sells[sortedIndexes[i]].orderType;
-            owners[i] = _sells[sortedIndexes[i]].owner;
-            prices[i] = _sells[sortedIndexes[i]].price;
-            quantities[i] = _sells[sortedIndexes[i]].quantity;
-            timeStamps[i] = _sells[sortedIndexes[i]].timeStamp;
+            returnedOrders[i] = _sells[sortedIndexes[i]];
         }
 
-        return (orderTypes, owners, prices, quantities, timeStamps);
+        return returnedOrders;
     }
 
-    function getOrderBookBuys(uint256 numberOfOrders) public view returns (
-        OrderType[],
-        address[],
-        uint256[],
-        uint256[],
-        uint256[]
-    ) {
+    function getOrderBookBuys(uint256 numberOfOrders) public view returns (Order[]) {
 
         uint256 max = getUnmatchedBuysCount() < numberOfOrders ? getUnmatchedBuysCount() : numberOfOrders;
 
@@ -228,43 +170,30 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
 
         uint256[] memory sortedIndexes = getPriceTimeBuyOrders();
 
-        OrderType[] memory orderTypes = new OrderType[](max);
-        address[] memory owners = new address[](max);
-        uint256[] memory prices = new uint256[](max);
-        uint256[] memory quantities = new uint256[](max);
-        uint256[] memory timeStamps = new uint256[](max);
+        Order[] memory returnedOrders = new Order[](max);
 
         for(uint256 i = 0; i < max; i++) {
-            orderTypes[i] = _buys[sortedIndexes[i]].orderType;
-            owners[i] = _buys[sortedIndexes[i]].owner;
-            prices[i] = _buys[sortedIndexes[i]].price;
-            quantities[i] = _buys[sortedIndexes[i]].quantity;
-            timeStamps[i] = _buys[sortedIndexes[i]].timeStamp;
+            returnedOrders[i] = _buys[sortedIndexes[i]];
         }
 
-        return (orderTypes, owners, prices, quantities, timeStamps);
+        return returnedOrders;
     }
 
-    function lowestSell() public view returns(address, uint256, uint256, uint256) {
-        if (getUnmatchedSellsCount() > 0) {
-            uint256[] memory sortedIndexes = getPriceTimeSellOrders();
+    function lowestSell() public view returns(Order) {
+        require(getUnmatchedSellsCount() > 0, "No sells available");
+        uint256[] memory sortedIndexes = getPriceTimeSellOrders();
 
-            uint i = sortedIndexes[0];
-            return (_sells[i].owner, _sells[i].price, _sells[i].quantity, _sells[i].timeStamp);
-        }
-
-        return (address(0), 0, 0, 0);
+        uint i = sortedIndexes[0];
+        return _sells[i];
     }
 
-    function highestBuy() public view returns(address, uint256, uint256, uint256) {
-        if (getUnmatchedBuysCount() > 0) {
-            uint256[] memory sortedIndexes = getPriceTimeBuyOrders();
+    function highestBuy() public view returns(Order) {
+        require(getUnmatchedBuysCount() > 0, "No buys available");
 
-            uint i = sortedIndexes[0];
-            return (_buys[i].owner, _buys[i].price, _buys[i].quantity, _buys[i].timeStamp);
-        }
+        uint256[] memory sortedIndexes = getPriceTimeBuyOrders();
 
-        return (address(0), 0, 0, 0);
+        uint i = sortedIndexes[0];
+        return _buys[i];
     }
 
     function getPriceTimeSellOrders() internal view returns(uint256[]) {

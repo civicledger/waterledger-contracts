@@ -1,4 +1,5 @@
 pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
 
 import "./SafeMath.sol";
 import "./QuickSort.sol";
@@ -7,12 +8,17 @@ import "./Ownable.sol";
 contract History is QuickSort, Ownable {
     using SafeMath for uint;
 
+    enum Status { Pending, Completed, Rejected }
+
     struct Trade {
         address buyer;
         address seller;
         uint256 averagePrice;
         uint256 quantity;
         uint256 timeStamp;
+        uint8 fromZone;
+        uint8 toZone;
+        Status status;
     }
 
     Trade[] public _history;
@@ -23,7 +29,7 @@ contract History is QuickSort, Ownable {
         _allowedWriters[orderBook] = true;
     }
 
-    function getHistory(uint256 numberOfTrades) public view returns(address[], address[], uint256[], uint256[], uint256[]) {
+    function getHistory(uint256 numberOfTrades) public view returns(Trade[]) {
         uint256 max = _history.length < numberOfTrades ? _history.length : numberOfTrades;
 
         if (max > 1000) {
@@ -31,22 +37,13 @@ contract History is QuickSort, Ownable {
         }
 
         uint256[] memory sortedIndexes = getTimeHistory();
-
-        address[] memory buyers = new address[](max);
-        address[] memory sellers = new address[](max);
-        uint256[] memory averagePrices = new uint256[](max);
-        uint256[] memory quantities = new uint256[](max);
-        uint256[] memory timeStamps = new uint256[](max);
+        Trade[] memory returnedTrades = new Trade[](max);
 
         for(uint256 i = 0; i < max; i++) {
-            buyers[i] = _history[sortedIndexes[i]].buyer;
-            sellers[i] = _history[sortedIndexes[i]].seller;
-            averagePrices[i] = _history[sortedIndexes[i]].averagePrice;
-            quantities[i] = _history[sortedIndexes[i]].quantity;
-            timeStamps[i] = _history[sortedIndexes[i]].timeStamp;
+            returnedTrades[i] = _history[sortedIndexes[i]];
         }
 
-        return (buyers, sellers, averagePrices, quantities, timeStamps);
+        return returnedTrades;
     }
 
     function getTradeCount() public view returns (uint) {
@@ -72,12 +69,20 @@ contract History is QuickSort, Ownable {
     }
 
     function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone)
-            external onlyWriters("Only writers can add history") {
+        external onlyWriters("Only writers can add history") {
         require(buyer != address(0), "Invalid address");
         require(seller != address(0), "Invalid address");
-        _history.push(Trade(buyer, seller, price, quantity, now));
+        _history.push(Trade(buyer, seller, price, quantity, now, fromZone, toZone, Status.Pending));
 
-        emit HistoryAdded(buyer, seller, price, quantity, fromZone, toZone);
+        emit HistoryAdded(_history.length - 1, buyer, seller, price, quantity, fromZone, toZone);
+    }
+
+    function rejectTrade(uint256 index) public onlyOwner {
+        _history[index].status = Status.Rejected;
+    }
+
+    function completeTrade(uint256 index) public onlyOwner {
+        _history[index].status = Status.Completed;
     }
 
     function addWriter(address who) public onlyOwner {
@@ -93,5 +98,5 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
+    event HistoryAdded(uint256 index, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
 }
