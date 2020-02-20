@@ -1,7 +1,5 @@
-const AUD = artifacts.require("AUD");
 const History = artifacts.require("History");
 const OrderBook = artifacts.require("OrderBook");
-const Stats = artifacts.require("Stats");
 const Zone = artifacts.require("Zone");
 
 let AssembleStruct = require('./helpers/AssembleStruct');
@@ -17,7 +15,6 @@ const zoneName = web3.utils.utf8ToHex("Barron Zone A");
 const START_VOLUME = 0;
 
 var contractInstance;
-var statsInstance;
 var zoneInstance;
 var historyInstance;
 

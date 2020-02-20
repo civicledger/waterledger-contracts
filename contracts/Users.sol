@@ -25,7 +25,16 @@ contract Users is Ownable {
 
     function addUser(bytes32 name) public onlyOwner returns (uint256) {
         _users.push(User(true, name, new address[](0)));
+        emit UserAdded(_users.length - 1, name);
         return _users.length - 1;
+    }
+
+    function getUser(uint256 userIndex) public view returns(bytes32, address[]) {
+        return (_users[userIndex].name, _users[userIndex].licenceAddresses);
+    }
+
+    function usersLength() public view returns (uint256) {
+        return _users.length;
     }
 
     function addUserLicence(uint256 userIndex, bytes32 licenceId, address ethAccount, uint8 zoneIndex, bytes32 zoneString)
@@ -42,7 +51,6 @@ contract Users is Ownable {
         return _licenceAddressToUser[ethAccount];
     }
 
-
     function getLicenceForLicenceId(bytes32 licenceId) public view returns (Licence) {
         address ethAccount = _licenceIdToAddress[licenceId];
         return _users[_licenceAddressToUser[ethAccount]].licences[ethAccount];
@@ -54,11 +62,13 @@ contract Users is Ownable {
 
         Licence[] memory licenceArray = new Licence[](licenceLength);
 
-        for(uint i = 0; i <= licenceLength; i++) {
+        for(uint i = 0; i < licenceLength; i++) {
             licenceArray[i] = _users[userIndex].licences[_users[userIndex].licenceAddresses[i]];
         }
 
         return licenceArray;
     }
+
+    event UserAdded(uint256 index, bytes32 name);
 
 }
