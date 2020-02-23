@@ -46,6 +46,23 @@ contract Users is Ownable {
         return _users[userIndex].licences[ethAccount];
     }
 
+    function getLicenceAddresses(uint256 userIndex) public view returns (address[]) {
+        return _users[userIndex].licenceAddresses;
+    }
+
+    function getLicenceIds(uint256 userIndex) public view returns (bytes32[]) {
+        uint256 licenceLength = _users[userIndex].licenceAddresses.length;
+        require(licenceLength > 0, "There are no licences for this user");
+
+        bytes32[] memory idArray = new bytes32[](licenceLength);
+
+        for(uint i = 0; i < licenceLength; i++) {
+            idArray[i] = _users[userIndex].licences[_users[userIndex].licenceAddresses[i]].licenceId;
+        }
+
+        return idArray;
+    }
+
     function getUserIndexForLicenceId(bytes32 licenceId) public view returns (uint256) {
         address ethAccount = _licenceIdToAddress[licenceId];
         return _licenceAddressToUser[ethAccount];

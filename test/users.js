@@ -1,9 +1,6 @@
-// const assertThrows = require('./helpers/TestHelpers').assertThrows;
 const Users = artifacts.require("Users");
 
 contract("Users", function(accounts) {
-
-  //const User = (values) => { return {userId: values[0], userExists: values[1]} };
 
   let contract;
   let owner = accounts[0];
@@ -26,7 +23,7 @@ contract("Users", function(accounts) {
     it("can retrieve a user", async function() {
         const usersLength = await contract.usersLength();
         const tx = await contract.addUser(name);
-        console.log(tx);
+
         const user = await contract.getUser(usersLength);
 
         assert.equal(web3.utils.hexToUtf8(user[0]), rawName, 'Name is not saved successfully');
@@ -34,7 +31,7 @@ contract("Users", function(accounts) {
 
   });
 
-  describe.only("Licences", function(){
+  describe("Licences", function(){
 
     beforeEach(async () => await contract.addUser(name));
 
@@ -68,6 +65,27 @@ contract("Users", function(accounts) {
         assert.equal(web3.utils.hexToUtf8(licences[2].zoneString), "Barron Zone E");
     });
 
+    it.only("can get all the licencesIds for a user", async function(){
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));
+
+        const licences = await contract.getLicencesForUser(0);
+
+        const ids = await contract.getLicenceIds(0);
+        const addresses = await contract.getLicenceAddresses(0);
+
+        console.log(web3.utils.hexToUtf8(licences[0].licenceId));
+        console.log(web3.utils.hexToUtf8(licences[1].licenceId));
+        console.log(web3.utils.hexToUtf8(licences[2].licenceId));
+
+        console.log(addresses);
+
+        assert.equal(licences.length, 3, "Licences array is the wrong length");
+        assert.equal(+licences[0].zoneIndex, 1);
+        assert.equal(web3.utils.hexToUtf8(licences[1].licenceId), "WL0000003");
+        assert.equal(web3.utils.hexToUtf8(licences[2].zoneString), "Barron Zone E");
+    });
 
   });
 });

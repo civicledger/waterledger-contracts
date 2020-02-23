@@ -16,7 +16,7 @@ module.exports = async (deployer) => {
 
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
 
-  const usersInstance = await deployer.deploy(Users);
+  await deployer.deploy(Users);
 
   zones.forEach(async zoneName => {
     const zoneInstance = await deployer.deploy(Zone, 100000, web3.utils.toHex(zoneName), orderBookInstance.address);
