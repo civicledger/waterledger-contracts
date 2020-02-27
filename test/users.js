@@ -65,7 +65,7 @@ contract("Users", function(accounts) {
         assert.equal(web3.utils.hexToUtf8(licences[2].zoneString), "Barron Zone E");
     });
 
-    it.only("can get all the licencesIds for a user", async function(){
+    it("can get all the licencesIds for a user", async function(){
         await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
         await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
         await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));

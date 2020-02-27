@@ -54,7 +54,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         uint256 sellIndex = sellCount - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
-        emit OrderAdded(msg.sender);
+        emit OrderAdded();
 
         uint256 matchedQuantity = 0;
 
@@ -83,16 +83,13 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     }
 
     function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
-        Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        require(zone.balanceOf(msg.sender) >= price * quantity, "Insufficient AUD allocation");
 
         //Push to array first
         uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = buyCount - 1;
-        zone.orderBookDebit(msg.sender, price * quantity);
 
-        emit OrderAdded(msg.sender);
+        emit OrderAdded();
 
         uint256 matchedQuantity = 0;
 
@@ -272,6 +269,6 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         return count;
     }
 
-    event OrderAdded(address _stats);
+    event OrderAdded();
     event Matched(address indexed owner, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
 }
