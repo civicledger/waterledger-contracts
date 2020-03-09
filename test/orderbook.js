@@ -41,9 +41,9 @@ contract.only("OrderBook", function(accounts) {
 
     it("can place a buy order that is unmatched", async () => {
       const buysBefore = await contractInstance.getOrderBookBuys(10);
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
       const buysAfter = await contractInstance.getOrderBookBuys(10);
-
+      // console.log(`${getGasCostInEth(tx)} eth`);
       assert.equal(buysBefore.length, 0, "Buys should not have any entries");
       assert.equal(buysAfter.length, 1, "Buys should not have a single entries");
       assert.equal(buysAfter[0].owner, BOB, "Buy order should belong to Bob");
@@ -53,8 +53,8 @@ contract.only("OrderBook", function(accounts) {
       await zoneInstance.transfer(ALICE, 100);
 
       await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
-      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-
+      const tx = await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
+      // console.log(`${getGasCostInEth(tx)} eth`);
       const buysAfter = await contractInstance.getOrderBookBuys(10);
       const sellsAfter = await contractInstance.getOrderBookSells(10);
       const history = await historyInstance.getHistory(10);
@@ -70,9 +70,9 @@ contract.only("OrderBook", function(accounts) {
       await zoneInstance.transfer(ALICE, 100);
       const balanceBefore = await zoneInstance.balanceOf(ALICE);
 
-      await contractInstance.addSellLimitOrder(sellLimitPrice, defaultSellQuantity, 0, {from: ALICE});
+      const tx = await contractInstance.addSellLimitOrder(sellLimitPrice, defaultSellQuantity, 0, {from: ALICE});
       const balanceAfter = await zoneInstance.balanceOf(ALICE);
-
+      // console.log(`${getGasCostInEth(tx)} eth`);
       assert.equal(Number(balanceAfter), Number(balanceBefore) - defaultSellQuantity, "Balance not correctly reduced");
 
       const sellsAfter = await contractInstance.getOrderBookSells(10);
@@ -85,8 +85,8 @@ contract.only("OrderBook", function(accounts) {
       await zoneInstance.transfer(ALICE, 100);
 
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
-
+      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      // console.log(`${getGasCostInEth(tx)} eth`);
       const buysAfter = await contractInstance.getOrderBookBuys(10);
       const sellsAfter = await contractInstance.getOrderBookSells(10);
       const history = await historyInstance.getHistory(10);
@@ -125,11 +125,8 @@ const createOrderBook = async () => {
   await contractInstance.addHistoryContract(historyInstance.address);
 }
 
-const getGasCostInEth = gas => {
-  const gasUsedGweiPrice = gas * 5;
+const getGasCostInEth = tx => {
+  const gasUsedGweiPrice = tx.receipt.gasUsed * 5;
   const gasUsedWeiPrice = web3.utils.toWei(gasUsedGweiPrice+'', 'gwei');
-  const gasUsedEtherPrice = web3.utils.fromWei(gasUsedWeiPrice+'', 'ether');
-
-  console.log(gasUsedEtherPrice);
-
+  return web3.utils.fromWei(gasUsedWeiPrice+'', 'ether');
 }
