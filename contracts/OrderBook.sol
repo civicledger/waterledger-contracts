@@ -45,6 +45,12 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         _users = Users(usersContract);
     }
 
+    function completeTrade(uint tradeIndex) public onlyOwner {
+        (address buyer, uint quantity, uint toZone) = _history.getTrade(tradeIndex);
+        _history.completeTrade(tradeIndex);
+        _zones[toZone].orderBookCredit(buyer, quantity);
+    }
+
     function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
@@ -68,13 +74,13 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity) {
-                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, zoneIndex);
+                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
                     matchedQuantity += _buys[j].quantity;
 
-                    emit Matched(_buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone);
+                    emit Matched();
                 }
 
                 i++;
@@ -103,14 +109,14 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == (quantity - matchedQuantity)) {
-                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, zoneIndex, zoneIndex);
+                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex);
 
                     _sells[j].matchedTimeStamp = now;
                     _buys[buyIndex].matchedTimeStamp = now;
 
                     matchedQuantity += _sells[j].quantity;
 
-                    emit Matched(_sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex);
+                    emit Matched();
                 }
 
                 i++;
@@ -270,5 +276,5 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     }
 
     event OrderAdded();
-    event Matched(address indexed owner, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
+    event Matched();
 }

@@ -1,4 +1,5 @@
 const History = artifacts.require("HistoryTesting");
+const OrderBook = artifacts.require("OrderBook");
 
 let AssembleStruct = require('./helpers/AssembleStruct');
 
@@ -21,8 +22,12 @@ contract("History", function(accounts) {
   describe("Trade History", async () => {
 
     let contractInstance;
-    
-    beforeEach(async () => contractInstance = await History.new());
+    let orderbookInstance;
+
+    beforeEach(async () => {
+      orderbookInstance = await OrderBook.new();
+      contractInstance = await History.new(orderbookInstance.address);
+    });
 
     const currentTime = Date.now();
     const currentTimeSeconds = Date.now();

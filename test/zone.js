@@ -1,9 +1,11 @@
 const assertThrows = require('./helpers/TestHelpers').assertThrows;
 const Zone = artifacts.require("Zone");
+const OrderBook = artifacts.require("OrderBook");
 
 contract("Zone Contract", function(accounts) {
 
   var contractInstance;
+  var orderbookInstance;
 
   const OWNER = accounts[0];
   const ALICE = accounts[1];
@@ -12,7 +14,10 @@ contract("Zone Contract", function(accounts) {
 
   const AMOUNT = 2000;
 
-  beforeEach(async () => { contractInstance = await Zone.new(AMOUNT, web3.utils.utf8ToHex("Barron Zone A")) });
+  beforeEach(async () => {
+    orderbookInstance = await OrderBook.new();
+    contractInstance = await Zone.new(AMOUNT, web3.utils.utf8ToHex("Barron Zone A"), orderbookInstance.address);
+  });
 
   describe("Instantiation and ERC-20 functionality", function(){
 

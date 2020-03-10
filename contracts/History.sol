@@ -29,6 +29,10 @@ contract History is QuickSort, Ownable {
         _allowedWriters[orderBook] = true;
     }
 
+    function getTrade(uint256 tradeIndex) public view returns (address, uint256, uint8) {
+        return (_history[tradeIndex].buyer, _history[tradeIndex].quantity, _history[tradeIndex].toZone);
+    }
+
     function getHistory(uint256 numberOfTrades) public view returns(Trade[]) {
         uint256 max = _history.length < numberOfTrades ? _history.length : numberOfTrades;
 
@@ -81,7 +85,7 @@ contract History is QuickSort, Ownable {
         _history[index].status = Status.Rejected;
     }
 
-    function completeTrade(uint256 index) public onlyOwner {
+    function completeTrade(uint256 index) public onlyWriters("Only writers can update history") {
         _history[index].status = Status.Completed;
     }
 

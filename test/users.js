@@ -72,14 +72,8 @@ contract("Users", function(accounts) {
 
         const licences = await contract.getLicencesForUser(0);
 
-        const ids = await contract.getLicenceIds(0);
-        const addresses = await contract.getLicenceAddresses(0);
-
-        console.log(web3.utils.hexToUtf8(licences[0].licenceId));
-        console.log(web3.utils.hexToUtf8(licences[1].licenceId));
-        console.log(web3.utils.hexToUtf8(licences[2].licenceId));
-
-        console.log(addresses);
+        // const ids = await contract.getLicenceIds(0);
+        // const addresses = await contract.getLicenceAddresses(0);
 
         assert.equal(licences.length, 3, "Licences array is the wrong length");
         assert.equal(+licences[0].zoneIndex, 1);
