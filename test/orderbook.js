@@ -37,7 +37,7 @@ contract("OrderBook", function(accounts) {
   beforeEach(async () => createOrderBook());
 
 
-  describe("OrderBook limit buys", () => {
+  describe.only("OrderBook limit buys", () => {
 
     it("can place a buy order that is unmatched", async () => {
       const buysBefore = await contractInstance.getOrderBookBuys(10);
@@ -98,6 +98,9 @@ contract("OrderBook", function(accounts) {
     });
 
     it("can place a sell order that is matched", async () => {
+
+      const lastTradedPriceBefore = await contractInstance.getLastTradedPrice();
+
       await zoneInstance.transfer(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
       await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
@@ -106,6 +109,10 @@ contract("OrderBook", function(accounts) {
       const sellsAfter = await contractInstance.getOrderBookSells(10);
       const history = await historyInstance.getHistory(10);
 
+      const lastTradedPriceAfter = await contractInstance.getLastTradedPrice();
+
+      assert.equal(lastTradedPriceBefore, 0, "There should not be any stats before a trade");
+      assert.equal(Number(lastTradedPriceAfter), buyLimitPrice, "The stats are not updated correctly");
       assert.equal(history.length, 1, "History should have one entry");
       assert.equal(history[0].status, "0", "Status should be set as Pending");
       assert.equal(buysAfter.length, 0, "Buys should have no entries after match");
@@ -151,18 +158,7 @@ contract("OrderBook", function(accounts) {
       assert.equal(afterBalance, defaultBuyQuantity, "History should have one entry");
     });
 
-
   })
-
-  describe("OrderBook with setup complete", () => {
-
-  });
-
-  describe("OrderBook with null data", () => {
-
-  });
-
-
 });
 
 const createOrderBook = async () => {

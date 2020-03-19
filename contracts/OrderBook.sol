@@ -17,6 +17,8 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     History public _history;
     Users public _users;
 
+    uint256 public _lastTradedPrice;
+
     enum OrderType { Sell, Buy }
 
     struct Order {
@@ -51,6 +53,10 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         _zones[toZone].orderBookCredit(buyer, quantity);
     }
 
+    function getLastTradedPrice() public view returns (uint256) {
+        return _lastTradedPrice;
+    }
+
     function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
@@ -79,7 +85,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                     _sells[sellIndex].matchedTimeStamp = now;
 
                     matchedQuantity += _buys[j].quantity;
-
+                    _lastTradedPrice = _buys[j].price;
                     emit Matched();
                 }
 
@@ -115,7 +121,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
                     _buys[buyIndex].matchedTimeStamp = now;
 
                     matchedQuantity += _sells[j].quantity;
-
+                    _lastTradedPrice = _sells[j].price;
                     emit Matched();
                 }
 

@@ -65,6 +65,7 @@ contract Users is Ownable {
 
     function getUserIndexForLicenceId(bytes32 licenceId) public view returns (uint256) {
         address ethAccount = _licenceIdToAddress[licenceId];
+        require(ethAccount != address(0), "There is no matching licence id");
         return _licenceAddressToUser[ethAccount];
     }
 

@@ -1,6 +1,7 @@
 const Users = artifacts.require("Users");
+const assertThrows = require('./helpers/TestHelpers').assertThrows;
 
-contract("Users", function(accounts) {
+contract.only("Users", function(accounts) {
 
   let contract;
   let owner = accounts[0];
@@ -80,6 +81,35 @@ contract("Users", function(accounts) {
         assert.equal(web3.utils.hexToUtf8(licences[1].licenceId), "WL0000003");
         assert.equal(web3.utils.hexToUtf8(licences[2].zoneString), "Barron Zone E");
     });
+
+    it("can get the licences from a given licenceID", async () => {
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));
+
+      const userIndex = await contract.getUserIndexForLicenceId(web3.utils.toHex('WL0000003'));
+
+      const licences = await contract.getLicencesForUser(Number(userIndex));
+
+      assert.equal(licences.length, 3, "Licences array is the wrong length");
+      assert.equal(+licences[0].zoneIndex, 1);
+      assert.equal(web3.utils.hexToUtf8(licences[1].licenceId), "WL0000003");
+      assert.equal(web3.utils.hexToUtf8(licences[2].zoneString), "Barron Zone E");
+    });
+
+    it("cannot get the licences from an invalid licenceID", async () => {
+      await assertThrows(contract.getLicencesForUser(0), 'There are no licences for this user');
+    });
+
+    it.only("cannot get the user from an invalid licenceID", async () => {
+
+      await assertThrows(
+        contract.getUserIndexForLicenceId(web3.utils.toHex('WL0000003')),
+        'There is no matching licence id'
+      );
+
+    });
+
 
   });
 });
