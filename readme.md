@@ -1,4 +1,4 @@
-WaterLedger Smart Contracts
+# WaterLedger Smart Contracts
 The WaterLedger platform is a water trading platform across four smart contracts. These contracts have a life of a single financial year, and the scope of a given water scheme.
 
 ## Usage
@@ -10,7 +10,6 @@ The contracts can be downloaded as a standard git repository, and then the typic
 Note that though a deployment script **is** included as part of this repository, it cannot be used for production builds. This is because Truffle's deployment system cannot handle multiple deployments of the same contract, which is a requirement.
 
 ## Contracts
-![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/waterledger-erd.png)
 
 **OrderBook** - The orderbook is the primary listing of unmatched buy and sell orders. It is the contract that implements the rules around what is a valid trade, and how to match.
 
@@ -21,6 +20,10 @@ Note that though a deployment script **is** included as part of this repository,
 **Users** - Stores user and licence details to ensure the user has valid access to the system.
 
 There are additional non-Solidity smart contracts written in DAML that handle the inter-party liability.
+
+The following entity relationship diagram covers the primary fields and the relationships between the contracts. Note that this is not exhaustive, and there are minor contracts such as abstracts and libraries that are not featured.
+
+![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/waterledger-erd.png)
 
 ## Deployment
 
@@ -66,5 +69,6 @@ Each financial year a new complete set of contracts is deployed, resetting the s
 - [ ] Implement user licences as EIP-1753
 - [ ] Remove unnecessary Grouped Zone functionality
 - [ ] Implement more consistent field names style guide
+- [ ] Remove now-unused BokkyPooBah time library
 - [ ] Remove setOrderbook() from zone as it is now done in constructor
 - [ ] Various optimisations to reduce gas costs
