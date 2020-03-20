@@ -66,7 +66,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         uint256 sellIndex = sellCount - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
-        emit OrderAdded();
+        emit SellOrderAdded();
 
         uint256 matchedQuantity = 0;
 
@@ -101,7 +101,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = buyCount - 1;
 
-        emit OrderAdded();
+        emit BuyOrderAdded();
 
         uint256 matchedQuantity = 0;
 
@@ -281,6 +281,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         return count;
     }
 
-    event OrderAdded();
+    event BuyOrderAdded();
+    event SellOrderAdded();
     event Matched();
 }
