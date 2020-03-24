@@ -3,13 +3,12 @@ pragma experimental ABIEncoderV2;
 
 import "./Ownable.sol";
 import "./Zone.sol";
-import "./IOrderBook.sol";
 import "./QuickSort.sol";
 import "./SafeMath.sol";
 import "./History.sol";
 import "./Users.sol";
 
-contract OrderBook is IOrderBook, QuickSort, Ownable {
+contract OrderBook is QuickSort, Ownable {
     using SafeMath for uint;
 
     Zone[] public _zones;
@@ -20,9 +19,11 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
     uint256 public _lastTradedPrice;
 
     enum OrderType { Sell, Buy }
+    enum Period { N_A, Three_Months, Six_Months, Nine_Months, One_Year }
 
     struct Order {
         OrderType orderType;
+        Period period;
         address owner;
         uint256 price;
         uint256 quantity;
@@ -62,7 +63,7 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
 
-        uint256 sellCount = _sells.push(Order(OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 sellCount = _sells.push(Order(OrderType.Sell, Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = sellCount - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
@@ -94,11 +95,11 @@ contract OrderBook is IOrderBook, QuickSort, Ownable {
         }
     }
 
-    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
+    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex, Period period) public {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
         //Push to array first
-        uint256 buyCount = _buys.push(Order(OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 buyCount = _buys.push(Order(OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = buyCount - 1;
 
         emit BuyOrderAdded();

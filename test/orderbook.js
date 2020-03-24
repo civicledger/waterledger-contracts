@@ -37,7 +37,7 @@ contract("OrderBook", function(accounts) {
   beforeEach(async () => createOrderBook());
 
 
-  describe.only("OrderBook limit buys", () => {
+  describe("OrderBook limit buys", () => {
 
     it("can place a buy order that is unmatched", async () => {
       const buysBefore = await contractInstance.getOrderBookBuys(10);

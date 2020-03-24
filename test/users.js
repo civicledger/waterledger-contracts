@@ -16,14 +16,14 @@ contract.only("Users", function(accounts) {
   describe("User", function(){
     it("can add a user", async function() {
         const usersLength = await contract.usersLength();
-        await contract.addUser(name);
+        await contract.addUser(user2Address, name);
         const usersLengthAfter = await contract.usersLength();
         assert.equal(Number(usersLengthAfter), Number(usersLength) + 1, "User index should be incremented");
     });
 
     it("can retrieve a user", async function() {
         const usersLength = await contract.usersLength();
-        const tx = await contract.addUser(name);
+        const tx = await contract.addUser(user2Address, name);
 
         const user = await contract.getUser(usersLength);
 
@@ -34,18 +34,18 @@ contract.only("Users", function(accounts) {
 
   describe("Licences", function(){
 
-    beforeEach(async () => await contract.addUser(name));
+    beforeEach(async () => await contract.addUser(user2Address, name));
 
     it("can add a licence to a user", async function(){
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), nonOwner, 1, web3.utils.toHex("Barron Zone B"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), 1, web3.utils.toHex("Barron Zone B"));
         const licence = await contract.getLicenceForLicenceId(web3.utils.toHex("WL0000002"));
         assert.equal(web3.utils.hexToUtf8(licence.licenceId), "WL0000002");
     });
 
     it("can add multiple licences to a user", async function(){
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), nonOwner, 1, web3.utils.toHex("Barron Zone B"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), nonOwner, 2, web3.utils.toHex("Barron Zone C"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), nonOwner, 4, web3.utils.toHex("Barron Zone E"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), 1, web3.utils.toHex("Barron Zone B"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), 2, web3.utils.toHex("Barron Zone C"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), 4, web3.utils.toHex("Barron Zone E"));
 
         const licence = await contract.getLicenceForLicenceId(web3.utils.toHex("WL0000004"));
 
@@ -54,9 +54,9 @@ contract.only("Users", function(accounts) {
     });
 
     it("can get all the licences for a user", async function(){
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), 1, web3.utils.toHex("Barron Zone B"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), 2, web3.utils.toHex("Barron Zone C"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), 4, web3.utils.toHex("Barron Zone E"));
 
         const licences = await contract.getLicencesForUser(0);
 
@@ -67,9 +67,9 @@ contract.only("Users", function(accounts) {
     });
 
     it("can get all the licencesIds for a user", async function(){
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
-        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), 1, web3.utils.toHex("Barron Zone B"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), 2, web3.utils.toHex("Barron Zone C"));
+        await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), 4, web3.utils.toHex("Barron Zone E"));
 
         const licences = await contract.getLicencesForUser(0);
 
@@ -83,9 +83,9 @@ contract.only("Users", function(accounts) {
     });
 
     it("can get the licences from a given licenceID", async () => {
-      await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), accounts[7], 1, web3.utils.toHex("Barron Zone B"));
-      await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), accounts[8], 2, web3.utils.toHex("Barron Zone C"));
-      await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), accounts[9], 4, web3.utils.toHex("Barron Zone E"));
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000002"), 1, web3.utils.toHex("Barron Zone B"));
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000003"), 2, web3.utils.toHex("Barron Zone C"));
+      await contract.addUserLicence(0, web3.utils.toHex("WL0000004"), 4, web3.utils.toHex("Barron Zone E"));
 
       const userIndex = await contract.getUserIndexForLicenceId(web3.utils.toHex('WL0000003'));
 
@@ -101,10 +101,10 @@ contract.only("Users", function(accounts) {
       await assertThrows(contract.getLicencesForUser(0), 'There are no licences for this user');
     });
 
-    it.only("cannot get the user from an invalid licenceID", async () => {
+    xit("cannot get the user from an invalid licenceID", async () => {
 
       await assertThrows(
-        contract.getUserIndexForLicenceId(web3.utils.toHex('WL0000003')),
+        contract.getUserIndexForLicenceId(web3.utils.toHex('NONEXISTENT')),
         'There is no matching licence id'
       );
 
