@@ -19,11 +19,10 @@ contract OrderBook is QuickSort, Ownable {
     uint256 public _lastTradedPrice;
 
     enum OrderType { Sell, Buy }
-    enum Period { N_A, Three_Months, Six_Months, Nine_Months, One_Year }
 
     struct Order {
         OrderType orderType;
-        Period period;
+        History.Period period;
         address owner;
         uint256 price;
         uint256 quantity;
@@ -63,7 +62,7 @@ contract OrderBook is QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
 
-        uint256 sellCount = _sells.push(Order(OrderType.Sell, Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 sellCount = _sells.push(Order(OrderType.Sell, History.Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = sellCount - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
@@ -81,7 +80,7 @@ contract OrderBook is QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity) {
-                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone);
+                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, History.Period.N_A);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
@@ -95,7 +94,7 @@ contract OrderBook is QuickSort, Ownable {
         }
     }
 
-    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex, Period period) public {
+    function addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex, History.Period period) public {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
         //Push to array first
@@ -116,7 +115,7 @@ contract OrderBook is QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == (quantity - matchedQuantity)) {
-                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex);
+                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex, period);
 
                     _sells[j].matchedTimeStamp = now;
                     _buys[buyIndex].matchedTimeStamp = now;

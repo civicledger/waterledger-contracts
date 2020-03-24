@@ -15,7 +15,7 @@ var usersInstance;
 
 const BN = web3.utils.BN;
 
-contract("OrderBook", function(accounts) {
+contract.only("OrderBook", function(accounts) {
 
 
   const OWNER = accounts[0];
@@ -41,7 +41,7 @@ contract("OrderBook", function(accounts) {
 
     it("can place a buy order that is unmatched", async () => {
       const buysBefore = await contractInstance.getOrderBookBuys(10);
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
       const buysAfter = await contractInstance.getOrderBookBuys(10);
 
       assert.equal(buysBefore.length, 0, "Buys should not have any entries");
@@ -52,7 +52,7 @@ contract("OrderBook", function(accounts) {
     it("can place a buy order that is matched", async () => {
       await zoneInstance.transfer(ALICE, 100);
 
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
 
       const history = await historyInstance.getHistory(10);
@@ -64,7 +64,7 @@ contract("OrderBook", function(accounts) {
     it("can be completed across zones", async () => {
       await zoneInstance.transfer(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
 
       const history = await historyInstance.getHistory(1);
 
@@ -103,7 +103,7 @@ contract("OrderBook", function(accounts) {
 
       await zoneInstance.transfer(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: BOB});
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
 
       const buysAfter = await contractInstance.getOrderBookBuys(10);
       const sellsAfter = await contractInstance.getOrderBookSells(10);
@@ -126,7 +126,7 @@ contract("OrderBook", function(accounts) {
 
       await zoneInstance.transfer(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, {from: BOB});
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, 2, {from: BOB});
 
       const buysAfter = await contractInstance.getOrderBookBuys(10);
       const sellsAfter = await contractInstance.getOrderBookSells(10);
@@ -144,7 +144,7 @@ contract("OrderBook", function(accounts) {
     it("can be completed across zones", async () => {
       await zoneInstance.transfer(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
-      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, {from: BOB});
+      const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, 2, {from: BOB});
 
       const history = await historyInstance.getHistory(1);
 

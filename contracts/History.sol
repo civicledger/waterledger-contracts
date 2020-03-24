@@ -9,6 +9,7 @@ contract History is QuickSort, Ownable {
     using SafeMath for uint;
 
     enum Status { Pending, Completed, Rejected }
+    enum Period { N_A, Three_Months, Six_Months, Nine_Months, One_Year }
 
     struct Trade {
         address buyer;
@@ -18,6 +19,7 @@ contract History is QuickSort, Ownable {
         uint256 timeStamp;
         uint8 fromZone;
         uint8 toZone;
+        Period period;
         Status status;
     }
 
@@ -72,11 +74,11 @@ contract History is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone)
+    function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, Period period)
         external onlyWriters("Only writers can add history") {
         require(buyer != address(0), "Invalid address");
         require(seller != address(0), "Invalid address");
-        _history.push(Trade(buyer, seller, price, quantity, now, fromZone, toZone, Status.Pending));
+        _history.push(Trade(buyer, seller, price, quantity, now, fromZone, toZone, period, Status.Pending));
 
         emit HistoryAdded(_history.length - 1, buyer, seller, price, quantity, fromZone, toZone);
     }

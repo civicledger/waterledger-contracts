@@ -1,7 +1,7 @@
 const Users = artifacts.require("Users");
 const assertThrows = require('./helpers/TestHelpers').assertThrows;
 
-contract.only("Users", function(accounts) {
+contract("Users", function(accounts) {
 
   let contract;
   let owner = accounts[0];
