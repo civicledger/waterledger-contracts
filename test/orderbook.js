@@ -7,6 +7,7 @@ const zoneName = web3.utils.utf8ToHex("Barron Zone A");
 const zoneNameB = web3.utils.utf8ToHex("Barron Zone B");
 const zoneNameC = web3.utils.utf8ToHex("Barron Zone C");
 const zoneNameD = web3.utils.utf8ToHex("Barron Zone D");
+const zoneNameE = web3.utils.utf8ToHex("Barron Zone E");
 
 var contractInstance;
 var zoneInstance;
@@ -15,7 +16,7 @@ var usersInstance;
 
 const BN = web3.utils.BN;
 
-contract.only("OrderBook", function(accounts) {
+contract("OrderBook", function(accounts) {
 
 
   const OWNER = accounts[0];
@@ -93,8 +94,26 @@ contract.only("OrderBook", function(accounts) {
 
       const sellsAfter = await contractInstance.getOrderBookSells(10);
 
-      assert.equal(sellsAfter.length, 1, "Sells should have a single entrie");
+      assert.equal(sellsAfter.length, 1, "Sells should have a single entry");
       assert.equal(sellsAfter[0].owner, ALICE, "Sell order should belong to Alice");
+    });
+
+    it("can place multiple sell orders", async () => {
+      await zoneInstance.transfer(ALICE, 300);
+      const balanceBefore = await zoneInstance.balanceOf(ALICE);
+
+      await contractInstance.addSellLimitOrder(100, 50, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(200, 40, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(123, 30, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(321, 20, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(222, 10, 0, {from: ALICE});
+
+      const balanceAfter = await zoneInstance.balanceOf(ALICE);
+
+      assert.equal(Number(balanceAfter), 150, "Balance not correctly reduced");
+      const sellsAfter = await contractInstance.getOrderBookSells(10);
+
+      assert.equal(sellsAfter.length, 5, "Sells should have 5 entries");
     });
 
     it("can place a sell order that is matched", async () => {
@@ -156,9 +175,68 @@ contract.only("OrderBook", function(accounts) {
       assert.equal(history[0].status, "0", "Status should be set as Pending");
       assert.equal(beforeBalance, 0, "History should have one entry");
       assert.equal(afterBalance, defaultBuyQuantity, "History should have one entry");
+
+
     });
 
-  })
+  });
+
+  describe.only("Matches that cannot be filled", () => {
+    it("Should NOT attempt to add multiple orders", async () => {
+      await zoneInstance3.transfer(ALICE, 500);
+      await zoneInstance3.transfer(BOB, 200);
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 60, 2, 2, {from: BOB});
+
+      const history = await historyInstance.getHistory(10);
+      const buysAfter = await contractInstance.getOrderBookBuys(10);
+      const sellsAfter = await contractInstance.getOrderBookSells(10);
+
+      assert.equal(history.length, 0, "History should have three entries");
+      assert.equal(buysAfter.length, 1, "Buys should have no entries");
+      assert.equal(sellsAfter.length, 4, "Sells should have one entry");
+    });
+  });
+
+  describe("Edge Cases", () => {
+    it("Should allow a standard trade", async () => {
+      await zoneInstance3.transfer(ALICE, 100);
+      await zoneInstance3.transfer(BOB, 200);
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 20, 1, 2, {from: BOB});
+    });
+
+    it("Should ignore trades by self - do not match buy order", async () => {
+      await zoneInstance.transfer(ALICE, 400);
+      await contractInstance.addSellLimitOrder(100, 20, 0, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(100, 20, 0, 0, {from: ALICE});
+
+      const history = await historyInstance.getHistory(10);
+      const buysAfter = await contractInstance.getOrderBookBuys(10);
+      const sellsAfter = await contractInstance.getOrderBookSells(10);
+
+      assert.equal(history.length, 0, "History should have no entries");
+      assert.equal(buysAfter.length, 1, "Buys should have one entry with no match");
+      assert.equal(sellsAfter.length, 1, "Sells should have one entry with no match");
+    });
+
+    it("Should ignore trades by self - do not match sell order", async () => {
+      await zoneInstance.transfer(ALICE, 400);
+      await contractInstance.addBuyLimitOrder(100, 20, 0, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 0, {from: ALICE});
+
+      const history = await historyInstance.getHistory(10);
+      const buysAfter = await contractInstance.getOrderBookBuys(10);
+      const sellsAfter = await contractInstance.getOrderBookSells(10);
+
+      assert.equal(history.length, 0, "History should have no entries");
+      assert.equal(buysAfter.length, 1, "Buys should have one entries with no match");
+      assert.equal(sellsAfter.length, 1, "Sells should have one entries with no match");
+    });
+  });
 });
 
 const createOrderBook = async () => {
@@ -168,6 +246,7 @@ const createOrderBook = async () => {
   zoneInstance2 = await Zone.new(100000, zoneNameB, contractInstance.address);
   zoneInstance3 = await Zone.new(100000, zoneNameC, contractInstance.address);
   zoneInstance4 = await Zone.new(100000, zoneNameD, contractInstance.address);
+  zoneInstance5 = await Zone.new(100000, zoneNameE, contractInstance.address);
 
   historyInstance = await History.new(contractInstance.address);
 
@@ -175,6 +254,7 @@ const createOrderBook = async () => {
   await contractInstance.addZone(zoneNameB, zoneInstance2.address);
   await contractInstance.addZone(zoneNameC, zoneInstance3.address);
   await contractInstance.addZone(zoneNameD, zoneInstance4.address);
+  await contractInstance.addZone(zoneNameE, zoneInstance5.address);
 
   await contractInstance.addHistoryContract(historyInstance.address);
 }

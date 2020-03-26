@@ -6,7 +6,7 @@ import "./Zone.sol";
 import "./QuickSort.sol";
 import "./SafeMath.sol";
 import "./History.sol";
-import "./Users.sol";
+import "./Licences.sol";
 
 contract OrderBook is QuickSort, Ownable {
     using SafeMath for uint;
@@ -14,7 +14,7 @@ contract OrderBook is QuickSort, Ownable {
     Zone[] public _zones;
     bytes32[] public _zoneNames;
     History public _history;
-    Users public _users;
+    Licences public _licences;
 
     uint256 public _lastTradedPrice;
 
@@ -39,12 +39,21 @@ contract OrderBook is QuickSort, Ownable {
         _zoneNames.push(name);
     }
 
+    function getZones() public view returns(address[]) {
+        address[] memory zones = new address[](_zones.length);
+
+        for(uint i; i < _zones.length; i++) {
+            zones[i] = address(_zones[i]);
+        }
+        return zones;
+    }
+
     function addHistoryContract(address historyContract) public onlyOwner {
         _history = History(historyContract);
     }
 
-    function addUsersContract(address usersContract) public onlyOwner {
-        _users = Users(usersContract);
+    function addLicencesContract(address licencesContract) public onlyOwner {
+        _licences = Licences(licencesContract);
     }
 
     function completeTrade(uint tradeIndex) public onlyOwner {
@@ -68,23 +77,23 @@ contract OrderBook is QuickSort, Ownable {
 
         emit SellOrderAdded();
 
-        uint256 matchedQuantity = 0;
+        bool isUnmatched = true;
 
         if (_buys.length > 0) {
 
             uint256 i = 0;
             uint256[] memory sortedIndexes = getPriceTimeBuyOrders();
 
-            while (matchedQuantity < quantity && i < sortedIndexes.length) {
+            while (isUnmatched && i < sortedIndexes.length) {
 
                 uint256 j = sortedIndexes[i];
 
-                if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity) {
+                if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity && _buys[j].owner != msg.sender) {
                     _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, History.Period.N_A);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
-                    matchedQuantity += _buys[j].quantity;
+                    isUnmatched = false;
                     _lastTradedPrice = _buys[j].price;
                     emit Matched();
                 }
@@ -103,25 +112,25 @@ contract OrderBook is QuickSort, Ownable {
 
         emit BuyOrderAdded();
 
-        uint256 matchedQuantity = 0;
+        bool isUnmatched = true;
 
         if (_sells.length > 0) {
 
             uint256 i = 0;
             uint256[] memory sortedIndexes = getPriceTimeSellOrders();
 
-            while (matchedQuantity < quantity && i < sortedIndexes.length) {
+            while (isUnmatched && i < sortedIndexes.length) {
 
                 uint256 j = sortedIndexes[i];
 
-                if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == (quantity - matchedQuantity)) {
+                if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == quantity && _sells[j].owner != msg.sender) {
                     _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex, period);
 
                     _sells[j].matchedTimeStamp = now;
                     _buys[buyIndex].matchedTimeStamp = now;
 
-                    matchedQuantity += _sells[j].quantity;
                     _lastTradedPrice = _sells[j].price;
+                    isUnmatched = false;
                     emit Matched();
                 }
 

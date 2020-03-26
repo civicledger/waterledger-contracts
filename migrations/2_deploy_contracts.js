@@ -1,9 +1,9 @@
 // const Zone = artifacts.require("Zone");
 const OrderBook = artifacts.require("OrderBook");
-const Users = artifacts.require("Users");
+const Licences = artifacts.require("Licences");
 const History = artifacts.require("History");
 
-// const zones = ['Barron Zone A', 'Barron Zone B', 'Barron Zone C', 'Barron Zone D', 'Barron Zone E'];
+const zones = ['Barron Zone A', 'Barron Zone B', 'Barron Zone C', 'Barron Zone D', 'Barron Zone E'];
 
 module.exports = async (deployer) => {
 
@@ -16,13 +16,13 @@ module.exports = async (deployer) => {
 
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
 
-  const usersInstance = await deployer.deploy(Users);
+  const licencesInstance = await deployer.deploy(Licences);
 
-  // zones.forEach(async zoneName => {
-  //   const zoneInstance = await deployer.deploy(Zone, 100000, web3.utils.toHex(zoneName), orderBookInstance.address);
-  //   await orderBookInstance.addZone(web3.utils.toHex(zoneName), zoneInstance.address);
-  // });
+  zones.forEach(async zoneName => {
+    const zoneInstance = await deployer.deploy(Zone, 100000, web3.utils.toHex(zoneName), orderBookInstance.address);
+    await orderBookInstance.addZone(web3.utils.toHex(zoneName), zoneInstance.address);
+  });
 
   await orderBookInstance.addHistoryContract(historyInstance.address);
-  await orderBookInstance.addUsersContract(usersInstance.address);
+  await orderBookInstance.addLicencesContract(licencesInstance.address);
 };
