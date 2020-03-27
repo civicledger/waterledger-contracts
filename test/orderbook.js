@@ -16,22 +16,13 @@ const BN = web3.utils.BN;
 
 contract("OrderBook", function(accounts) {
 
-
-  const OWNER = accounts[0];
   const ALICE = accounts[1];
   const BOB = accounts[2];
-  const ORDER_TYPE_SELL = 0;
-  const ORDER_TYPE_BUY = 1;
 
   const sellLimitPrice = 334822;
   const buyLimitPrice = 234822;
   const defaultSellQuantity = 20;
   const defaultBuyQuantity = 30;
-
-  const DEFAULT_VOLUME = 100;
-
-  const JANUARY_1_2018 = 1514764800;
-  const JANUARY_1_2020 = 1577836800;
 
   beforeEach(async () => createOrderBook());
 
@@ -173,8 +164,6 @@ contract("OrderBook", function(accounts) {
       assert.equal(history[0].status, "0", "Status should be set as Pending");
       assert.equal(beforeBalance, 0, "History should have one entry");
       assert.equal(afterBalance, defaultBuyQuantity, "History should have one entry");
-
-
     });
 
   });
