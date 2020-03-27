@@ -17,7 +17,7 @@ Note that though a deployment script **is** included as part of this repository,
 
 **Zone** - A zone is an ERC-20 token representing the physical water in MegaLitres. There are typically multiple trading zones in a given scheme, and these contract instances allow each user to have multiple balances.
 
-**Users** - Stores user and licence details to ensure the user has valid access to the system.
+**Licences** - Stores licence and water account details to ensure the address has valid access to the system. This implements the [EIP-1753 standard for licences](https://erc1753.org/).
 
 There are additional non-Solidity smart contracts written in DAML that handle the inter-party liability.
 
@@ -36,7 +36,7 @@ const zones = ['Barron Zone A', 'Barron Zone B', 'Barron Zone C', 'Barron Zone D
 
 const orderBookInstance = await deployer.deploy(OrderBook);
 const historyInstance = await deployer.deploy(History, orderBookInstance.address);
-const usersInstance = await deployer.deploy(Users);
+const licenceInstance = await deployer.deploy(Licences);
 
 zones.forEach(async zoneName => {
   const zoneInstance = await deployer.deploy(Zone, 100000, web3.utils.toHex(zoneName), orderBookInstance.address);
@@ -44,7 +44,7 @@ zones.forEach(async zoneName => {
 });
 
 await orderBookInstance.addHistoryContract(historyInstance.address);
-await orderBookInstance.addUsersContract(usersInstance.address);
+await orderBookInstance.addLicencesContract(licenceInstance.address);
 ```
 
 ## Compilation Warning
@@ -64,10 +64,10 @@ Each financial year a new complete set of contracts is deployed, resetting the s
 
 ## ToDo List
 - [x] Update getLatestPrice on match
+- [x] Implement user licences as EIP-1753
+- [x] Remove unnecessary Grouped Zone functionality
 - [ ] Add support for selecting user-specific data
 - [ ] Update Solidity version
-- [ ] Implement user licences as EIP-1753
-- [ ] Remove unnecessary Grouped Zone functionality
 - [ ] Implement more consistent field names style guide
 - [ ] Remove now-unused BokkyPooBah time library
 - [ ] Remove setOrderbook() from zone as it is now done in constructor

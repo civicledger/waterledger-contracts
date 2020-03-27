@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "./Ownable.sol";
 import "./IEIP1753.sol";
 
-contract Licences is EIP1753, Ownable {
+contract Licences is Ownable {
 
     string public name = "Kakadu National Park Camping Permit";
 	uint256 public totalSupply;
@@ -46,7 +46,7 @@ contract Licences is EIP1753, Ownable {
 		return _authorities[who];
 	}
 
-    function issue(address who, uint256 start, uint256 end) public onlyAuthority returns {
+    function issue(address who, uint256 start, uint256 end) public onlyAuthority {
 		_licences.push(Licence(true, who, start, end, new bytes32[](0)));
         _addressToLicenceIndex[who] = _licences.length - 1;
         emit LicenceAdded(_licences.length - 1, who);
@@ -65,26 +65,26 @@ contract Licences is EIP1753, Ownable {
     }
 
     function hasValid(address who) public view returns (bool) {
-        Licence licence = _addressToLicenceIndex[who];
+        Licence storage licence = _licences[_addressToLicenceIndex[who]];
         if (licence.licenceExists) {
-            return licence.start > now && licence[who].end < now;
+            return licence.validFrom > now && licence.validTo < now;
         }
         return false;
 	}
 
     function addLicenceWaterAccount(uint256 licenceIndex, bytes32 waterAccountId, uint8 zoneIndex, bytes32 zoneString)
         public onlyOwner {
-        _licences[licenceIndex].licences[waterAccountId] = Licence(waterAccountId, zoneIndex, zoneString);
+        _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
-        _licenceIdToLicenceIndex[licenceId] = licenceIndex;
+        _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
     }
 
-    function purchase(uint256 validFrom, uint256 validTo) public payable {
+    function purchase() public payable {
 	    revert('Licence purchase is not supported');
 	}
 
     function getWaterAccountIds(uint256 licenceIndex) public view returns (bytes32[]) {
-        return _licences[licenceIndex].licenceIds;
+        return _licences[licenceIndex].waterAccountIds;
     }
 
     function getLicenceIndexForWaterAccountId(bytes32 waterAccountId) public view returns (uint256) {

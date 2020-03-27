@@ -1,7 +1,6 @@
 const History = artifacts.require("History");
 const OrderBook = artifacts.require("OrderBook");
 const Zone = artifacts.require("Zone");
-const Users = artifacts.require("Users");
 
 const zoneName = web3.utils.utf8ToHex("Barron Zone A");
 const zoneNameB = web3.utils.utf8ToHex("Barron Zone B");
@@ -12,7 +11,6 @@ const zoneNameE = web3.utils.utf8ToHex("Barron Zone E");
 var contractInstance;
 var zoneInstance;
 var historyInstance;
-var usersInstance;
 
 const BN = web3.utils.BN;
 
@@ -181,7 +179,7 @@ contract("OrderBook", function(accounts) {
 
   });
 
-  describe.only("Matches that cannot be filled", () => {
+  describe("Matches that cannot be filled", () => {
     it("Should NOT attempt to add multiple orders", async () => {
       await zoneInstance3.transfer(ALICE, 500);
       await zoneInstance3.transfer(BOB, 200);
