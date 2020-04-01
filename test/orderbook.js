@@ -1,6 +1,7 @@
 const History = artifacts.require("History");
 const OrderBook = artifacts.require("OrderBook");
 const Zone = artifacts.require("Zone");
+const assertThrows = require('./helpers/TestHelpers').assertThrows;
 
 const zoneName = web3.utils.utf8ToHex("Barron Zone A");
 const zoneNameB = web3.utils.utf8ToHex("Barron Zone B");
@@ -14,7 +15,9 @@ var historyInstance;
 
 const BN = web3.utils.BN;
 
-contract("OrderBook", function(accounts) {
+const statuses = ['Pending', 'Completed', 'Rejected', 'Invalid'];
+
+contract.only("OrderBook", function(accounts) {
 
   const ALICE = accounts[1];
   const BOB = accounts[2];
@@ -25,7 +28,6 @@ contract("OrderBook", function(accounts) {
   const defaultBuyQuantity = 30;
 
   beforeEach(async () => createOrderBook());
-
 
   describe("OrderBook limit buys", () => {
 
@@ -40,7 +42,7 @@ contract("OrderBook", function(accounts) {
     });
 
     it("can place a buy order that is matched", async () => {
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
 
       await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
@@ -52,7 +54,7 @@ contract("OrderBook", function(accounts) {
     });
 
     it("can be completed across zones", async () => {
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
       const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
 
@@ -73,7 +75,7 @@ contract("OrderBook", function(accounts) {
   describe("OrderBook limit sells", () => {
 
     it("can place a sell order - unmatched", async () => {
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
       const balanceBefore = await zoneInstance.balanceOf(ALICE);
 
       await contractInstance.addSellLimitOrder(sellLimitPrice, defaultSellQuantity, 0, {from: ALICE});
@@ -88,7 +90,7 @@ contract("OrderBook", function(accounts) {
     });
 
     it("can place multiple sell orders", async () => {
-      await zoneInstance.transfer(ALICE, 300);
+      await zoneInstance.allocate(ALICE, 300);
       const balanceBefore = await zoneInstance.balanceOf(ALICE);
 
       await contractInstance.addSellLimitOrder(100, 50, 0, {from: ALICE});
@@ -109,7 +111,7 @@ contract("OrderBook", function(accounts) {
 
       const lastTradedPriceBefore = await contractInstance.getLastTradedPrice();
 
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
       await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, 2, {from: BOB});
 
@@ -132,7 +134,7 @@ contract("OrderBook", function(accounts) {
 
     it("can match across zones", async () => {
 
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
       await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, 2, {from: BOB});
 
@@ -150,7 +152,7 @@ contract("OrderBook", function(accounts) {
     });
 
     it("can be completed across zones", async () => {
-      await zoneInstance.transfer(ALICE, 100);
+      await zoneInstance.allocate(ALICE, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, {from: ALICE});
       const tx = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 1, 2, {from: BOB});
 
@@ -160,18 +162,18 @@ contract("OrderBook", function(accounts) {
       await contractInstance.completeTrade(0);
       const afterBalance = await zoneInstance2.balanceOf(BOB);
 
-      assert.equal(history.length, 1, "History should have one entry");
+      assert.equal(Number(history.length), 1, "History should have one entry");
       assert.equal(history[0].status, "0", "Status should be set as Pending");
-      assert.equal(beforeBalance, 0, "History should have one entry");
-      assert.equal(afterBalance, defaultBuyQuantity, "History should have one entry");
+      assert.equal(beforeBalance, 0, "Balance before transfer should be zero");
+      assert.equal(afterBalance, defaultBuyQuantity, "Balance after transfer is not correct");
     });
 
   });
 
   describe("Matches that cannot be filled", () => {
     it("Should NOT attempt to add multiple orders", async () => {
-      await zoneInstance3.transfer(ALICE, 500);
-      await zoneInstance3.transfer(BOB, 200);
+      await zoneInstance3.allocate(ALICE, 500);
+      await zoneInstance3.allocate(BOB, 200);
       await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
       await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
       await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
@@ -182,22 +184,108 @@ contract("OrderBook", function(accounts) {
       const buysAfter = await contractInstance.getOrderBookBuys(10);
       const sellsAfter = await contractInstance.getOrderBookSells(10);
 
-      assert.equal(history.length, 0, "History should have three entries");
-      assert.equal(buysAfter.length, 1, "Buys should have no entries");
+      assert.equal(history.length, 0, "History should have no entries");
+      assert.equal(buysAfter.length, 1, "Buys should have one entry");
       assert.equal(sellsAfter.length, 4, "Sells should have one entry");
     });
   });
 
+  describe.only("Transfer Limits", () => {
+
+    it("should store transfer limit maximum and minimum", async () => {
+      const limits = await zoneInstance3.getTransferLimits();
+      assert.equal(Number(limits[0]), 0, "Minimum is not correct");
+      assert.equal(Number(limits[1]), 1000, "Maximum is not correct");
+    });
+
+    it("should have total supply set by allocations", async () => {
+      await zoneInstance.allocate(ALICE, 500);
+      await zoneInstance.allocate(BOB, 200);
+      const supply = await zoneInstance.totalSupply();
+      assert.equal(Number(supply), 700, "Total supply is not correctly set");
+    });
+
+    it("should not be affected if there is no cross zone", async () => {
+      await zoneInstance3.allocate(ALICE, 2000);
+      await contractInstance.addSellLimitOrder(100, 1500, 2, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 1500, 2, 2, {from: BOB});
+
+      await contractInstance.validateTrade(0);
+      const trade = await historyInstance.getTradeStruct(0);
+
+      assert.equal(statuses[trade.status], "Pending", "Validation not correctly working");
+    });
+
+    it("should not error on a correct cross zone transfer", async () => {
+      await zoneInstance3.allocate(ALICE, 2000);
+      await contractInstance.addSellLimitOrder(100, 800, 2, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 800, 1, 2, {from: BOB});
+
+      await contractInstance.validateTrade(0);
+
+      const trade = await historyInstance.getTradeStruct(0);
+
+      assert.equal(statuses[trade.status], "Pending", "Validation not correctly working");
+    });
+
+    it("should revert if maximum is exceeded", async () => {
+      await zoneInstance3.allocate(ALICE, 2000);
+      await contractInstance.addSellLimitOrder(100, 1200, 2, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 1200, 1, 2, {from: BOB});
+
+      const buysBefore = await contractInstance.getOrderBookBuys(5);
+      const sellsBefore = await contractInstance.getOrderBookSells(5);
+
+      await contractInstance.validateTrade(0);
+
+      const trade = await historyInstance.getTradeStruct(0);
+
+      const buysAfter = await contractInstance.getOrderBookBuys(5);
+      const sellsAfter = await contractInstance.getOrderBookSells(5);
+
+      assert.equal(buysBefore.length, 0, "Buys should have no entries");
+      assert.equal(sellsBefore.length, 0, "Sells should have no entries");
+      assert.equal(statuses[trade.status], "Invalid", "validation not correctly invalidating");
+      assert.equal(buysAfter.length, 1, "Buys should have one entry");
+      assert.equal(sellsAfter.length, 1, "Sells should have one entry");
+
+    });
+
+    it("should error if minimum is exceeded", async () => {
+      await zoneInstance4.allocate(ALICE, 600);
+      await contractInstance.addSellLimitOrder(100, 150, 3, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 150, 1, 2, {from: BOB});
+
+      const buysBefore = await contractInstance.getOrderBookBuys(5);
+      const sellsBefore = await contractInstance.getOrderBookSells(5);
+
+      await contractInstance.validateTrade(0);
+
+      const trade = await historyInstance.getTradeStruct(0);
+
+      const buysAfter = await contractInstance.getOrderBookBuys(5);
+      const sellsAfter = await contractInstance.getOrderBookSells(5);
+
+      assert.equal(buysBefore.length, 0, "Buys should have no entries");
+      assert.equal(sellsBefore.length, 0, "Sells should have no entries");
+      assert.equal(statuses[trade.status], "Invalid", "validation not correctly invalidating");
+      assert.equal(buysAfter.length, 1, "Buys should have one entry");
+      assert.equal(sellsAfter.length, 1, "Sells should have one entry");
+    });
+
+  });
+
   describe("Edge Cases", () => {
+
     it("Should allow a standard trade", async () => {
-      await zoneInstance3.transfer(ALICE, 100);
-      await zoneInstance3.transfer(BOB, 200);
+      await zoneInstance3.allocate(ALICE, 100);
+      await zoneInstance3.allocate(BOB, 200);
       await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
       await contractInstance.addBuyLimitOrder(110, 20, 1, 2, {from: BOB});
     });
 
     it("Should ignore trades by self - do not match buy order", async () => {
-      await zoneInstance.transfer(ALICE, 400);
+      await zoneInstance.allocate(ALICE, 400);
       await contractInstance.addSellLimitOrder(100, 20, 0, {from: ALICE});
       await contractInstance.addBuyLimitOrder(100, 20, 0, 0, {from: ALICE});
 
@@ -211,7 +299,7 @@ contract("OrderBook", function(accounts) {
     });
 
     it("Should ignore trades by self - do not match sell order", async () => {
-      await zoneInstance.transfer(ALICE, 400);
+      await zoneInstance.allocate(ALICE, 400);
       await contractInstance.addBuyLimitOrder(100, 20, 0, 0, {from: ALICE});
       await contractInstance.addSellLimitOrder(100, 20, 0, {from: ALICE});
 
@@ -229,11 +317,11 @@ contract("OrderBook", function(accounts) {
 const createOrderBook = async () => {
   contractInstance = await OrderBook.new();
 
-  zoneInstance = await Zone.new(100000, zoneName, contractInstance.address);
-  zoneInstance2 = await Zone.new(100000, zoneNameB, contractInstance.address);
-  zoneInstance3 = await Zone.new(100000, zoneNameC, contractInstance.address);
-  zoneInstance4 = await Zone.new(100000, zoneNameD, contractInstance.address);
-  zoneInstance5 = await Zone.new(100000, zoneNameE, contractInstance.address);
+  zoneInstance = await Zone.new(0, zoneName, contractInstance.address, 0, 1000);
+  zoneInstance2 = await Zone.new(0, zoneNameB, contractInstance.address, 0, 1000);
+  zoneInstance3 = await Zone.new(0, zoneNameC, contractInstance.address, 0, 1000);
+  zoneInstance4 = await Zone.new(0, zoneNameD, contractInstance.address, 500, 1000);
+  zoneInstance5 = await Zone.new(0, zoneNameE, contractInstance.address, 800, 1000);
 
   historyInstance = await History.new(contractInstance.address);
 

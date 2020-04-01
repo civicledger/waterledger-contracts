@@ -56,8 +56,30 @@ contract OrderBook is QuickSort, Ownable {
         _licences = Licences(licencesContract);
     }
 
-    function completeTrade(uint tradeIndex) public onlyOwner {
-        (address buyer, uint quantity, uint toZone) = _history.getTrade(tradeIndex);
+    function validateTrade(uint tradeIndex) public onlyOwner returns (bool) {
+        (address buyer, uint quantity, uint8 toZone, uint8 fromZone, uint256 buyIndex, uint256 sellIndex) = _history.getTrade(tradeIndex);
+
+        if(toZone == fromZone){
+            return true;
+        }
+
+        if(!_zones[toZone].isToTransferValid(quantity)) {
+            _buys[buyIndex].matchedTimeStamp = 0;
+            _sells[sellIndex].matchedTimeStamp = 0;
+            _history.invalidateTrade(tradeIndex);
+        }
+
+        if(!_zones[fromZone].isFromTransferValid(quantity)) {
+            _buys[buyIndex].matchedTimeStamp = 0;
+            _sells[sellIndex].matchedTimeStamp = 0;
+            _history.invalidateTrade(tradeIndex);
+        }
+
+        return true;
+    }
+
+    function completeTrade(uint256 tradeIndex) public onlyOwner {
+        (address buyer, uint quantity, uint8 toZone, uint8 fromZone, uint256 buyIndex, uint256 sellIndex) = _history.getTrade(tradeIndex);
         _history.completeTrade(tradeIndex);
         _zones[toZone].orderBookCredit(buyer, quantity);
     }
@@ -89,7 +111,7 @@ contract OrderBook is QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity && _buys[j].owner != msg.sender) {
-                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, History.Period.N_A);
+                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, j, sellIndex, History.Period.N_A);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
@@ -107,8 +129,7 @@ contract OrderBook is QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
         //Push to array first
-        uint256 buyCount = _buys.push(Order(OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex));
-        uint256 buyIndex = buyCount - 1;
+        uint256 buyIndex = _buys.push(Order(OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex)) - 1;
 
         emit BuyOrderAdded();
 
@@ -124,7 +145,7 @@ contract OrderBook is QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if ( _sells[j].matchedTimeStamp == 0 && _sells[j].price <= price && _sells[j].quantity == quantity && _sells[j].owner != msg.sender) {
-                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex, period);
+                    _history.addHistory(msg.sender, _sells[j].owner, _sells[j].price, _sells[j].quantity, _sells[j].zone, zoneIndex, buyIndex, j, period);
 
                     _sells[j].matchedTimeStamp = now;
                     _buys[buyIndex].matchedTimeStamp = now;

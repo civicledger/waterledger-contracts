@@ -16,27 +16,48 @@ contract Zone is ERC20, Ownable {
 
     address private _orderBook;
 
-    constructor(uint256 supply, bytes32 name, address orderBook) public {
+    constructor(uint256 supply, bytes32 name, address orderBook, uint256 min, uint256 max) public {
         _totalSupply = supply;
-        _balances[msg.sender] = supply;
         _name = name;
         _orderBook = orderBook;
+        _min = min;
+        _max = max;
+    }
+
+    function isToTransferValid(uint256 value) public view returns (bool) {
+        return _totalSupply.add(value) <= _max;
+    }
+
+    function isFromTransferValid(uint256 value) public view returns (bool) {
+        return _totalSupply.sub(value) >= _min;
+    }
+
+    function getTransferLimits() external view returns(uint256, uint256) {
+        return (_min, _max);
+    }
+
+    function allocate(address to, uint256 value) external onlyOwner() {
+        _balances[to] = value;
+        _totalSupply = _totalSupply.add(value);
     }
 
     function orderBookCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {
-        _balances[owner()] = _balances[owner()].sub(value);
-        _balances[to] = _balances[to].add(value);
-
-        emit Transfer(owner(), to, value);
-        return true;
+        if(isToTransferValid(value)){
+            _balances[to] = _balances[to].add(value);
+            _totalSupply = _totalSupply.add(value);
+            emit Transfer(owner(), to, value);
+            return true;
+        }
+        return false;
     }
 
     function orderBookDebit(address from, uint256 value) external onlyOrderBook() returns (bool) {
-        _balances[from] = _balances[from].sub(value);
-        _balances[owner()] = _balances[owner()].add(value);
-
-        emit Transfer(from, owner(), value);
-        return true;
+        if(isFromTransferValid(value)){
+            _balances[from] = _balances[from].sub(value);
+            emit Transfer(from, owner(), value);
+            return true;
+        }
+        return false;
     }
 
     modifier onlyOrderBook() {
