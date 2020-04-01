@@ -17,7 +17,7 @@ const BN = web3.utils.BN;
 
 const statuses = ['Pending', 'Completed', 'Rejected', 'Invalid'];
 
-contract.only("OrderBook", function(accounts) {
+contract("OrderBook", function(accounts) {
 
   const ALICE = accounts[1];
   const BOB = accounts[2];
@@ -190,7 +190,7 @@ contract.only("OrderBook", function(accounts) {
     });
   });
 
-  describe.only("Transfer Limits", () => {
+  describe("Transfer Limits", () => {
 
     it("should store transfer limit maximum and minimum", async () => {
       const limits = await zoneInstance3.getTransferLimits();
