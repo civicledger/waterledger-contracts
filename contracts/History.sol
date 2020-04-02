@@ -59,6 +59,33 @@ contract History is QuickSort, Ownable {
         return returnedTrades;
     }
 
+    function getLicenceHistory(address licenceAddress) public view returns(Trade[]) {
+
+        uint256 max = getLicenceTradeCount(licenceAddress);
+        Trade[] memory returnedTrades = new Trade[](max);
+
+        uint256 currentIndex = 0;
+
+        for(uint256 i; i < _history.length; i++) {
+            if(_history[i].buyer == licenceAddress || _history[i].seller == licenceAddress) {
+                returnedTrades[currentIndex] = _history[i];
+                currentIndex++;
+            }
+        }
+
+        return returnedTrades;
+    }
+
+    function getLicenceTradeCount(address licenceAddress) public view returns(uint256) {
+        uint256 tradeCount = 0;
+        for(uint256 i; i < _history.length; i++) {
+            if(_history[i].buyer == licenceAddress || _history[i].seller == licenceAddress) {
+                tradeCount++;
+            }
+        }
+        return tradeCount;
+    }
+
     function getTradeCount() public view returns (uint) {
         return _history.length;
     }

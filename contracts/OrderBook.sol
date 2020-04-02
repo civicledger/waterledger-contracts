@@ -218,6 +218,46 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
+    function getLicenceOrderBookSells(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
+
+        uint256 sellsCount = getLicenceUnmatchedSellsCount(licenceAddress);
+        uint256 max = sellsCount < numberOfOrders ? sellsCount : numberOfOrders;
+
+        if (max > 10) {
+            max = 10;
+        }
+
+        uint256[] memory sortedIndexes = getLicencePriceTimeSellOrders(licenceAddress);
+
+        Order[] memory returnedOrders = new Order[](max);
+
+        for(uint256 i = 0; i < max; i++) {
+            returnedOrders[i] = _sells[sortedIndexes[i]];
+        }
+
+        return returnedOrders;
+    }
+
+    function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
+        uint256 buysCount = getLicenceUnmatchedBuysCount(licenceAddress);
+
+        uint256 max = buysCount < numberOfOrders ? buysCount : numberOfOrders;
+
+        if (max > 10) {
+            max = 10;
+        }
+
+        uint256[] memory sortedIndexes = getLicencePriceTimeBuyOrders(licenceAddress);
+
+        Order[] memory returnedOrders = new Order[](max);
+
+        for(uint256 i = 0; i < max; i++) {
+            returnedOrders[i] = _buys[sortedIndexes[i]];
+        }
+
+        return returnedOrders;
+    }
+
     function lowestSell() public view returns(Order) {
         require(getUnmatchedSellsCount() > 0, "No sells available");
         uint256[] memory sortedIndexes = getPriceTimeSellOrders();
@@ -258,6 +298,29 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
+    function getLicencePriceTimeSellOrders(address licenceAddress) internal view returns(uint256[]) {
+        uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
+
+        uint256[] memory prices = new uint256[](count);
+        uint256[] memory indexes = new uint256[](count);
+
+        if (count == 0) {
+            return indexes;
+        }
+
+        uint j = 0;
+        for (uint i = 0; i < _sells.length; i++) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner == licenceAddress) {
+                prices[j] = _sells[i].price;
+                indexes[j] = i;
+                j += 1;
+            }
+        }
+
+        uint256[] memory sortedIndexes = sortWithIndex(prices, indexes);
+        return sortedIndexes;
+    }
+
     function getPriceTimeBuyOrders() internal view returns(uint256[]) {
         uint256 count = getUnmatchedBuysCount();
 
@@ -271,6 +334,29 @@ contract OrderBook is QuickSort, Ownable {
         uint j = 0;
         for (uint i = 0; i < _buys.length; i++) {
             if (_buys[i].matchedTimeStamp == 0) {
+                prices[j] = _buys[i].price;
+                indexes[j] = i;
+                j += 1;
+            }
+        }
+
+        uint256[] memory sortedIndexes = reverseSortWithIndex(prices, indexes);
+        return sortedIndexes;
+    }
+
+    function getLicencePriceTimeBuyOrders(address licenceAddress) internal view returns(uint256[]) {
+        uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
+
+        uint256[] memory prices = new uint256[](count);
+        uint256[] memory indexes = new uint256[](count);
+
+        if (count == 0) {
+            return indexes;
+        }
+
+        uint j = 0;
+        for (uint i = 0; i < _buys.length; i++) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner == licenceAddress) {
                 prices[j] = _buys[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -296,6 +382,17 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
+    function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint) {
+        uint count = 0;
+        for (uint i = 0; i < _sells.length; i++) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner == licenceAddress) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     function getBuysCount() public view returns (uint) {
         return _buys.length;
     }
@@ -304,6 +401,17 @@ contract OrderBook is QuickSort, Ownable {
         uint count = 0;
         for (uint i = 0; i < _buys.length; i++) {
             if (_buys[i].matchedTimeStamp == 0) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
+    function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint) {
+        uint count = 0;
+        for (uint i = 0; i < _buys.length; i++) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner == licenceAddress) {
                 count++;
             }
         }

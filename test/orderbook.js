@@ -275,6 +275,40 @@ contract("OrderBook", function(accounts) {
 
   });
 
+  describe("get orders for a licence address", () => {
+
+    it("should get the sell orders for one licence address", async () => {
+      await zoneInstance3.allocate(ALICE, 200);
+      await zoneInstance3.allocate(BOB, 200);
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(100, 20, 2, {from: ALICE});
+      await contractInstance.addSellLimitOrder(110, 20, 2, {from: BOB});
+      await contractInstance.addSellLimitOrder(110, 20, 2, {from: BOB});
+
+      const sells = await contractInstance.getLicenceOrderBookSells(ALICE, 10);
+      assert.equal(sells.length, 3, "Alice should have three sell orders");
+
+    });
+
+    it("should get the sell orders for one licence address", async () => {
+      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, {from: BOB});
+      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, {from: BOB});
+      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, {from: BOB});
+
+      const buysAlice = await contractInstance.getLicenceOrderBookBuys(ALICE, 10);
+      const buysBob = await contractInstance.getLicenceOrderBookBuys(BOB, 10);
+      assert.equal(buysAlice.length, 4, "Alice should have four buy orders");
+      assert.equal(buysBob.length, 3, "Bob should have three buy orders");
+
+    });
+
+  });
+
   describe("Edge Cases", () => {
 
     it("Should allow a standard trade", async () => {
