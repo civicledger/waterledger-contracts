@@ -6,6 +6,7 @@ contract("History", function(accounts) {
   const OWNER = accounts[0];
   const ALICE = accounts[1];
   const BOB = accounts[2];
+  const PERIOD_SIX_MONTHS = 2;
 
   describe("Trade History", async () => {
 
@@ -33,6 +34,13 @@ contract("History", function(accounts) {
 
       let history = await contractInstance.getHistory(5);
       assert.equal(history.length, 3, "Should be returning three history items");
+    });
+
+    it("Should should store the period in history", async () => {
+      await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, 0, 0, 0, 0, PERIOD_SIX_MONTHS);
+      let history = await contractInstance.getHistory(1);
+      assert.equal(history[0].period, PERIOD_SIX_MONTHS, "Should be returning the history items period");
+
     });
 
     it("Should allow partial returning of history", async () => {

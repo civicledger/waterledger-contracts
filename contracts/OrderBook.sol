@@ -111,7 +111,7 @@ contract OrderBook is QuickSort, Ownable {
                 uint256 j = sortedIndexes[i];
 
                 if (_buys[j].matchedTimeStamp == 0 && _buys[j].price >= price && _buys[j].quantity == quantity && _buys[j].owner != msg.sender) {
-                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, j, sellIndex, History.Period.N_A);
+                    _history.addHistory(msg.sender, _buys[j].owner, _buys[j].price, _buys[j].quantity, zoneIndex, _buys[j].zone, j, sellIndex, _buys[j].period);
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
 
