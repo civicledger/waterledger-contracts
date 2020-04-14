@@ -17,7 +17,7 @@ const BN = web3.utils.BN;
 
 const statuses = ['Pending', 'Completed', 'Rejected', 'Invalid'];
 
-contract("OrderBook", function(accounts) {
+contract.only("OrderBook", function(accounts) {
 
   const ALICE = accounts[1];
   const BOB = accounts[2];
@@ -346,6 +346,85 @@ contract("OrderBook", function(accounts) {
       assert.equal(sellsAfter.length, 1, "Sells should have one entries with no match");
     });
   });
+
+  describe("Order Deletion", () => {
+
+    beforeEach(async () => {
+      await zoneInstance.allocate(ALICE, 2000);
+      await zoneInstance.allocate(BOB, 2000);
+      await contractInstance.addBuyLimitOrder(110, 20, 0, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(120, 20, 0, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(130, 20, 0, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(140, 20, 0, 1, {from: ALICE});
+      await contractInstance.addBuyLimitOrder(150, 20, 0, 1, {from: BOB});
+      await contractInstance.addBuyLimitOrder(160, 20, 0, 1, {from: BOB});
+      await contractInstance.addBuyLimitOrder(170, 20, 0, 1, {from: BOB});
+
+      await contractInstance.addSellLimitOrder(110, 30, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(120, 30, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(130, 30, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(140, 30, 0, {from: ALICE});
+      await contractInstance.addSellLimitOrder(150, 30, 0, {from: BOB});
+      await contractInstance.addSellLimitOrder(160, 30, 0, {from: BOB});
+      await contractInstance.addSellLimitOrder(170, 30, 0, {from: BOB});
+    });
+
+    it("should allow deletion of record", async () => {
+      await contractInstance.deleteBuyOrder(2, {from: ALICE});
+    });
+
+    it("should count buy orders correctly", async () => {
+      const buysBefore = await contractInstance.getOrderBookBuys(10);
+      await contractInstance.deleteBuyOrder(2, {from: ALICE});
+      const buysAfter = await contractInstance.getOrderBookBuys(10);
+      assert.equal(buysAfter.length, buysBefore.length - 1, "Incorrect number of buys");
+    });
+
+    it("should count sell orders correctly", async () => {
+      const sellsBefore = await contractInstance.getOrderBookSells(10);
+      await contractInstance.deleteSellOrder(2, {from: ALICE});
+      const sellsAfter = await contractInstance.getOrderBookSells(10);
+      assert.equal(sellsAfter.length, sellsBefore.length - 1, "Incorrect number of sells");
+    });
+
+    it("should return the correct buy orders", async () => {
+      await contractInstance.deleteBuyOrder(2, {from: ALICE});
+      const buys = await contractInstance.getOrderBookBuys(10);
+      assert.equal(buys[0].price, 170, "Incorrect ordering of values");
+      assert.equal(buys[1].price, 160, "Incorrect ordering of values");
+      assert.equal(buys[2].price, 150, "Incorrect ordering of values");
+      assert.equal(buys[3].price, 140, "Incorrect ordering of values");
+      assert.equal(buys[4].price, 120, "Incorrect ordering of values");
+      assert.equal(buys[5].price, 110, "Incorrect ordering of values");
+    });
+
+    it("should return the correct sell orders", async () => {
+      await contractInstance.deleteSellOrder(2, {from: ALICE});
+      const sells = await contractInstance.getOrderBookSells(10);
+
+      assert.equal(sells[0].price, 110, "Incorrect ordering of values");
+      assert.equal(sells[1].price, 120, "Incorrect ordering of values");
+      assert.equal(sells[2].price, 140, "Incorrect ordering of values");
+      assert.equal(sells[3].price, 150, "Incorrect ordering of values");
+      assert.equal(sells[4].price, 160, "Incorrect ordering of values");
+      assert.equal(sells[5].price, 170, "Incorrect ordering of values");
+    });
+
+    it("should not allow deletion of a matched order", async () => {
+      const buys = await contractInstance.getOrderBookBuys(10);
+
+      await contractInstance.addSellLimitOrder(140, 20, 0, {from: ALICE});
+      const history = await historyInstance.getHistory(10);
+      const matchedBuy = history[0].buyIndex;
+
+      assertThrows(contractInstance.deleteBuyOrder(matchedBuy, {from: BOB}), "This order has been matched");
+    });
+
+    it("should not allow deletion of someone else's order", async () => {
+      assertThrows(contractInstance.deleteBuyOrder(2, {from: BOB}), "You can only delete your own order");
+    });
+
+  })
 });
 
 const createOrderBook = async () => {
