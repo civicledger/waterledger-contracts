@@ -238,6 +238,22 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
+    function deleteBuyOrder(uint256 orderIndex) external {
+        Order memory order = _buys[orderIndex];
+        require(order.owner != address(0), "This order does not exist");
+        require(order.owner == msg.sender, "You can only delete your own order");
+        require(order.matchedTimeStamp == 0, "This order has been matched");
+        delete _buys[orderIndex];
+    }
+
+    function deleteSellOrder(uint256 orderIndex) external {
+        Order memory order = _sells[orderIndex];
+        require(order.owner != address(0), "This order does not exist");
+        require(order.owner == msg.sender, "You can only delete your own order");
+        require(order.matchedTimeStamp == 0, "This order has been matched");
+        delete _sells[orderIndex];
+    }
+
     function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
         uint256 buysCount = getLicenceUnmatchedBuysCount(licenceAddress);
 
@@ -287,7 +303,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint j = 0;
         for (uint i = 0; i < _sells.length; i++) {
-            if (_sells[i].matchedTimeStamp == 0) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)) {
                 prices[j] = _sells[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -333,7 +349,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint j = 0;
         for (uint i = 0; i < _buys.length; i++) {
-            if (_buys[i].matchedTimeStamp == 0) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)) {
                 prices[j] = _buys[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -374,7 +390,7 @@ contract OrderBook is QuickSort, Ownable {
     function getUnmatchedSellsCount() internal view returns (uint) {
         uint count = 0;
         for (uint i = 0; i < _sells.length; i++) {
-            if (_sells[i].matchedTimeStamp == 0) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)) {
                 count++;
             }
         }
@@ -400,7 +416,7 @@ contract OrderBook is QuickSort, Ownable {
     function getUnmatchedBuysCount() internal view returns (uint) {
         uint count = 0;
         for (uint i = 0; i < _buys.length; i++) {
-            if (_buys[i].matchedTimeStamp == 0) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)) {
                 count++;
             }
         }
