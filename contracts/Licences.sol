@@ -52,6 +52,10 @@ contract Licences is Ownable {
         emit LicenceAdded(_licences.length - 1, who);
 	}
 
+    function issueCompleted(uint256 licenceIndex) public onlyAuthority {
+        emit LicenceCompleted(licenceIndex, _licences[licenceIndex].ethAccount);
+    }
+
     function revoke(address who) public onlyAuthority() {
 		delete _licences[_addressToLicenceIndex[who]];
 	}
@@ -77,6 +81,7 @@ contract Licences is Ownable {
         _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
         _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
+        emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
     }
 
     function purchase() public payable {
@@ -115,5 +120,7 @@ contract Licences is Ownable {
 	}
 
     event LicenceAdded(uint256 index, address ethAccount);
+    event WaterAccountAdded(address ethAccount);
+    event LicenceCompleted(uint256 index, address ethAccount);
 
 }

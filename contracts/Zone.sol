@@ -39,6 +39,7 @@ contract Zone is ERC20, Ownable {
     function allocate(address to, uint256 value) external onlyOwner() {
         _balances[to] = value;
         _totalSupply = _totalSupply.add(value);
+        emit Allocation(to, value);
     }
 
     function orderBookCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {

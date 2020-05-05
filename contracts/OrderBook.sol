@@ -21,6 +21,7 @@ contract OrderBook is QuickSort, Ownable {
     enum OrderType { Sell, Buy }
 
     struct Order {
+        uint256 orderIndex;
         OrderType orderType;
         History.Period period;
         address owner;
@@ -93,11 +94,11 @@ contract OrderBook is QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
 
-        uint256 sellCount = _sells.push(Order(OrderType.Sell, History.Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 sellCount = _sells.push(Order(_sells.length, OrderType.Sell, History.Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = sellCount - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
-        emit SellOrderAdded();
+        emit SellOrderAdded(msg.sender);
 
         bool isUnmatched = true;
 
@@ -129,9 +130,9 @@ contract OrderBook is QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
         //Push to array first
-        uint256 buyIndex = _buys.push(Order(OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex)) - 1;
+        uint256 buyIndex = _buys.push(Order(_buys.length, OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex)) - 1;
 
-        emit BuyOrderAdded();
+        emit BuyOrderAdded(msg.sender);
 
         bool isUnmatched = true;
 
@@ -244,6 +245,7 @@ contract OrderBook is QuickSort, Ownable {
         require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _buys[orderIndex];
+        emit BuyOrderDeleted();
     }
 
     function deleteSellOrder(uint256 orderIndex) external {
@@ -252,6 +254,7 @@ contract OrderBook is QuickSort, Ownable {
         require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _sells[orderIndex];
+        emit SellOrderDeleted();
     }
 
     function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
@@ -435,7 +438,9 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    event BuyOrderAdded();
-    event SellOrderAdded();
+    event BuyOrderAdded(address indexed licenceAddress);
+    event SellOrderAdded(address indexed licenceAddress);
     event Matched();
+    event BuyOrderDeleted();
+    event SellOrderDeleted();
 }
