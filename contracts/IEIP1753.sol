@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 
 interface EIP1753 {
     function grantAuthority(address who) external;

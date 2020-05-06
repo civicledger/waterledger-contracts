@@ -1,9 +1,9 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
-import "./SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./QuickSort.sol";
-import "./Ownable.sol";
 
 contract History is QuickSort, Ownable {
     using SafeMath for uint;
@@ -38,11 +38,11 @@ contract History is QuickSort, Ownable {
         return (trade.buyer, trade.quantity, trade.toZone, trade.fromZone, trade.buyIndex, trade.sellIndex);
     }
 
-    function getTradeStruct(uint256 tradeIndex) public view returns (Trade) {
+    function getTradeStruct(uint256 tradeIndex) public view returns (Trade memory) {
         return _history[tradeIndex];
     }
 
-    function getHistory(uint256 numberOfTrades) public view returns(Trade[]) {
+    function getHistory(uint256 numberOfTrades) public view returns(Trade[] memory) {
         uint256 max = _history.length < numberOfTrades ? _history.length : numberOfTrades;
 
         if (max > 1000) {
@@ -59,7 +59,7 @@ contract History is QuickSort, Ownable {
         return returnedTrades;
     }
 
-    function getLicenceHistory(address licenceAddress) public view returns(Trade[]) {
+    function getLicenceHistory(address licenceAddress) public view returns(Trade[] memory) {
 
         uint256 max = getLicenceTradeCount(licenceAddress);
         Trade[] memory returnedTrades = new Trade[](max);
@@ -90,7 +90,7 @@ contract History is QuickSort, Ownable {
         return _history.length;
     }
 
-    function getTimeHistory() internal view returns(uint256[]) {
+    function getTimeHistory() internal view returns(uint256[] memory) {
 
         uint256[] memory timeStamps = new uint256[](_history.length);
         uint256[] memory indexes = new uint256[](_history.length);
@@ -140,7 +140,7 @@ contract History is QuickSort, Ownable {
         _allowedWriters[who] = false;
     }
 
-    modifier onlyWriters(string error) {
+    modifier onlyWriters(string memory error) {
         require(_allowedWriters[msg.sender] == true, error);
         _;
     }

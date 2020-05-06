@@ -1,10 +1,10 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
-import "./Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Zone.sol";
 import "./QuickSort.sol";
-import "./SafeMath.sol";
 import "./History.sol";
 import "./Licences.sol";
 
@@ -12,7 +12,7 @@ contract OrderBook is QuickSort, Ownable {
     using SafeMath for uint;
 
     Zone[] public _zones;
-    bytes32[] public _zoneNames;
+    string[] public _zoneNames;
     History public _history;
     Licences public _licences;
 
@@ -35,12 +35,18 @@ contract OrderBook is QuickSort, Ownable {
     Order[] public _buys;
     Order[] public _sells;
 
-    function addZone(bytes32 name, address zoneContract) public onlyOwner {
+    string _scheme = '';
+
+    constructor(string memory scheme) public Ownable() {
+        _scheme = scheme;
+    }
+
+    function addZone(string memory name, address zoneContract) public onlyOwner {
         _zones.push(Zone(zoneContract));
         _zoneNames.push(name);
     }
 
-    function getZones() public view returns(address[]) {
+    function getZones() public view returns(address[] memory) {
         address[] memory zones = new address[](_zones.length);
 
         for(uint i; i < _zones.length; i++) {
@@ -89,13 +95,17 @@ contract OrderBook is QuickSort, Ownable {
         return _lastTradedPrice;
     }
 
+    function getScheme() external view returns (string memory) {
+        return _scheme;
+    }
+
     function addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex) public {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
 
-        uint256 sellCount = _sells.push(Order(_sells.length, OrderType.Sell, History.Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
-        uint256 sellIndex = sellCount - 1;
+        _sells.push(Order(_sells.length, OrderType.Sell, History.Period.N_A, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 sellIndex = _sells.length - 1;
         zone.orderBookDebit(msg.sender, quantity);
 
         emit SellOrderAdded(msg.sender);
@@ -130,7 +140,8 @@ contract OrderBook is QuickSort, Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
         //Push to array first
-        uint256 buyIndex = _buys.push(Order(_buys.length, OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex)) - 1;
+        _buys.push(Order(_buys.length, OrderType.Buy, period, msg.sender, price, quantity, now, 0, zoneIndex));
+        uint256 buyIndex = _buys.length - 1;
 
         emit BuyOrderAdded(msg.sender);
 
@@ -161,7 +172,7 @@ contract OrderBook is QuickSort, Ownable {
         }
     }
 
-    function getOrderBook() public view returns (Order[]) {
+    function getOrderBook() public view returns (Order[] memory) {
         uint256 totalLength = getUnmatchedSellsCount() + getUnmatchedBuysCount();
 
         Order[] memory returnedOrders = new Order[](totalLength);
@@ -181,7 +192,7 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function getOrderBookSells(uint256 numberOfOrders) public view returns (Order[]) {
+    function getOrderBookSells(uint256 numberOfOrders) public view returns (Order[] memory) {
 
         uint256 max = getUnmatchedSellsCount() < numberOfOrders ? getUnmatchedSellsCount() : numberOfOrders;
 
@@ -200,7 +211,7 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function getOrderBookBuys(uint256 numberOfOrders) public view returns (Order[]) {
+    function getOrderBookBuys(uint256 numberOfOrders) public view returns (Order[] memory) {
 
         uint256 max = getUnmatchedBuysCount() < numberOfOrders ? getUnmatchedBuysCount() : numberOfOrders;
 
@@ -219,7 +230,7 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function getLicenceOrderBookSells(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
+    function getLicenceOrderBookSells(address licenceAddress, uint256 numberOfOrders) public view returns (Order[] memory) {
 
         uint256 sellsCount = getLicenceUnmatchedSellsCount(licenceAddress);
         uint256 max = sellsCount < numberOfOrders ? sellsCount : numberOfOrders;
@@ -257,7 +268,7 @@ contract OrderBook is QuickSort, Ownable {
         emit SellOrderDeleted();
     }
 
-    function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[]) {
+    function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[] memory) {
         uint256 buysCount = getLicenceUnmatchedBuysCount(licenceAddress);
 
         uint256 max = buysCount < numberOfOrders ? buysCount : numberOfOrders;
@@ -277,7 +288,7 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function lowestSell() public view returns(Order) {
+    function lowestSell() public view returns(Order memory) {
         require(getUnmatchedSellsCount() > 0, "No sells available");
         uint256[] memory sortedIndexes = getPriceTimeSellOrders();
 
@@ -285,7 +296,7 @@ contract OrderBook is QuickSort, Ownable {
         return _sells[i];
     }
 
-    function highestBuy() public view returns(Order) {
+    function highestBuy() public view returns(Order memory) {
         require(getUnmatchedBuysCount() > 0, "No buys available");
 
         uint256[] memory sortedIndexes = getPriceTimeBuyOrders();
@@ -294,7 +305,7 @@ contract OrderBook is QuickSort, Ownable {
         return _buys[i];
     }
 
-    function getPriceTimeSellOrders() internal view returns(uint256[]) {
+    function getPriceTimeSellOrders() internal view returns(uint256[] memory) {
         uint256 count = getUnmatchedSellsCount();
 
         uint256[] memory prices = new uint256[](count);
@@ -317,7 +328,7 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function getLicencePriceTimeSellOrders(address licenceAddress) internal view returns(uint256[]) {
+    function getLicencePriceTimeSellOrders(address licenceAddress) internal view returns(uint256[] memory) {
         uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
 
         uint256[] memory prices = new uint256[](count);
@@ -340,7 +351,7 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function getPriceTimeBuyOrders() internal view returns(uint256[]) {
+    function getPriceTimeBuyOrders() internal view returns(uint256[] memory) {
         uint256 count = getUnmatchedBuysCount();
 
         uint256[] memory prices = new uint256[](count);
@@ -363,7 +374,7 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function getLicencePriceTimeBuyOrders(address licenceAddress) internal view returns(uint256[]) {
+    function getLicencePriceTimeBuyOrders(address licenceAddress) internal view returns(uint256[] memory) {
         uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
 
         uint256[] memory prices = new uint256[](count);

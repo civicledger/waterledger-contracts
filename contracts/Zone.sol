@@ -1,14 +1,14 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 
-import "./SafeMath.sol";
-import "./ERC20.sol";
-import "./Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Zone is ERC20, Ownable {
     using SafeMath for uint;
 
-    bytes32 public _name = '';
-    bytes32 public _symbol = "CLW";
+    string public _name = '';
+    string public _symbol = "CLW";
     uint8 public _decimals = 12;
 
     uint256 public _min = 0;
@@ -16,8 +16,8 @@ contract Zone is ERC20, Ownable {
 
     address private _orderBook;
 
-    constructor(uint256 supply, bytes32 name, address orderBook, uint256 min, uint256 max) public {
-        _totalSupply = supply;
+    constructor(uint256 supply, string memory name, address orderBook, uint256 min, uint256 max) ERC20(name, 'CLW') public {
+        _mint(owner(), supply);
         _name = name;
         _orderBook = orderBook;
         _min = min;
@@ -25,11 +25,11 @@ contract Zone is ERC20, Ownable {
     }
 
     function isToTransferValid(uint256 value) public view returns (bool) {
-        return _totalSupply.add(value) <= _max;
+        return totalSupply().add(value) <= _max;
     }
 
     function isFromTransferValid(uint256 value) public view returns (bool) {
-        return _totalSupply.sub(value) >= _min;
+        return totalSupply().sub(value) >= _min;
     }
 
     function getTransferLimits() external view returns(uint256, uint256) {
@@ -37,15 +37,13 @@ contract Zone is ERC20, Ownable {
     }
 
     function allocate(address to, uint256 value) external onlyOwner() {
-        _balances[to] = value;
-        _totalSupply = _totalSupply.add(value);
+        _mint(to, value);
         emit Allocation(to, value);
     }
 
     function orderBookCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {
         if(isToTransferValid(value)){
-            _balances[to] = _balances[to].add(value);
-            _totalSupply = _totalSupply.add(value);
+            _mint(to, value);
             emit Transfer(owner(), to, value);
             return true;
         }
@@ -54,7 +52,7 @@ contract Zone is ERC20, Ownable {
 
     function orderBookDebit(address from, uint256 value) external onlyOrderBook() returns (bool) {
         if(isFromTransferValid(value)){
-            _balances[from] = _balances[from].sub(value);
+            _burn(from, value);
             emit Transfer(from, owner(), value);
             return true;
         }

@@ -1,28 +1,28 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 
 contract QuickSort {
-    
-    function sort(uint[] data) public pure returns(uint[]) {
+
+    function sort(uint[] memory data) public pure returns(uint[] memory) {
         quickSort(data, int(0), int(data.length - 1));
         return data;
     }
 
-    function reverseSort(uint[] data) public pure returns(uint[]) {
+    function reverseSort(uint[] memory data) public pure returns(uint[] memory) {
         quickSortReverse(data, int(0), int(data.length - 1));
         return data;
     }
 
     //Returns the sorted indexes
-    function sortWithIndex(uint[] data, uint[] indices) public pure returns(uint[]) {
+    function sortWithIndex(uint[] memory data, uint[] memory indices) public pure returns(uint[] memory) {
         quickSortWithIndex(data, indices, int(0), int(data.length - 1));
         return indices;
     }
 
-    function reverseSortWithIndex(uint[] data, uint[] indices) public pure returns(uint[]) {
+    function reverseSortWithIndex(uint[] memory data, uint[] memory indices) public pure returns(uint[] memory) {
         quickReverseSortWithIndex(data, indices, int(0), int(data.length - 1));
         return indices;
     }
-    
+
     function quickSort(uint[] memory arr, int left, int right) internal pure {
         int i = left;
         int j = right;
@@ -31,14 +31,14 @@ contract QuickSort {
 
         uint pivot = arr[uint(left + (right - left) / 2)];
         while (i <= j) {
-            while (arr[uint(i)] < pivot) { 
+            while (arr[uint(i)] < pivot) {
                 i++;
             }
 
             while (pivot < arr[uint(j)]) {
                 j--;
             }
-            
+
             if (i <= j) {
                 (arr[uint(i)], arr[uint(j)]) = (arr[uint(j)], arr[uint(i)]);
                 i++;
@@ -60,7 +60,7 @@ contract QuickSort {
 
         uint pivot = arr[uint(left + (right - left) / 2)];
         while (i <= j) {
-            while (arr[uint(i)] > pivot) { 
+            while (arr[uint(i)] > pivot) {
                 i++;
             }
 
@@ -74,7 +74,7 @@ contract QuickSort {
                 j--;
             }
         }
-    
+
         if (left < j)
             quickSortReverse(arr, left, j);
         if (i < right)
@@ -98,7 +98,7 @@ contract QuickSort {
                 j--;
             }
         }
-    
+
         if (left < j)
             quickSortWithIndex(arr, indices, left, j);
         if (i < right)
@@ -113,7 +113,7 @@ contract QuickSort {
 
         uint pivot = arr[uint(left + (right - left) / 2)];
         while (i <= j) {
-            while (arr[uint(i)] > pivot) { 
+            while (arr[uint(i)] > pivot) {
                 i++;
             }
 
@@ -128,7 +128,7 @@ contract QuickSort {
                 j--;
             }
         }
-    
+
         if (left < j)
             quickReverseSortWithIndex(arr, indices, left, j);
         if (i < right)

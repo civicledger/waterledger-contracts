@@ -1,7 +1,7 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
-import "./Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IEIP1753.sol";
 
 contract Licences is Ownable {
@@ -60,7 +60,7 @@ contract Licences is Ownable {
 		delete _licences[_addressToLicenceIndex[who]];
 	}
 
-    function getLicence(uint256 licenceIndex) public view returns(address, bytes32[]) {
+    function getLicence(uint256 licenceIndex) public view returns(address, bytes32[] memory) {
         return (_licences[licenceIndex].ethAccount, _licences[licenceIndex].waterAccountIds);
     }
 
@@ -88,7 +88,7 @@ contract Licences is Ownable {
 	    revert('Licence purchase is not supported');
 	}
 
-    function getWaterAccountIds(uint256 licenceIndex) public view returns (bytes32[]) {
+    function getWaterAccountIds(uint256 licenceIndex) public view returns (bytes32[] memory) {
         return _licences[licenceIndex].waterAccountIds;
     }
 
@@ -97,11 +97,11 @@ contract Licences is Ownable {
         return _waterAccountIdToLicenceIndex[waterAccountId];
     }
 
-    function getWaterAccountForWaterAccountId(bytes32 waterAccountId) public view returns (WaterAccount) {
+    function getWaterAccountForWaterAccountId(bytes32 waterAccountId) public view returns (WaterAccount memory) {
         return _licences[_waterAccountIdToLicenceIndex[waterAccountId]].waterAccounts[waterAccountId];
     }
 
-    function getWaterAccountsForLicence(uint256 licenceIndex) public view returns (WaterAccount[]) {
+    function getWaterAccountsForLicence(uint256 licenceIndex) public view returns (WaterAccount[] memory) {
         uint256 waterAccountsLength = _licences[licenceIndex].waterAccountIds.length;
         require(waterAccountsLength > 0, "There are no water accounts for this licence");
 

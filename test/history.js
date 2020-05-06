@@ -14,7 +14,7 @@ contract("History", function(accounts) {
     let orderbookInstance;
 
     beforeEach(async () => {
-      orderbookInstance = await OrderBook.new();
+      orderbookInstance = await OrderBook.new("Test Scheme");
       contractInstance = await History.new(orderbookInstance.address);
     });
 
