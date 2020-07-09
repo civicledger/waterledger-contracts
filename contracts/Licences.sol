@@ -23,7 +23,7 @@ contract Licences is Ownable {
     struct WaterAccount {
         bytes32 waterAccountId;
         uint8 zoneIndex;
-        bytes32 zoneString;
+        string zoneString;
     }
 
     Licence[] public _licences;
@@ -76,7 +76,7 @@ contract Licences is Ownable {
         return false;
 	}
 
-    function addLicenceWaterAccount(uint256 licenceIndex, bytes32 waterAccountId, uint8 zoneIndex, bytes32 zoneString)
+    function addLicenceWaterAccount(uint256 licenceIndex, bytes32 waterAccountId, uint8 zoneIndex, string memory zoneString)
         public onlyOwner {
         _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);

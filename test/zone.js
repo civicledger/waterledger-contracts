@@ -1,25 +1,27 @@
-const assertThrows = require('./helpers/TestHelpers').assertThrows;
+const assertThrows = require("./helpers/TestHelpers").assertThrows;
 const Zone = artifacts.require("Zone");
 const OrderBook = artifacts.require("OrderBook");
 
-contract("Zone Contract", function(accounts) {
-
+contract("Zone Contract", function (accounts) {
   var contractInstance;
   var orderbookInstance;
 
-  const OWNER = accounts[0];
   const ALICE = accounts[1];
-  const BOB = accounts[2];
 
   const AMOUNT = 2000;
 
   beforeEach(async () => {
-    orderbookInstance = await OrderBook.new();
-    contractInstance = await Zone.new(AMOUNT, web3.utils.utf8ToHex("Barron Zone A"), orderbookInstance.address, 0, 1000000);
+    orderbookInstance = await OrderBook.new("Test Scheme", 2001);
+    contractInstance = await Zone.new(
+      AMOUNT,
+      "Barron Zone A",
+      orderbookInstance.address,
+      0,
+      1000000
+    );
   });
 
-  describe("Instantiation and ERC-20 functionality", function(){
-
+  describe("Instantiation and ERC-20 functionality", function () {
     describe("Initial supply", () => {
       it("total supply should be 2000", async function () {
         const actual = await contractInstance.totalSupply();
@@ -28,7 +30,6 @@ contract("Zone Contract", function(accounts) {
     });
 
     describe("Allocation", () => {
-
       it("should transfer 1337 tokens to alice", async function () {
         await contractInstance.allocate(ALICE, 1337);
 
@@ -37,6 +38,4 @@ contract("Zone Contract", function(accounts) {
       });
     });
   });
-
-
 });
