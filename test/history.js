@@ -27,7 +27,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -38,7 +37,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -46,7 +44,6 @@ contract("History", function (accounts) {
         ALICE,
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -61,32 +58,13 @@ contract("History", function (accounts) {
       );
     });
 
-    it("Should should store the period in history", async () => {
-      await contractInstance.addHistory(
-        BOB,
-        ALICE,
-        historyPrice,
-        historyQuantity,
-        0,
-        0,
-        0,
-        0,
-        PERIOD_SIX_MONTHS
-      );
-      let history = await contractInstance.getHistory(1);
-      assert.equal(
-        history[0].period,
-        PERIOD_SIX_MONTHS,
-        "Should be returning the history items period"
-      );
-    });
-
     it("Should allow partial returning of history", async () => {
-      await contractInstance.addHistory(BOB, ALICE, 1, 3, 0, 0, 0, 0, 0);
-      await contractInstance.addHistory(BOB, ALICE, 2, 2, 0, 0, 0, 0, 0);
-      await contractInstance.addHistory(BOB, ALICE, 3, 5, 0, 0, 0, 0, 0);
-      await contractInstance.addHistory(BOB, ALICE, 4, 1, 0, 0, 0, 0, 0);
-      await contractInstance.addHistory(BOB, ALICE, 5, 4, 0, 0, 0, 0, 0);
+      // buyer, seller, price, quantity, fromZone, toZone, buyIndex, sellIndex
+      await contractInstance.addHistory(BOB, ALICE, 1, 3, 0, 0, 0, 0);
+      await contractInstance.addHistory(BOB, ALICE, 2, 2, 0, 0, 0, 0);
+      await contractInstance.addHistory(BOB, ALICE, 3, 5, 0, 0, 0, 0);
+      await contractInstance.addHistory(BOB, ALICE, 4, 1, 0, 0, 0, 0);
+      await contractInstance.addHistory(BOB, ALICE, 5, 4, 0, 0, 0, 0);
 
       const numberOfHistory = 3;
 
@@ -108,7 +86,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -119,7 +96,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -127,7 +103,6 @@ contract("History", function (accounts) {
         ALICE,
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -160,7 +135,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -171,7 +145,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -179,7 +152,6 @@ contract("History", function (accounts) {
         ALICE,
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -190,7 +162,6 @@ contract("History", function (accounts) {
         BOB,
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -204,7 +175,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -212,7 +182,6 @@ contract("History", function (accounts) {
         accounts[2],
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -223,7 +192,6 @@ contract("History", function (accounts) {
         accounts[3],
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -243,7 +211,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -251,7 +218,6 @@ contract("History", function (accounts) {
         accounts[2],
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,
@@ -265,7 +231,6 @@ contract("History", function (accounts) {
         0,
         0,
         0,
-        0,
         0
       );
       await contractInstance.addHistory(
@@ -273,7 +238,6 @@ contract("History", function (accounts) {
         accounts[3],
         historyPrice,
         historyQuantity,
-        0,
         0,
         0,
         0,

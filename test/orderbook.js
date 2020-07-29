@@ -51,7 +51,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         0,
-        2,
         { from: BOB }
       );
       const buysAfter = await contractInstance.getOrderBookBuys(10);
@@ -72,7 +71,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         0,
-        2,
         { from: BOB }
       );
       await contractInstance.addSellLimitOrder(
@@ -100,7 +98,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         0,
-        2,
         { from: BOB }
       );
 
@@ -182,7 +179,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         0,
-        2,
         { from: BOB }
       );
 
@@ -230,7 +226,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         1,
-        2,
         { from: BOB }
       );
 
@@ -266,7 +261,6 @@ contract("OrderBook", function (accounts) {
         buyLimitPrice,
         defaultBuyQuantity,
         1,
-        2,
         { from: BOB }
       );
 
@@ -295,7 +289,7 @@ contract("OrderBook", function (accounts) {
       await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
       await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
       await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 60, 2, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 60, 2, { from: BOB });
 
       const history = await historyInstance.getHistory(10);
       const buysAfter = await contractInstance.getOrderBookBuys(10);
@@ -324,7 +318,7 @@ contract("OrderBook", function (accounts) {
     it("should not be affected if there is no cross zone", async () => {
       await zoneInstance3.allocate(ALICE, 2000);
       await contractInstance.addSellLimitOrder(100, 1500, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 1500, 2, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 1500, 2, { from: BOB });
 
       await contractInstance.validateTrade(0);
       const trade = await historyInstance.getTradeStruct(0);
@@ -339,7 +333,7 @@ contract("OrderBook", function (accounts) {
     it("should not error on a correct cross zone transfer", async () => {
       await zoneInstance3.allocate(ALICE, 2000);
       await contractInstance.addSellLimitOrder(100, 800, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 800, 1, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 800, 1, { from: BOB });
 
       await contractInstance.validateTrade(0);
 
@@ -355,7 +349,7 @@ contract("OrderBook", function (accounts) {
     xit("should revert if maximum is exceeded", async () => {
       await zoneInstance3.allocate(ALICE, 2000);
       await contractInstance.addSellLimitOrder(100, 1200, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 1200, 1, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 1200, 1, { from: BOB });
 
       const buysBefore = await contractInstance.getOrderBookBuys(5);
       const sellsBefore = await contractInstance.getOrderBookSells(5);
@@ -381,7 +375,7 @@ contract("OrderBook", function (accounts) {
     it("should error if minimum is exceeded", async () => {
       await zoneInstance4.allocate(ALICE, 600);
       await contractInstance.addSellLimitOrder(100, 150, 3, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 150, 1, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 150, 1, { from: BOB });
 
       const buysBefore = await contractInstance.getOrderBookBuys(5);
       const sellsBefore = await contractInstance.getOrderBookSells(5);
@@ -420,13 +414,13 @@ contract("OrderBook", function (accounts) {
     });
 
     it("should get the sell orders for one licence address", async () => {
-      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(100, 20, 2, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, { from: BOB });
-      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, { from: BOB });
-      await contractInstance.addBuyLimitOrder(110, 20, 2, 1, { from: BOB });
+      await contractInstance.addBuyLimitOrder(100, 20, 2, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(100, 20, 2, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(100, 20, 2, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(100, 20, 2, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(110, 20, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 20, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 20, 2, { from: BOB });
 
       const buysAlice = await contractInstance.getLicenceOrderBookBuys(
         ALICE,
@@ -443,13 +437,13 @@ contract("OrderBook", function (accounts) {
       await zoneInstance3.allocate(ALICE, 100);
       await zoneInstance3.allocate(BOB, 200);
       await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 20, 1, 2, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 20, 1, { from: BOB });
     });
 
     it("Should ignore trades by self - do not match buy order", async () => {
       await zoneInstance.allocate(ALICE, 400);
       await contractInstance.addSellLimitOrder(100, 20, 0, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(100, 20, 0, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(100, 20, 0, { from: ALICE });
 
       const history = await historyInstance.getHistory(10);
       const buysAfter = await contractInstance.getOrderBookBuys(10);
@@ -470,7 +464,7 @@ contract("OrderBook", function (accounts) {
 
     it("Should ignore trades by self - do not match sell order", async () => {
       await zoneInstance.allocate(ALICE, 400);
-      await contractInstance.addBuyLimitOrder(100, 20, 0, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(100, 20, 0, { from: ALICE });
       await contractInstance.addSellLimitOrder(100, 20, 0, { from: ALICE });
 
       const history = await historyInstance.getHistory(10);
@@ -495,13 +489,13 @@ contract("OrderBook", function (accounts) {
     beforeEach(async () => {
       await zoneInstance.allocate(ALICE, 2000);
       await zoneInstance.allocate(BOB, 2000);
-      await contractInstance.addBuyLimitOrder(110, 20, 0, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(120, 20, 0, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(130, 20, 0, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(140, 20, 0, 1, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(150, 20, 0, 1, { from: BOB });
-      await contractInstance.addBuyLimitOrder(160, 20, 0, 1, { from: BOB });
-      await contractInstance.addBuyLimitOrder(170, 20, 0, 1, { from: BOB });
+      await contractInstance.addBuyLimitOrder(110, 20, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(120, 20, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(130, 20, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(140, 20, 0, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(150, 20, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(160, 20, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(170, 20, 0, { from: BOB });
 
       await contractInstance.addSellLimitOrder(110, 30, 0, { from: ALICE });
       await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });

@@ -24,7 +24,6 @@ contract OrderBook is QuickSort, Ownable {
     struct Order {
         uint256 orderIndex;
         OrderType orderType;
-        History.Period period;
         address owner;
         uint256 price;
         uint256 quantity;
@@ -133,7 +132,6 @@ contract OrderBook is QuickSort, Ownable {
             Order(
                 _sells.length,
                 OrderType.Sell,
-                History.Period.N_A,
                 msg.sender,
                 price,
                 quantity,
@@ -170,8 +168,7 @@ contract OrderBook is QuickSort, Ownable {
                         zoneIndex,
                         _buys[j].zone,
                         j,
-                        sellIndex,
-                        _buys[j].period
+                        sellIndex
                     );
                     _buys[j].matchedTimeStamp = now;
                     _sells[sellIndex].matchedTimeStamp = now;
@@ -189,8 +186,7 @@ contract OrderBook is QuickSort, Ownable {
     function addBuyLimitOrder(
         uint256 price,
         uint256 quantity,
-        uint8 zoneIndex,
-        History.Period period
+        uint8 zoneIndex
     ) public {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
@@ -199,7 +195,6 @@ contract OrderBook is QuickSort, Ownable {
             Order(
                 _buys.length,
                 OrderType.Buy,
-                period,
                 msg.sender,
                 price,
                 quantity,
@@ -235,8 +230,7 @@ contract OrderBook is QuickSort, Ownable {
                         _sells[j].zone,
                         zoneIndex,
                         buyIndex,
-                        j,
-                        period
+                        j
                     );
 
                     _sells[j].matchedTimeStamp = now;

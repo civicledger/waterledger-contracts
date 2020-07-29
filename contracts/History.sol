@@ -9,7 +9,6 @@ contract History is QuickSort, Ownable {
     using SafeMath for uint;
 
     enum Status { Pending, Completed, Rejected, Invalid }
-    enum Period { N_A, Three_Months, Six_Months, Nine_Months, One_Year }
 
     struct Trade {
         address buyer;
@@ -21,7 +20,6 @@ contract History is QuickSort, Ownable {
         uint8 toZone;
         uint256 buyIndex;
         uint256 sellIndex;
-        Period period;
         Status status;
     }
 
@@ -108,13 +106,18 @@ contract History is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, uint256 buyIndex, uint256 sellIndex, Period period)
+    function addHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, uint256 buyIndex, uint256 sellIndex)
             external onlyWriters("Only writers can add history") {
-        require(buyer != address(0), "Invalid address");
-        require(seller != address(0), "Invalid address");
-        _history.push(Trade(buyer, seller, price, quantity, now, fromZone, toZone, buyIndex, sellIndex, period, Status.Pending));
+        _history.push(Trade(buyer, seller, price, quantity, now, fromZone, toZone, buyIndex, sellIndex, Status.Pending));
 
         emit HistoryAdded(_history.length - 1, buyer, seller, price, quantity, fromZone, toZone);
+    }
+
+    function addManualHistory(address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, uint256 buyIndex, uint256 sellIndex, uint256 timestamp, Status status)
+            external onlyOwner {
+        _history.push(Trade(buyer, seller, price, quantity, timestamp, fromZone, toZone, buyIndex, sellIndex, status));
+
+        emit ManualHistoryAdded(_history.length - 1);
     }
 
     function rejectTrade(uint256 index) public onlyOwner {
@@ -146,6 +149,7 @@ contract History is QuickSort, Ownable {
     }
 
     event HistoryAdded(uint256 index, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
+    event ManualHistoryAdded(uint256 index);
     event TradeCompleted(uint256 index);
     event TradeInvalidated(uint256 index);
     event TradeRejected(uint256 index);
