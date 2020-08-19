@@ -64,6 +64,21 @@ contract("OrderBook", function (accounts) {
       assert.equal(buysAfter[0].owner, BOB, "Buy order should belong to Bob");
     });
 
+    it.only("can place a buy order and get the order by id", async () => {
+      await contractInstance.addBuyLimitOrder(
+        buyLimitPrice,
+        defaultBuyQuantity,
+        0,
+        { from: BOB }
+      );
+      const buys = await contractInstance.getOrderBookBuys(10);
+      const buyId = buys[0].id;
+      const buy = await contractInstance.getBuyById(buyId);
+
+      assert.equal(buy.owner, BOB, "Buy order should belong to Bob");
+      assert.equal(buy.id, buyId, "Buy order should have the right ID");
+    });
+
     it("can place a buy order that is matched", async () => {
       await zoneInstance.allocate(ALICE, 100);
 

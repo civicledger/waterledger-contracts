@@ -19,9 +19,13 @@ contract OrderBook is QuickSort, Ownable {
 
     uint256 public _lastTradedPrice;
 
+    mapping(bytes32 => uint256) public _idToBuyIndex;
+    mapping(bytes32 => uint256) public _idToSellIndex;
+
     enum OrderType {Sell, Buy}
 
     struct Order {
+        bytes32 id;
         uint256 orderIndex;
         OrderType orderType;
         address owner;
@@ -60,6 +64,14 @@ contract OrderBook is QuickSort, Ownable {
 
     function addHistoryContract(address historyContract) public onlyOwner {
         _history = History(historyContract);
+    }
+
+    function getBuyById(bytes32 id) public view returns(Order memory) {
+        return _buys[_idToBuyIndex[id]];
+    }
+
+    function getSellById(bytes32 id) public view returns(Order memory) {
+        return _sells[_idToSellIndex[id]];
     }
 
     function addLicencesContract(address licencesContract) public onlyOwner {
@@ -116,6 +128,10 @@ contract OrderBook is QuickSort, Ownable {
         return _scheme;
     }
 
+    function createId(uint256 timestamp, uint256 price, uint256 quantity, address user) public pure returns(bytes32) {
+        return keccak256(abi.encode(timestamp, price, quantity, user));
+    }
+
     function addSellLimitOrder(
         uint256 price,
         uint256 quantity,
@@ -127,9 +143,11 @@ contract OrderBook is QuickSort, Ownable {
             zone.balanceOf(msg.sender) >= quantity,
             "Insufficient water allocation"
         );
+        bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
 
         _sells.push(
             Order(
+                id,
                 _sells.length,
                 OrderType.Sell,
                 msg.sender,
@@ -141,9 +159,10 @@ contract OrderBook is QuickSort, Ownable {
             )
         );
         uint256 sellIndex = _sells.length - 1;
+        _idToSellIndex[id] = sellIndex;
         zone.orderBookDebit(msg.sender, quantity);
 
-        emit SellOrderAdded(msg.sender);
+        emit SellOrderAdded(id, msg.sender);
 
         bool isUnmatched = true;
 
@@ -190,9 +209,12 @@ contract OrderBook is QuickSort, Ownable {
     ) public {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
+        bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
+
         //Push to array first
         _buys.push(
             Order(
+                id,
                 _buys.length,
                 OrderType.Buy,
                 msg.sender,
@@ -204,8 +226,8 @@ contract OrderBook is QuickSort, Ownable {
             )
         );
         uint256 buyIndex = _buys.length - 1;
-
-        emit BuyOrderAdded(msg.sender);
+        _idToBuyIndex[id] = buyIndex;
+        emit BuyOrderAdded(id, msg.sender);
 
         bool isUnmatched = true;
 
@@ -539,8 +561,8 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    event BuyOrderAdded(address indexed licenceAddress);
-    event SellOrderAdded(address indexed licenceAddress);
+    event BuyOrderAdded(bytes32 id, address indexed licenceAddress);
+    event SellOrderAdded(bytes32 id, address indexed licenceAddress);
     event Matched();
     event BuyOrderDeleted();
     event SellOrderDeleted();
