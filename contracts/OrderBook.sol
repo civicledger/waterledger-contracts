@@ -162,7 +162,7 @@ contract OrderBook is QuickSort, Ownable {
         _idToSellIndex[id] = sellIndex;
         zone.orderBookDebit(msg.sender, quantity);
 
-        emit SellOrderAdded(id, msg.sender);
+        emit SellOrderAdded(id, msg.sender, price, quantity, zoneIndex);
 
         bool isUnmatched = true;
 
@@ -194,7 +194,6 @@ contract OrderBook is QuickSort, Ownable {
 
                     isUnmatched = false;
                     _lastTradedPrice = _buys[j].price;
-                    emit Matched();
                 }
 
                 i++;
@@ -227,7 +226,7 @@ contract OrderBook is QuickSort, Ownable {
         );
         uint256 buyIndex = _buys.length - 1;
         _idToBuyIndex[id] = buyIndex;
-        emit BuyOrderAdded(id, msg.sender);
+        emit BuyOrderAdded(id, msg.sender, price, quantity, zoneIndex);
 
         bool isUnmatched = true;
 
@@ -260,7 +259,6 @@ contract OrderBook is QuickSort, Ownable {
 
                     _lastTradedPrice = _sells[j].price;
                     isUnmatched = false;
-                    emit Matched();
                 }
 
                 i++;
@@ -349,7 +347,7 @@ contract OrderBook is QuickSort, Ownable {
         );
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _buys[orderIndex];
-        emit BuyOrderDeleted();
+        emit BuyOrderDeleted(order.id);
     }
 
     function deleteSellOrder(uint256 orderIndex) external {
@@ -361,7 +359,7 @@ contract OrderBook is QuickSort, Ownable {
         );
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _sells[orderIndex];
-        emit SellOrderDeleted();
+        emit SellOrderDeleted(order.id);
     }
 
     function getLicenceOrderBookBuys(
@@ -561,9 +559,8 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    event BuyOrderAdded(bytes32 id, address indexed licenceAddress);
-    event SellOrderAdded(bytes32 id, address indexed licenceAddress);
-    event Matched();
-    event BuyOrderDeleted();
-    event SellOrderDeleted();
+    event BuyOrderAdded(bytes32 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event SellOrderAdded(bytes32 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event BuyOrderDeleted(bytes32 id);
+    event SellOrderDeleted(bytes32 id);
 }

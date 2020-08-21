@@ -1,4 +1,3 @@
-const assertThrows = require("./helpers/TestHelpers").assertThrows;
 const Zone = artifacts.require("Zone");
 const OrderBook = artifacts.require("OrderBook");
 
@@ -12,13 +11,7 @@ contract("Zone Contract", function (accounts) {
 
   beforeEach(async () => {
     orderbookInstance = await OrderBook.new("Test Scheme", 2001);
-    contractInstance = await Zone.new(
-      AMOUNT,
-      "Barron Zone A",
-      orderbookInstance.address,
-      0,
-      1000000
-    );
+    contractInstance = await Zone.new(AMOUNT, "Barron Zone A", orderbookInstance.address, 0, 1000000);
   });
 
   describe("Instantiation and ERC-20 functionality", function () {

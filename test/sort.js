@@ -1,6 +1,6 @@
 var QuickSort = artifacts.require("QuickSort");
 
-contract.only("QuickSort", function (accounts) {
+contract("QuickSort", function (accounts) {
   var instance;
 
   beforeEach(async function () {
