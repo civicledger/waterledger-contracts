@@ -117,7 +117,7 @@ contract History is QuickSort, Ownable {
         bytes32 id = createId(block.timestamp, price, quantity, buyer);
         _history.push(Trade(id, buyer, seller, price, quantity, block.timestamp, fromZone, toZone, buyIndex, sellIndex, Status.Pending));
 
-        emit HistoryAdded(id, _history.length - 1, buyer, seller, price, quantity, fromZone, toZone);
+        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone);
     }
 
     function createId(uint256 timestamp, uint256 price, uint256 quantity, address user) public pure returns(bytes32) {
@@ -129,22 +129,22 @@ contract History is QuickSort, Ownable {
         bytes32 id = createId(block.timestamp, price, quantity, buyer);
         _history.push(Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, buyIndex, sellIndex, status));
 
-        emit ManualHistoryAdded(_history.length - 1);
+        emit ManualHistoryAdded(id);
     }
 
     function rejectTrade(uint256 index) public onlyOwner {
         _history[index].status = Status.Rejected;
-        emit TradeRejected(index);
+        emit TradeRejected(_history[index].id);
     }
 
     function invalidateTrade(uint256 index) public onlyWriters("Trade can only be invalidated by the orderbook") {
         _history[index].status = Status.Invalid;
-        emit TradeInvalidated(index);
+        emit TradeInvalidated(_history[index].id);
     }
 
     function completeTrade(uint256 index) public onlyWriters("Only writers can update history") {
         _history[index].status = Status.Completed;
-        emit TradeCompleted(index);
+        emit TradeCompleted(_history[index].id);
     }
 
     function addWriter(address who) public onlyOwner {
@@ -160,9 +160,9 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(bytes32 id, uint256 index, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
-    event ManualHistoryAdded(uint256 index);
-    event TradeCompleted(uint256 index);
-    event TradeInvalidated(uint256 index);
-    event TradeRejected(uint256 index);
+    event HistoryAdded(bytes32 id, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone);
+    event ManualHistoryAdded(bytes32 id);
+    event TradeCompleted(bytes32 id);
+    event TradeInvalidated(bytes32 id);
+    event TradeRejected(bytes32 id);
 }
