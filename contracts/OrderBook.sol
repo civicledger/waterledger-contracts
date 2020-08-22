@@ -46,10 +46,7 @@ contract OrderBook is QuickSort, Ownable {
         _year = year;
     }
 
-    function addZone(string memory name, address zoneContract)
-        public
-        onlyOwner
-    {
+    function addZone(string memory name, address zoneContract) public onlyOwner {
         _zones.push(Zone(zoneContract));
         _zoneNames.push(name);
     }
@@ -66,11 +63,11 @@ contract OrderBook is QuickSort, Ownable {
         _history = History(historyContract);
     }
 
-    function getBuyById(bytes32 id) public view returns(Order memory) {
+    function getBuyById(bytes32 id) public view returns (Order memory) {
         return _buys[_idToBuyIndex[id]];
     }
 
-    function getSellById(bytes32 id) public view returns(Order memory) {
+    function getSellById(bytes32 id) public view returns (Order memory) {
         return _sells[_idToSellIndex[id]];
     }
 
@@ -79,14 +76,8 @@ contract OrderBook is QuickSort, Ownable {
     }
 
     function validateTrade(uint256 tradeIndex) public onlyOwner returns (bool) {
-        (
-            address buyer,
-            uint256 quantity,
-            uint8 toZone,
-            uint8 fromZone,
-            uint256 buyIndex,
-            uint256 sellIndex
-        ) = _history.getTrade(tradeIndex);
+        (address buyer, uint256 quantity, uint8 toZone, uint8 fromZone, uint256 buyIndex, uint256 sellIndex) = _history
+            .getTrade(tradeIndex);
 
         if (toZone == fromZone) {
             return true;
@@ -108,14 +99,8 @@ contract OrderBook is QuickSort, Ownable {
     }
 
     function completeTrade(uint256 tradeIndex) public onlyOwner {
-        (
-            address buyer,
-            uint256 quantity,
-            uint8 toZone,
-            uint8 fromZone,
-            uint256 buyIndex,
-            uint256 sellIndex
-        ) = _history.getTrade(tradeIndex);
+        (address buyer, uint256 quantity, uint8 toZone, uint8 fromZone, uint256 buyIndex, uint256 sellIndex) = _history
+            .getTrade(tradeIndex);
         _history.completeTrade(tradeIndex);
         _zones[toZone].orderBookCredit(buyer, quantity);
     }
@@ -128,7 +113,12 @@ contract OrderBook is QuickSort, Ownable {
         return _scheme;
     }
 
-    function createId(uint256 timestamp, uint256 price, uint256 quantity, address user) public pure returns(bytes32) {
+    function createId(
+        uint256 timestamp,
+        uint256 price,
+        uint256 quantity,
+        address user
+    ) public pure returns (bytes32) {
         return keccak256(abi.encode(timestamp, price, quantity, user));
     }
 
@@ -139,25 +129,10 @@ contract OrderBook is QuickSort, Ownable {
     ) public {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        require(
-            zone.balanceOf(msg.sender) >= quantity,
-            "Insufficient water allocation"
-        );
+        require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
         bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
 
-        _sells.push(
-            Order(
-                id,
-                _sells.length,
-                OrderType.Sell,
-                msg.sender,
-                price,
-                quantity,
-                now,
-                0,
-                zoneIndex
-            )
-        );
+        _sells.push(Order(id, _sells.length, OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = _sells.length - 1;
         _idToSellIndex[id] = sellIndex;
         zone.orderBookDebit(msg.sender, quantity);
@@ -211,19 +186,7 @@ contract OrderBook is QuickSort, Ownable {
         bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
 
         //Push to array first
-        _buys.push(
-            Order(
-                id,
-                _buys.length,
-                OrderType.Buy,
-                msg.sender,
-                price,
-                quantity,
-                now,
-                0,
-                zoneIndex
-            )
-        );
+        _buys.push(Order(id, _buys.length, OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 buyIndex = _buys.length - 1;
         _idToBuyIndex[id] = buyIndex;
         emit BuyOrderAdded(id, msg.sender, price, quantity, zoneIndex);
@@ -266,14 +229,8 @@ contract OrderBook is QuickSort, Ownable {
         }
     }
 
-    function getOrderBookSells(uint256 numberOfOrders)
-        public
-        view
-        returns (Order[] memory)
-    {
-        uint256 max = getUnmatchedSellsCount() < numberOfOrders
-            ? getUnmatchedSellsCount()
-            : numberOfOrders;
+    function getOrderBookSells(uint256 numberOfOrders) public view returns (Order[] memory) {
+        uint256 max = getUnmatchedSellsCount() < numberOfOrders ? getUnmatchedSellsCount() : numberOfOrders;
 
         if (max > 10) {
             max = 10;
@@ -290,14 +247,8 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function getOrderBookBuys(uint256 numberOfOrders)
-        public
-        view
-        returns (Order[] memory)
-    {
-        uint256 max = getUnmatchedBuysCount() < numberOfOrders
-            ? getUnmatchedBuysCount()
-            : numberOfOrders;
+    function getOrderBookBuys(uint256 numberOfOrders) public view returns (Order[] memory) {
+        uint256 max = getUnmatchedBuysCount() < numberOfOrders ? getUnmatchedBuysCount() : numberOfOrders;
 
         if (max > 10) {
             max = 10;
@@ -314,10 +265,11 @@ contract OrderBook is QuickSort, Ownable {
         return returnedOrders;
     }
 
-    function getLicenceOrderBookSells(
-        address licenceAddress,
-        uint256 numberOfOrders
-    ) public view returns (Order[] memory) {
+    function getLicenceOrderBookSells(address licenceAddress, uint256 numberOfOrders)
+        public
+        view
+        returns (Order[] memory)
+    {
         uint256 sellsCount = getLicenceUnmatchedSellsCount(licenceAddress);
         uint256 max = sellsCount < numberOfOrders ? sellsCount : numberOfOrders;
 
@@ -325,9 +277,7 @@ contract OrderBook is QuickSort, Ownable {
             max = 10;
         }
 
-        uint256[] memory sortedIndexes = getLicencePriceTimeSellOrders(
-            licenceAddress
-        );
+        uint256[] memory sortedIndexes = getLicencePriceTimeSellOrders(licenceAddress);
 
         Order[] memory returnedOrders = new Order[](max);
 
@@ -341,10 +291,7 @@ contract OrderBook is QuickSort, Ownable {
     function deleteBuyOrder(uint256 orderIndex) external {
         Order memory order = _buys[orderIndex];
         require(order.owner != address(0), "This order does not exist");
-        require(
-            order.owner == msg.sender,
-            "You can only delete your own order"
-        );
+        require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _buys[orderIndex];
         emit BuyOrderDeleted(order.id);
@@ -353,19 +300,17 @@ contract OrderBook is QuickSort, Ownable {
     function deleteSellOrder(uint256 orderIndex) external {
         Order memory order = _sells[orderIndex];
         require(order.owner != address(0), "This order does not exist");
-        require(
-            order.owner == msg.sender,
-            "You can only delete your own order"
-        );
+        require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _sells[orderIndex];
         emit SellOrderDeleted(order.id);
     }
 
-    function getLicenceOrderBookBuys(
-        address licenceAddress,
-        uint256 numberOfOrders
-    ) public view returns (Order[] memory) {
+    function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders)
+        public
+        view
+        returns (Order[] memory)
+    {
         uint256 buysCount = getLicenceUnmatchedBuysCount(licenceAddress);
 
         uint256 max = buysCount < numberOfOrders ? buysCount : numberOfOrders;
@@ -374,9 +319,7 @@ contract OrderBook is QuickSort, Ownable {
             max = 10;
         }
 
-        uint256[] memory sortedIndexes = getLicencePriceTimeBuyOrders(
-            licenceAddress
-        );
+        uint256[] memory sortedIndexes = getLicencePriceTimeBuyOrders(licenceAddress);
 
         Order[] memory returnedOrders = new Order[](max);
 
@@ -399,9 +342,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint256 j = 0;
         for (uint256 i = 0; i < _sells.length; i++) {
-            if (
-                _sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)
-            ) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)) {
                 prices[j] = _sells[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -412,11 +353,7 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function getLicencePriceTimeSellOrders(address licenceAddress)
-        internal
-        view
-        returns (uint256[] memory)
-    {
+    function getLicencePriceTimeSellOrders(address licenceAddress) internal view returns (uint256[] memory) {
         uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
 
         uint256[] memory prices = new uint256[](count);
@@ -428,10 +365,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint256 j = 0;
         for (uint256 i = 0; i < _sells.length; i++) {
-            if (
-                _sells[i].matchedTimeStamp == 0 &&
-                _sells[i].owner == licenceAddress
-            ) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner == licenceAddress) {
                 prices[j] = _sells[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -454,9 +388,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint256 j = 0;
         for (uint256 i = 0; i < _buys.length; i++) {
-            if (
-                _buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)
-            ) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)) {
                 prices[j] = _buys[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -467,11 +399,7 @@ contract OrderBook is QuickSort, Ownable {
         return sortedIndexes;
     }
 
-    function getLicencePriceTimeBuyOrders(address licenceAddress)
-        internal
-        view
-        returns (uint256[] memory)
-    {
+    function getLicencePriceTimeBuyOrders(address licenceAddress) internal view returns (uint256[] memory) {
         uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
 
         uint256[] memory prices = new uint256[](count);
@@ -483,10 +411,7 @@ contract OrderBook is QuickSort, Ownable {
 
         uint256 j = 0;
         for (uint256 i = 0; i < _buys.length; i++) {
-            if (
-                _buys[i].matchedTimeStamp == 0 &&
-                _buys[i].owner == licenceAddress
-            ) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner == licenceAddress) {
                 prices[j] = _buys[i].price;
                 indexes[j] = i;
                 j += 1;
@@ -500,9 +425,7 @@ contract OrderBook is QuickSort, Ownable {
     function getUnmatchedSellsCount() internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _sells.length; i++) {
-            if (
-                _sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)
-            ) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner != address(0)) {
                 count++;
             }
         }
@@ -510,17 +433,10 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    function getLicenceUnmatchedSellsCount(address licenceAddress)
-        internal
-        view
-        returns (uint256)
-    {
+    function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _sells.length; i++) {
-            if (
-                _sells[i].matchedTimeStamp == 0 &&
-                _sells[i].owner == licenceAddress
-            ) {
+            if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner == licenceAddress) {
                 count++;
             }
         }
@@ -531,9 +447,7 @@ contract OrderBook is QuickSort, Ownable {
     function getUnmatchedBuysCount() internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _buys.length; i++) {
-            if (
-                _buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)
-            ) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner != address(0)) {
                 count++;
             }
         }
@@ -541,17 +455,10 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    function getLicenceUnmatchedBuysCount(address licenceAddress)
-        internal
-        view
-        returns (uint256)
-    {
+    function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _buys.length; i++) {
-            if (
-                _buys[i].matchedTimeStamp == 0 &&
-                _buys[i].owner == licenceAddress
-            ) {
+            if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner == licenceAddress) {
                 count++;
             }
         }

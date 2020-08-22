@@ -5,9 +5,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Zone is ERC20, Ownable {
-    using SafeMath for uint;
+    using SafeMath for uint256;
 
-    string public _name = '';
+    string public _name = "";
     string public _symbol = "CLW";
     uint8 public _decimals = 12;
 
@@ -16,7 +16,13 @@ contract Zone is ERC20, Ownable {
 
     address private _orderBook;
 
-    constructor(uint256 supply, string memory name, address orderBook, uint256 min, uint256 max) ERC20(name, 'CLW') public {
+    constructor(
+        uint256 supply,
+        string memory name,
+        address orderBook,
+        uint256 min,
+        uint256 max
+    ) public ERC20(name, "CLW") {
         _mint(owner(), supply);
         _name = name;
         _orderBook = orderBook;
@@ -32,7 +38,7 @@ contract Zone is ERC20, Ownable {
         return totalSupply().sub(value) >= _min;
     }
 
-    function getTransferLimits() external view returns(uint256, uint256) {
+    function getTransferLimits() external view returns (uint256, uint256) {
         return (_min, _max);
     }
 
@@ -42,7 +48,7 @@ contract Zone is ERC20, Ownable {
     }
 
     function orderBookCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {
-        if(isToTransferValid(value)){
+        if (isToTransferValid(value)) {
             _mint(to, value);
             emit Transfer(owner(), to, value);
             return true;
@@ -51,7 +57,7 @@ contract Zone is ERC20, Ownable {
     }
 
     function orderBookDebit(address from, uint256 value) external onlyOrderBook() returns (bool) {
-        if(isFromTransferValid(value)){
+        if (isFromTransferValid(value)) {
             _burn(from, value);
             emit Transfer(from, owner(), value);
             return true;
