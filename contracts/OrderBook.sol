@@ -19,13 +19,13 @@ contract OrderBook is QuickSort, Ownable {
 
     uint256 public _lastTradedPrice;
 
-    mapping(bytes32 => uint256) public _idToBuyIndex;
-    mapping(bytes32 => uint256) public _idToSellIndex;
+    mapping(bytes16 => uint256) public _idToBuyIndex;
+    mapping(bytes16 => uint256) public _idToSellIndex;
 
     enum OrderType {Sell, Buy}
 
     struct Order {
-        bytes32 id;
+        bytes16 id;
         uint256 orderIndex;
         OrderType orderType;
         address owner;
@@ -63,11 +63,11 @@ contract OrderBook is QuickSort, Ownable {
         _history = History(historyContract);
     }
 
-    function getBuyById(bytes32 id) public view returns (Order memory) {
+    function getBuyById(bytes16 id) public view returns (Order memory) {
         return _buys[_idToBuyIndex[id]];
     }
 
-    function getSellById(bytes32 id) public view returns (Order memory) {
+    function getSellById(bytes16 id) public view returns (Order memory) {
         return _sells[_idToSellIndex[id]];
     }
 
@@ -118,8 +118,8 @@ contract OrderBook is QuickSort, Ownable {
         uint256 price,
         uint256 quantity,
         address user
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encode(timestamp, price, quantity, user));
+    ) public pure returns (bytes16) {
+        return bytes16(keccak256(abi.encode(timestamp, price, quantity, user)));
     }
 
     function addSellLimitOrder(
@@ -130,7 +130,7 @@ contract OrderBook is QuickSort, Ownable {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
-        bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
+        bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
 
         _sells.push(Order(id, _sells.length, OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
         uint256 sellIndex = _sells.length - 1;
@@ -183,7 +183,7 @@ contract OrderBook is QuickSort, Ownable {
     ) public {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
 
-        bytes32 id = createId(block.timestamp, price, quantity, msg.sender);
+        bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
 
         //Push to array first
         _buys.push(Order(id, _buys.length, OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
@@ -466,8 +466,8 @@ contract OrderBook is QuickSort, Ownable {
         return count;
     }
 
-    event BuyOrderAdded(bytes32 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
-    event SellOrderAdded(bytes32 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
-    event BuyOrderDeleted(bytes32 id);
-    event SellOrderDeleted(bytes32 id);
+    event BuyOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event SellOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event BuyOrderDeleted(bytes16 id);
+    event SellOrderDeleted(bytes16 id);
 }

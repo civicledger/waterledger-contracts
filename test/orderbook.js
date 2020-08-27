@@ -15,7 +15,7 @@ var historyInstance;
 
 const statuses = ["Pending", "Completed", "Rejected", "Invalid"];
 
-contract("OrderBook", function (accounts) {
+contract.only("OrderBook", function (accounts) {
   const ALICE = accounts[1];
   const BOB = accounts[2];
 
