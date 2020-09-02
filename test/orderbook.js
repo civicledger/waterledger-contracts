@@ -470,6 +470,36 @@ contract.only("OrderBook", function (accounts) {
       expectRevert(contractInstance.deleteBuyOrder(2, { from: BOB }), "You can only delete your own order");
     });
   });
+
+  // TODO: include these testcases within the order deletion & test multiple orders more thoroughly & test events emitted
+  describe("Sell Order Deletion", () => {
+    beforeEach(async () => {
+      await zoneInstance.allocate(ALICE, 2000);
+    });
+
+    it("should confirm correct zone after deletion", async () => {
+      const beforeSell = await zoneInstance.balanceOf(ALICE);
+      await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });
+
+      const afterSell = await zoneInstance.balanceOf(ALICE);
+
+      await contractInstance.deleteSellOrder(0, { from: ALICE });
+      const afterSellDeletion = await zoneInstance.balanceOf(ALICE);
+
+      assert.equal(beforeSell, Number(2000), "Incorrect ALICE amount BEFORE placing sell order");
+      assert.equal(afterSell, Number(1970), "Incorrect ALICE amount BEFORE placing sell order");
+      assert.equal(afterSellDeletion, Number(2000), "Incorrect ALICE amount AFTER deleting sell order");
+    });
+
+    it("should allow reuse of previously held funds", async () => {
+      await contractInstance.addSellLimitOrder(4000, 2000, 0, { from: ALICE });
+      await contractInstance.deleteSellOrder(0, { from: ALICE });
+      await contractInstance.addSellLimitOrder(1930, 1930, 0, { from: ALICE });
+
+      const afterSell = await zoneInstance.balanceOf(ALICE);
+      assert.equal(afterSell, Number(70), "Funds not returned after deleting sell order");
+    });
+  });
 });
 
 const createOrderBook = async () => {
