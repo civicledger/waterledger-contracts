@@ -47,13 +47,6 @@ contract Zone is ERC20, Ownable {
         emit Allocation(to, value);
     }
 
-    // WIP: assumed that credit ammounts during deletion of sellLimitOrder do not need to be validated (as it is within initially allocated limit). May need some other checking around this. Should this be a separate function or contained within orderBookCredit()? More thinking required on this
-    function orderBookReCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {
-        _mint(to, value);
-        emit Transfer(owner(), to, value);
-        return true;
-    }
-
     function orderBookCredit(address to, uint256 value) external onlyOrderBook() returns (bool) {
         if (isToTransferValid(value)) {
             _mint(to, value);
