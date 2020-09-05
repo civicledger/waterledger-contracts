@@ -12,6 +12,8 @@ module.exports = async deployer => {
   let orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
   orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
 
+  // console.log(orderBookInstance);
+
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
 
   const licencesInstance = await deployer.deploy(Licences);
@@ -23,4 +25,6 @@ module.exports = async deployer => {
 
   await orderBookInstance.addHistoryContract(historyInstance.address);
   await orderBookInstance.addLicencesContract(licencesInstance.address);
+
+  // 5.2 eth = $2,562.15
 };
