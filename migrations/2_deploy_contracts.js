@@ -11,17 +11,6 @@ module.exports = async deployer => {
 
   let orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
   orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
-  // 2.6692672 | 6673168 // full
-  // 2.3518000 | 5879500 // with licence code without sorting
-  // 2.1609144 | 5402286 // private variables
-  // 2.3258588 | 5814647 // without licence code
-  // 2.0732964 | 5183241 // without licence code and sorting
-
-  // public variables = 470,000
-  // libraries (sorting, safemath) = 630,000
-  // licence code = 860,000
-
-  // console.log(orderBookInstance);
 
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
 
@@ -34,6 +23,4 @@ module.exports = async deployer => {
 
   await orderBookInstance.addHistoryContract(historyInstance.address);
   await orderBookInstance.addLicencesContract(licencesInstance.address);
-
-  // 5.2 eth = $2,562.15
 };
