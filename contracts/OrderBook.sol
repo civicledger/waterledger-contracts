@@ -2,29 +2,27 @@ pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-// import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Zone.sol";
-// import "./QuickSort.sol";
 import "./History.sol";
 import "./Licences.sol";
 
-contract OrderBook is QuickSort, Ownable {
+contract OrderBook is Ownable {
     using SafeMath for uint256;
+    Zone[] private _zones;
+    string[] private _zoneNames;
+    History private _history;
+    Licences private _licences;
+    uint256 private _year;
 
-    Zone[] public _zones;
-    string[] public _zoneNames;
-    History public _history;
-    Licences public _licences;
-    uint256 public _year;
-
-    uint256 public _lastTradedPrice;
+    uint256 private _lastTradedPrice;
 
     struct IndexPosition {
         uint256 index;
         bool isValid;
     }
 
-    mapping(bytes16 => IndexPosition) public _idToIndex;
+    mapping(bytes16 => IndexPosition) _idToIndex;
 
     enum OrderType {Sell, Buy}
 
@@ -70,7 +68,7 @@ contract OrderBook is QuickSort, Ownable {
         _history = History(historyContract);
     }
 
-    function getBuyById(bytes16 id) public view returns (Order memory) {
+    function getBuyById(bytes16 id) public view guardId(id) returns (Order memory) {
         return _buys[_idToIndex[id].index];
     }
 
@@ -85,23 +83,26 @@ contract OrderBook is QuickSort, Ownable {
     function validateTrade(uint256 tradeIndex) public onlyOwner returns (bool) {
         (address buyer, uint256 quantity, uint8 toZone, uint8 fromZone, bytes16 buyId, bytes16 sellId) = _history.getTrade(tradeIndex);
 
-        if (toZone == fromZone) {
-            return true;
-        }
+        if (toZone == fromZone) return true;
 
-        if (!_zones[toZone].isToTransferValid(quantity)) {
+        bool validTo = _zones[toZone].isToTransferValid(quantity);
+        bool validFrom = _zones[fromZone].isFromTransferValid(quantity);
+
+        if (validFrom && validTo) return true;
+
+        if (buyId != bytes16(0)) {
             _buys[_idToIndex[buyId].index].matchedTimeStamp = 0;
-            _sells[_idToIndex[sellId].index].matchedTimeStamp = 0;
-            _history.invalidateTrade(tradeIndex);
+            _unmatchedBuys.push(buyId);
+            emit BuyOrderUnmatched(buyId);
         }
 
-        if (!_zones[fromZone].isFromTransferValid(quantity)) {
-            _buys[_idToIndex[buyId].index].matchedTimeStamp = 0;
+        if (sellId != bytes16(0)) {
             _sells[_idToIndex[sellId].index].matchedTimeStamp = 0;
-            _history.invalidateTrade(tradeIndex);
+            _unmatchedSells.push(sellId);
+            emit SellOrderUnmatched(sellId);
         }
 
-        return true;
+        _history.invalidateTrade(tradeIndex);
     }
 
     function completeTrade(uint256 tradeIndex) public onlyOwner {
@@ -174,20 +175,26 @@ contract OrderBook is QuickSort, Ownable {
         emit SellOrderAdded(id, msg.sender, price, quantity, zoneIndex);
     }
 
-    function acceptSellOrder(bytes16 id, uint8 toZone) public {
+    function acceptSellOrder(bytes16 id, uint8 toZone) public guardId(id) {
         Order storage order = _sells[_idToIndex[id].index];
+        require(order.owner != msg.sender, "You cannot accept your own order");
         order.matchedTimeStamp = block.timestamp;
+
+        _lastTradedPrice = order.price;
 
         _history.addHistory(msg.sender, order.owner, order.price, order.quantity, order.zone, toZone, 0, order.id);
         removeUnmatchedSellId(id);
         emit SellOrderAccepted(id, msg.sender);
     }
 
-    function acceptBuyOrder(bytes16 id, uint8 fromZone) public {
+    function acceptBuyOrder(bytes16 id, uint8 fromZone) public guardId(id) {
         Order storage order = _buys[_idToIndex[id].index];
+        require(order.owner != msg.sender, "You cannot accept your own order");
         order.matchedTimeStamp = block.timestamp;
 
-        _history.addHistory(msg.sender, order.owner, order.price, order.quantity, order.zone, fromZone, order.id, 0);
+        _lastTradedPrice = order.price;
+
+        _history.addHistory(order.owner, msg.sender, order.price, order.quantity, order.zone, fromZone, order.id, 0);
         removeUnmatchedBuyId(id);
         emit BuyOrderAccepted(id, msg.sender);
     }
@@ -202,6 +209,7 @@ contract OrderBook is QuickSort, Ownable {
         bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
         _buys.push(Order(id, _buys.length, OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
         _idToIndex[id] = IndexPosition(_buys.length - 1, true);
+        _unmatchedBuys.push(id);
         emit BuyOrderAdded(id, msg.sender, price, quantity, zoneIndex);
     }
 
@@ -245,123 +253,77 @@ contract OrderBook is QuickSort, Ownable {
         emit SellOrderDeleted(order.id);
     }
 
-    // function getLicenceOrderBookSells(address licenceAddress, uint256 numberOfOrders) public view returns (Order[] memory) {
-    //     uint256 sellsCount = getLicenceUnmatchedSellsCount(licenceAddress);
-    //     uint256 max = sellsCount < numberOfOrders ? sellsCount : numberOfOrders;
+    function getLicenceOrderBookSells(address licenceAddress) public view returns (Order[] memory) {
+        uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
 
-    //     if (max > 10) {
-    //         max = 10;
-    //     }
+        Order[] memory returnedOrders = new Order[](count);
 
-    //     uint256[] memory sortedIndexes = getLicencePriceTimeSellOrders(licenceAddress);
+        uint256 foundCount = 0;
+        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+            Order memory order = _sells[_idToIndex[_unmatchedSells[i]].index];
+            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+                returnedOrders[foundCount] = order;
+                foundCount++;
+            }
+        }
 
-    //     Order[] memory returnedOrders = new Order[](max);
+        return returnedOrders;
+    }
 
-    //     for (uint256 i = 0; i < max; i++) {
-    //         returnedOrders[i] = _sells[sortedIndexes[i]];
-    //     }
+    function getLicenceOrderBookBuys(address licenceAddress) public view returns (Order[] memory) {
+        uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
 
-    //     return returnedOrders;
-    // }
+        Order[] memory returnedOrders = new Order[](count);
 
-    // function getLicenceOrderBookBuys(address licenceAddress, uint256 numberOfOrders) public view returns (Order[] memory) {
-    //     uint256 buysCount = getLicenceUnmatchedBuysCount(licenceAddress);
+        uint256 foundCount = 0;
+        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+            Order memory order = _buys[_idToIndex[_unmatchedBuys[i]].index];
+            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+                returnedOrders[foundCount] = order;
+                foundCount++;
+            }
+        }
 
-    //     uint256 max = buysCount < numberOfOrders ? buysCount : numberOfOrders;
+        return returnedOrders;
+    }
 
-    //     if (max > 10) {
-    //         max = 10;
-    //     }
+    function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+            Order memory order = _sells[_idToIndex[_unmatchedSells[i]].index];
+            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+                count++;
+            }
+        }
+        return count;
+    }
 
-    //     uint256[] memory sortedIndexes = getLicencePriceTimeBuyOrders(licenceAddress);
+    function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+            Order memory order = _buys[_idToIndex[_unmatchedBuys[i]].index];
+            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+                count++;
+            }
+        }
 
-    //     Order[] memory returnedOrders = new Order[](max);
-
-    //     for (uint256 i = 0; i < max; i++) {
-    //         returnedOrders[i] = _buys[sortedIndexes[i]];
-    //     }
-
-    //     return returnedOrders;
-    // }
-
-    // function getLicencePriceTimeSellOrders(address licenceAddress) internal view returns (uint256[] memory) {
-    //     uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
-
-    //     uint256[] memory prices = new uint256[](count);
-    //     uint256[] memory indexes = new uint256[](count);
-
-    //     if (count == 0) {
-    //         return indexes;
-    //     }
-
-    //     uint256 j = 0;
-    //     for (uint256 i = 0; i < _sells.length; i++) {
-    //         if (_sells[i].matchedTimeStamp == 0 && _sells[i].owner == licenceAddress) {
-    //             prices[j] = _sells[i].price;
-    //             indexes[j] = i;
-    //             j += 1;
-    //         }
-    //     }
-
-    //     uint256[] memory sortedIndexes = sortWithIndex(prices, indexes);
-    //     return sortedIndexes;
-    // }
-
-    // function getLicencePriceTimeBuyOrders(address licenceAddress) internal view returns (uint256[] memory) {
-    //     uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
-
-    //     uint256[] memory prices = new uint256[](count);
-    //     uint256[] memory indexes = new uint256[](count);
-
-    //     if (count == 0) {
-    //         return indexes;
-    //     }
-
-    //     uint256 j = 0;
-    //     for (uint256 i = 0; i < _buys.length; i++) {
-    //         if (_buys[i].matchedTimeStamp == 0 && _buys[i].owner == licenceAddress) {
-    //             prices[j] = _buys[i].price;
-    //             indexes[j] = i;
-    //             j += 1;
-    //         }
-    //     }
-
-    //     uint256[] memory sortedIndexes = reverseSortWithIndex(prices, indexes);
-    //     return sortedIndexes;
-    // }
-
-    // function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
-    //     uint256 count = 0;
-    //     for (uint256 i = 0; i < _unmatchedSells.length; i++) {
-    //         Order memory order = _sells[_idToIndex[_unmatchedSells[i]].index];
-    //         if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
-    //             count++;
-    //         }
-    //     }
-    //     return count;
-    // }
-
-    // function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
-    //     uint256 count = 0;
-    //     for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
-    //         Order memory order = _buys[_idToIndex[_unmatchedBuys[i]].index];
-    //         if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
-    //             count++;
-    //         }
-    //     }
-
-    //     return count;
-    // }
+        return count;
+    }
 
     modifier guardId(bytes16 id) {
         require(_idToIndex[id].isValid, "The ID provided is not valid");
         _;
     }
 
-    event SellOrderAccepted(bytes16 orderId, address indexed buyer);
-    event BuyOrderAccepted(bytes16 orderId, address indexed seller);
-    event BuyOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
-    event SellOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
     event BuyOrderDeleted(bytes16 id);
     event SellOrderDeleted(bytes16 id);
+
+    event BuyOrderUnmatched(bytes16 orderId);
+    event SellOrderUnmatched(bytes16 orderId);
+
+    event SellOrderAccepted(bytes16 orderId, address indexed buyer);
+    event BuyOrderAccepted(bytes16 orderId, address indexed seller);
+
+    event BuyOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event SellOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
 }
