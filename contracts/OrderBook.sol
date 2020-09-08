@@ -248,6 +248,7 @@ contract OrderBook is Ownable {
         require(order.owner != address(0), "This order does not exist");
         require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
+        _zones[order.zone].orderBookCredit(order.owner, order.quantity);
         delete _sells[orderIndex];
         removeUnmatchedSellId(order.id);
         emit SellOrderDeleted(order.id);
