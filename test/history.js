@@ -2,7 +2,7 @@ const History = artifacts.require("History");
 const OrderBook = artifacts.require("OrderBook");
 const { BN, expectEvent } = require("@openzeppelin/test-helpers");
 
-contract.only("History", function (accounts) {
+contract("History", function (accounts) {
   const ALICE = accounts[1];
   const BOB = accounts[2];
   const PERIOD_SIX_MONTHS = 2;

@@ -426,7 +426,7 @@ contract("OrderBook", function (accounts) {
     });
 
     it("should allow deletion of record", async () => {
-      console.log(await contractInstance.getOrderBookBuys());
+      // console.log(await contractInstance.getOrderBookBuys());
       await contractInstance.deleteBuyOrder(2, { from: ALICE });
     });
 
