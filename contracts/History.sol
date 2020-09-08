@@ -11,7 +11,7 @@ contract History is QuickSort, Ownable {
     enum Status {Pending, Completed, Rejected, Invalid}
 
     struct Trade {
-        bytes32 id;
+        bytes16 id;
         address buyer;
         address seller;
         uint256 averagePrice;
@@ -19,14 +19,14 @@ contract History is QuickSort, Ownable {
         uint256 timeStamp;
         uint8 fromZone;
         uint8 toZone;
-        uint256 buyIndex;
-        uint256 sellIndex;
+        bytes16 buyId;
+        bytes16 sellId;
         Status status;
     }
 
     Trade[] public _history;
     mapping(address => bool) private _allowedWriters;
-    mapping(bytes32 => uint256) public _idToHistoryIndex;
+    mapping(bytes16 => uint256) public _idToHistoryIndex;
 
     constructor(address orderBook) public {
         _allowedWriters[msg.sender] = true;
@@ -41,12 +41,12 @@ contract History is QuickSort, Ownable {
             uint256,
             uint8,
             uint8,
-            uint256,
-            uint256
+            bytes16,
+            bytes16
         )
     {
         Trade memory trade = _history[tradeIndex];
-        return (trade.buyer, trade.quantity, trade.toZone, trade.fromZone, trade.buyIndex, trade.sellIndex);
+        return (trade.buyer, trade.quantity, trade.toZone, trade.fromZone, trade.buyId, trade.sellId);
     }
 
     function getTradeStruct(uint256 tradeIndex) public view returns (Trade memory) {
@@ -70,7 +70,7 @@ contract History is QuickSort, Ownable {
         return returnedTrades;
     }
 
-    function getTradeById(bytes32 id) public view returns (Trade memory) {
+    function getTradeById(bytes16 id) public view returns (Trade memory) {
         return _history[_idToHistoryIndex[id]];
     }
 
@@ -128,24 +128,12 @@ contract History is QuickSort, Ownable {
         uint256 quantity,
         uint8 fromZone,
         uint8 toZone,
-        uint256 buyIndex,
-        uint256 sellIndex
+        bytes16 buyId,
+        bytes16 sellId
     ) external onlyWriters("Only writers can add history") {
-        bytes32 id = createId(block.timestamp, price, quantity, buyer);
+        bytes16 id = createId(block.timestamp, price, quantity, buyer);
         _history.push(
-            Trade(
-                id,
-                buyer,
-                seller,
-                price,
-                quantity,
-                block.timestamp,
-                fromZone,
-                toZone,
-                buyIndex,
-                sellIndex,
-                Status.Pending
-            )
+            Trade(id, buyer, seller, price, quantity, block.timestamp, fromZone, toZone, buyId, sellId, Status.Pending)
         );
 
         emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone);
@@ -156,8 +144,8 @@ contract History is QuickSort, Ownable {
         uint256 price,
         uint256 quantity,
         address user
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encode(timestamp, price, quantity, user));
+    ) public pure returns (bytes16) {
+        return bytes16(keccak256(abi.encode(timestamp, price, quantity, user)));
     }
 
     function addManualHistory(
@@ -167,15 +155,13 @@ contract History is QuickSort, Ownable {
         uint256 quantity,
         uint8 fromZone,
         uint8 toZone,
-        uint256 buyIndex,
-        uint256 sellIndex,
+        bytes16 buyId,
+        bytes16 sellId,
         uint256 timestamp,
         Status status
     ) external onlyOwner {
-        bytes32 id = createId(block.timestamp, price, quantity, buyer);
-        _history.push(
-            Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, buyIndex, sellIndex, status)
-        );
+        bytes16 id = createId(block.timestamp, price, quantity, buyer);
+        _history.push(Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, buyId, sellId, status));
 
         emit ManualHistoryAdded(id);
     }
@@ -209,7 +195,7 @@ contract History is QuickSort, Ownable {
     }
 
     event HistoryAdded(
-        bytes32 id,
+        bytes16 id,
         address buyer,
         address seller,
         uint256 price,
@@ -217,8 +203,8 @@ contract History is QuickSort, Ownable {
         uint8 fromZone,
         uint8 toZone
     );
-    event ManualHistoryAdded(bytes32 id);
-    event TradeCompleted(bytes32 id);
-    event TradeInvalidated(bytes32 id);
-    event TradeRejected(bytes32 id);
+    event ManualHistoryAdded(bytes16 id);
+    event TradeCompleted(bytes16 id);
+    event TradeInvalidated(bytes16 id);
+    event TradeRejected(bytes16 id);
 }

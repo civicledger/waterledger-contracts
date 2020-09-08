@@ -35,7 +35,7 @@ contract Zone is ERC20, Ownable {
     }
 
     function isFromTransferValid(uint256 value) public view returns (bool) {
-        return totalSupply().sub(value) >= _min;
+        return (totalSupply() - value) >= _min;
     }
 
     function getTransferLimits() external view returns (uint256, uint256) {
