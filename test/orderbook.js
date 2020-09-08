@@ -486,11 +486,11 @@ contract.only("OrderBook", function (accounts) {
     });
 
     it("should managed transfer limit with addition/deletion of sell limit order", async () => {
-      const initTotalSupply = await zoneInstance.totalSupply.call();
+      const initTotalSupply = await zoneInstance.totalSupply();
       await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });
-      const beforeDeletion = await zoneInstance.totalSupply.call();
+      const beforeDeletion = await zoneInstance.totalSupply();
       await contractInstance.deleteSellOrder(0, { from: ALICE });
-      const afterDeletion = await zoneInstance.totalSupply.call();
+      const afterDeletion = await zoneInstance.totalSupply();
 
 
       assert.equal(Number(initTotalSupply), 200, "initial totalSupply not correctly set");
@@ -501,12 +501,12 @@ contract.only("OrderBook", function (accounts) {
     it("should allow reuse of previously held funds", async () => {
       await contractInstance.addSellLimitOrder(200, 200, 0, { from: ALICE });
       await contractInstance.deleteSellOrder(0, { from: ALICE });
-      const beforeReuse = await zoneInstance.totalSupply.call();
+      const beforeReuse = await zoneInstance.totalSupply();
       await contractInstance.addSellLimitOrder(1, 1, 0, { from: ALICE });
-      const afterReuse = await zoneInstance.totalSupply.call();
+      const afterReuse = await zoneInstance.totalSupply();
       await contractInstance.deleteSellOrder(1, { from: ALICE });
-      const afterDeletion = await zoneInstance.totalSupply.call();
-      const totalSupply = await zoneInstance.totalSupply.call();
+      const afterDeletion = await zoneInstance.totalSupply();
+      const totalSupply = await zoneInstance.totalSupply();
 
       assert.equal(Number(beforeReuse), 200, "zone balance not refunded after deletion");
       assert.equal(Number(afterReuse), 199, "reuse of refunded funds incorrectly handled");
