@@ -7,7 +7,7 @@ contract("QuickSort", function (accounts) {
     instance = await QuickSort.new();
   });
 
-  it("should sort array of 1000 ints", async function () {
+  xit("should sort array of 1000 ints", async function () {
     //1000 random ints
     let data = [
       335,
@@ -113,10 +113,10 @@ contract("QuickSort", function (accounts) {
     ];
 
     var actual = await instance.sort(data);
-    assert.equal(actual.length, 100, "Should be 1000");
+    assert.equal(actual.length, 100, "Should be 100");
   });
 
-  it("should sort array of ints", async function () {
+  xit("should sort array of ints", async function () {
     let data = [2, 4, 1, 5, 3, 6];
 
     var actual = await instance.sort(data);
@@ -129,7 +129,7 @@ contract("QuickSort", function (accounts) {
     assert.equal(actual[5], 6, "Should be 6");
   });
 
-  it("should reverse sort array of ints", async function () {
+  xit("should reverse sort array of ints", async function () {
     let data = [2, 4, 1, 5, 3, 6];
 
     var actual = await instance.reverseSort(data);
@@ -142,7 +142,7 @@ contract("QuickSort", function (accounts) {
     assert.equal(actual[5], 1, "Should be 1");
   });
 
-  it("should sort array of ints by index", async function () {
+  xit("should sort array of ints by index", async function () {
     let indexes = [0, 1, 2, 3, 4, 5];
     let data = [2, 4, 1, 5, 3, 6];
 
@@ -158,7 +158,7 @@ contract("QuickSort", function (accounts) {
     assert.equal(actual[5], 5, "Should be index 5");
   });
 
-  it("should reverse sort array of ints by index", async function () {
+  xit("should reverse sort array of ints by index", async function () {
     let indexes = [0, 1, 2, 3, 4, 5];
     let data = [2, 4, 1, 5, 3, 6];
 
