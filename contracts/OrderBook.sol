@@ -2,13 +2,11 @@ pragma solidity ^0.6.2;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./Zone.sol";
 import "./History.sol";
 import "./Licences.sol";
 
 contract OrderBook is Ownable {
-    using SafeMath for uint256;
     Zone[] private _zones;
     string[] private _zoneNames;
     History private _history;
@@ -22,13 +20,12 @@ contract OrderBook is Ownable {
         bool isValid;
     }
 
-    mapping(bytes16 => IndexPosition) _idToIndex;
+    mapping(bytes16 => IndexPosition) private _idToIndex;
 
     enum OrderType {Sell, Buy}
 
     struct Order {
         bytes16 id;
-        uint256 orderIndex;
         OrderType orderType;
         address owner;
         uint256 price;
@@ -38,13 +35,12 @@ contract OrderBook is Ownable {
         uint8 zone;
     }
 
-    Order[] public _buys;
-    Order[] public _sells;
+    Order[] private _orders;
 
-    bytes16[] public _unmatchedBuys;
-    bytes16[] public _unmatchedSells;
+    bytes16[] private _unmatchedBuys;
+    bytes16[] private _unmatchedSells;
 
-    string _scheme = "";
+    string private _scheme;
 
     constructor(string memory scheme, uint256 year) public Ownable() {
         _scheme = scheme;
@@ -56,58 +52,46 @@ contract OrderBook is Ownable {
         _zoneNames.push(name);
     }
 
-    function getZoneNames() public view returns (string[] memory) {
-        return _zoneNames;
-    }
-
-    function getYear() public view returns (uint256) {
-        return _year;
-    }
-
     function addHistoryContract(address historyContract) public onlyOwner {
         _history = History(historyContract);
     }
 
-    function getBuyById(bytes16 id) public view guardId(id) returns (Order memory) {
-        return _buys[_idToIndex[id].index];
-    }
-
-    function getSellById(bytes16 id) public view returns (Order memory) {
-        return _sells[_idToIndex[id].index];
+    function getOrderById(bytes16 id) public view guardId(id) returns (Order memory) {
+        return _orders[_idToIndex[id].index];
     }
 
     function addLicencesContract(address licencesContract) public onlyOwner {
         _licences = Licences(licencesContract);
     }
 
-    function validateTrade(uint256 tradeIndex) public onlyOwner returns (bool) {
-        (address buyer, uint256 quantity, uint8 toZone, uint8 fromZone, bytes16 buyId, bytes16 sellId) = _history.getTrade(tradeIndex);
+    function validateTrade(bytes16 tradeId) public onlyOwner returns (bool) {
+        (bytes16 orderId, , , , , uint8 fromZone, uint8 toZone) = _history.getTradeDetails(tradeId);
+        Order memory order = _orders[_idToIndex[orderId].index];
 
         if (toZone == fromZone) return true;
 
-        bool validTo = _zones[toZone].isToTransferValid(quantity);
-        bool validFrom = _zones[fromZone].isFromTransferValid(quantity);
+        bool validTo = _zones[toZone].isToTransferValid(order.quantity);
+        bool validFrom = _zones[fromZone].isFromTransferValid(order.quantity);
 
         if (validFrom && validTo) return true;
 
-        if (buyId != bytes16(0)) {
-            _buys[_idToIndex[buyId].index].matchedTimeStamp = 0;
-            _unmatchedBuys.push(buyId);
-            emit BuyOrderUnmatched(buyId);
+        if (order.orderType == OrderType.Sell) {
+            _unmatchedSells.push(order.id);
+        } else {
+            _unmatchedBuys.push(order.id);
         }
 
-        if (sellId != bytes16(0)) {
-            _sells[_idToIndex[sellId].index].matchedTimeStamp = 0;
-            _unmatchedSells.push(sellId);
-            emit SellOrderUnmatched(sellId);
-        }
+        _orders[_idToIndex[orderId].index].matchedTimeStamp = 0;
 
-        _history.invalidateTrade(tradeIndex);
+        emit OrderUnmatched(order.id);
+
+        _history.invalidateTrade(tradeId);
     }
 
-    function completeTrade(uint256 tradeIndex) public onlyOwner {
-        (address buyer, uint256 quantity, uint8 toZone, uint8 fromZone, bytes16 buyId, bytes16 sellId) = _history.getTrade(tradeIndex);
-        _history.completeTrade(tradeIndex);
+    function completeTrade(bytes16 tradeId) public onlyOwner {
+        (, address buyer, , , uint256 quantity, , uint8 toZone) = _history.getTradeDetails(tradeId);
+
+        _history.completeTrade(tradeId);
         _zones[toZone].orderBookCredit(buyer, quantity);
     }
 
@@ -119,12 +103,16 @@ contract OrderBook is Ownable {
         return _scheme;
     }
 
+    function getYear() external view returns (uint256) {
+        return _year;
+    }
+
     function createId(
         uint256 timestamp,
         uint256 price,
         uint256 quantity,
         address user
-    ) public pure returns (bytes16) {
+    ) private pure returns (bytes16) {
         return bytes16(keccak256(abi.encode(timestamp, price, quantity, user)));
     }
 
@@ -150,118 +138,114 @@ contract OrderBook is Ownable {
         }
     }
 
-    function getUnmatchedSellsCount() public view returns (uint256) {
-        return _unmatchedSells.length;
-    }
-
-    function getUnmatchedBuysCount() public view returns (uint256) {
-        return _unmatchedBuys.length;
-    }
-
     function addSellLimitOrder(
         uint256 price,
         uint256 quantity,
         uint8 zoneIndex
-    ) public {
+    ) external {
         Zone zone = _zones[zoneIndex];
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         require(zone.balanceOf(msg.sender) >= quantity, "Insufficient water allocation");
-        bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
-
-        _sells.push(Order(id, _sells.length, OrderType.Sell, msg.sender, price, quantity, now, 0, zoneIndex));
-        _idToIndex[id] = IndexPosition(_sells.length - 1, true);
+        bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Sell);
         zone.orderBookDebit(msg.sender, quantity);
         _unmatchedSells.push(id);
-        emit SellOrderAdded(id, msg.sender, price, quantity, zoneIndex);
-    }
-
-    function acceptSellOrder(bytes16 id, uint8 toZone) public guardId(id) {
-        Order storage order = _sells[_idToIndex[id].index];
-        require(order.owner != msg.sender, "You cannot accept your own order");
-        order.matchedTimeStamp = block.timestamp;
-
-        _lastTradedPrice = order.price;
-
-        _history.addHistory(msg.sender, order.owner, order.price, order.quantity, order.zone, toZone, 0, order.id);
-        removeUnmatchedSellId(id);
-        emit SellOrderAccepted(id, msg.sender);
-    }
-
-    function acceptBuyOrder(bytes16 id, uint8 fromZone) public guardId(id) {
-        Order storage order = _buys[_idToIndex[id].index];
-        require(order.owner != msg.sender, "You cannot accept your own order");
-        order.matchedTimeStamp = block.timestamp;
-
-        _lastTradedPrice = order.price;
-
-        _history.addHistory(order.owner, msg.sender, order.price, order.quantity, order.zone, fromZone, order.id, 0);
-        removeUnmatchedBuyId(id);
-        emit BuyOrderAccepted(id, msg.sender);
     }
 
     function addBuyLimitOrder(
         uint256 price,
         uint256 quantity,
         uint8 zoneIndex
-    ) public {
+    ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-
-        bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
-        _buys.push(Order(id, _buys.length, OrderType.Buy, msg.sender, price, quantity, now, 0, zoneIndex));
-        _idToIndex[id] = IndexPosition(_buys.length - 1, true);
+        bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Buy);
         _unmatchedBuys.push(id);
-        emit BuyOrderAdded(id, msg.sender, price, quantity, zoneIndex);
+    }
+
+    function addOrder(
+        uint256 price,
+        uint256 quantity,
+        uint8 zoneIndex,
+        OrderType orderType
+    ) internal returns (bytes16) {
+        bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
+        _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, zoneIndex));
+        _idToIndex[id] = IndexPosition(_orders.length - 1, true);
+        emit OrderAdded(id, msg.sender, price, quantity, zoneIndex, orderType);
+        return id;
+    }
+
+    function acceptOrder(bytes16 id, uint8 zone) public guardId(id) {
+        Order storage order = _orders[_idToIndex[id].index];
+        require(order.owner != msg.sender, "You cannot accept your own order");
+
+        order.matchedTimeStamp = block.timestamp;
+
+        _lastTradedPrice = order.price;
+
+        uint8 toZone = order.zone;
+        uint8 fromZone = order.zone;
+
+        address buyer = order.owner;
+        address seller = order.owner;
+
+        if (order.orderType == OrderType.Sell) {
+            removeUnmatchedSellId(id);
+            toZone = zone;
+            buyer = msg.sender;
+        } else {
+            removeUnmatchedBuyId(id);
+            fromZone = zone;
+            seller = msg.sender;
+        }
+
+        _history.addHistory(buyer, seller, order.price, order.quantity, fromZone, toZone, order.id);
+
+        emit OrderAccepted(id, msg.sender);
     }
 
     function getOrderBookSells() public view returns (Order[] memory) {
-        Order[] memory returnedOrders = new Order[](_unmatchedSells.length);
-
-        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
-            returnedOrders[i] = _sells[_idToIndex[_unmatchedSells[i]].index];
-        }
-
-        return returnedOrders;
+        return getOrders(_unmatchedSells);
     }
 
     function getOrderBookBuys() public view returns (Order[] memory) {
-        Order[] memory returnedOrders = new Order[](_unmatchedBuys.length);
+        return getOrders(_unmatchedBuys);
+    }
 
-        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
-            returnedOrders[i] = _buys[_idToIndex[_unmatchedBuys[i]].index];
+    function getOrders(bytes16[] storage ids) internal view returns (Order[] memory) {
+        Order[] memory returnedOrders = new Order[](ids.length);
+
+        for (uint256 i = 0; i < ids.length; i++) {
+            returnedOrders[i] = _orders[_idToIndex[ids[i]].index];
         }
 
         return returnedOrders;
     }
 
-    function deleteBuyOrder(uint256 orderIndex) external {
-        Order memory order = _buys[orderIndex];
+    function deleteOrder(bytes16 id) external guardId(id) {
+        Order memory order = _orders[_idToIndex[id].index];
         require(order.owner != address(0), "This order does not exist");
         require(order.owner == msg.sender, "You can only delete your own order");
         require(order.matchedTimeStamp == 0, "This order has been matched");
-        delete _buys[orderIndex];
-        removeUnmatchedBuyId(order.id);
-        emit BuyOrderDeleted(order.id);
+        delete _orders[_idToIndex[id].index];
+
+        if (order.orderType == OrderType.Sell) {
+            removeUnmatchedSellId(order.id);
+            _zones[order.zone].orderBookCredit(order.owner, order.quantity);
+        } else {
+            removeUnmatchedBuyId(order.id);
+        }
+
+        emit OrderDeleted(order.id);
     }
 
-    function deleteSellOrder(uint256 orderIndex) external {
-        Order memory order = _sells[orderIndex];
-        require(order.owner != address(0), "This order does not exist");
-        require(order.owner == msg.sender, "You can only delete your own order");
-        require(order.matchedTimeStamp == 0, "This order has been matched");
-        _zones[order.zone].orderBookCredit(order.owner, order.quantity);
-        delete _sells[orderIndex];
-        removeUnmatchedSellId(order.id);
-        emit SellOrderDeleted(order.id);
-    }
-
-    function getLicenceOrderBookSells(address licenceAddress) public view returns (Order[] memory) {
+    function getLicenceOrderBookSells(address licenceAddress) external view returns (Order[] memory) {
         uint256 count = getLicenceUnmatchedSellsCount(licenceAddress);
 
         Order[] memory returnedOrders = new Order[](count);
 
         uint256 foundCount = 0;
         for (uint256 i = 0; i < _unmatchedSells.length; i++) {
-            Order memory order = _sells[_idToIndex[_unmatchedSells[i]].index];
+            Order memory order = _orders[_idToIndex[_unmatchedSells[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 returnedOrders[foundCount] = order;
                 foundCount++;
@@ -271,14 +255,14 @@ contract OrderBook is Ownable {
         return returnedOrders;
     }
 
-    function getLicenceOrderBookBuys(address licenceAddress) public view returns (Order[] memory) {
+    function getLicenceOrderBookBuys(address licenceAddress) external view returns (Order[] memory) {
         uint256 count = getLicenceUnmatchedBuysCount(licenceAddress);
 
         Order[] memory returnedOrders = new Order[](count);
 
         uint256 foundCount = 0;
         for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
-            Order memory order = _buys[_idToIndex[_unmatchedBuys[i]].index];
+            Order memory order = _orders[_idToIndex[_unmatchedBuys[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 returnedOrders[foundCount] = order;
                 foundCount++;
@@ -291,7 +275,7 @@ contract OrderBook is Ownable {
     function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _unmatchedSells.length; i++) {
-            Order memory order = _sells[_idToIndex[_unmatchedSells[i]].index];
+            Order memory order = _orders[_idToIndex[_unmatchedSells[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;
             }
@@ -302,7 +286,7 @@ contract OrderBook is Ownable {
     function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
-            Order memory order = _buys[_idToIndex[_unmatchedBuys[i]].index];
+            Order memory order = _orders[_idToIndex[_unmatchedBuys[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;
             }
@@ -316,15 +300,8 @@ contract OrderBook is Ownable {
         _;
     }
 
-    event BuyOrderDeleted(bytes16 id);
-    event SellOrderDeleted(bytes16 id);
-
-    event BuyOrderUnmatched(bytes16 orderId);
-    event SellOrderUnmatched(bytes16 orderId);
-
-    event SellOrderAccepted(bytes16 orderId, address indexed buyer);
-    event BuyOrderAccepted(bytes16 orderId, address indexed seller);
-
-    event BuyOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
-    event SellOrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone);
+    event OrderDeleted(bytes16 id);
+    event OrderUnmatched(bytes16 orderId);
+    event OrderAccepted(bytes16 orderId, address indexed buyer);
+    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone, OrderType orderType);
 }

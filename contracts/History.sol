@@ -19,38 +19,45 @@ contract History is QuickSort, Ownable {
         uint256 timeStamp;
         uint8 fromZone;
         uint8 toZone;
-        bytes16 buyId;
-        bytes16 sellId;
+        bytes16 orderId;
         Status status;
+    }
+
+    struct IndexPosition {
+        uint256 index;
+        bool isValid;
     }
 
     Trade[] public _history;
     mapping(address => bool) private _allowedWriters;
-    mapping(bytes16 => uint256) public _idToHistoryIndex;
+
+    mapping(bytes16 => IndexPosition) _idToIndex;
 
     constructor(address orderBook) public {
         _allowedWriters[msg.sender] = true;
         _allowedWriters[orderBook] = true;
     }
 
-    function getTrade(uint256 tradeIndex)
-        public
-        view
-        returns (
-            address,
-            uint256,
-            uint8,
-            uint8,
-            bytes16,
-            bytes16
-        )
-    {
-        Trade memory trade = _history[tradeIndex];
-        return (trade.buyer, trade.quantity, trade.toZone, trade.fromZone, trade.buyId, trade.sellId);
+    function getTrade(bytes16 id) public view guardId(id) returns (Trade memory) {
+        return _history[_idToIndex[id].index];
     }
 
-    function getTradeStruct(uint256 tradeIndex) public view returns (Trade memory) {
-        return _history[tradeIndex];
+    function getTradeDetails(bytes16 id)
+        public
+        view
+        guardId(id)
+        returns (
+            bytes16,
+            address,
+            address,
+            uint256,
+            uint256,
+            uint8,
+            uint8
+        )
+    {
+        Trade memory trade = _history[_idToIndex[id].index];
+        return (trade.orderId, trade.buyer, trade.seller, trade.averagePrice, trade.quantity, trade.fromZone, trade.toZone);
     }
 
     function getHistory(uint256 numberOfTrades) public view returns (Trade[] memory) {
@@ -68,10 +75,6 @@ contract History is QuickSort, Ownable {
         }
 
         return returnedTrades;
-    }
-
-    function getTradeById(bytes16 id) public view returns (Trade memory) {
-        return _history[_idToHistoryIndex[id]];
     }
 
     function getLicenceHistory(address licenceAddress) public view returns (Trade[] memory) {
@@ -128,15 +131,15 @@ contract History is QuickSort, Ownable {
         uint256 quantity,
         uint8 fromZone,
         uint8 toZone,
-        bytes16 buyId,
-        bytes16 sellId
+        bytes16 orderId
     ) external onlyWriters("Only writers can add history") {
         bytes16 id = createId(block.timestamp, price, quantity, buyer);
-        _history.push(
-            Trade(id, buyer, seller, price, quantity, block.timestamp, fromZone, toZone, buyId, sellId, Status.Pending)
-        );
 
-        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone);
+        _history.push(Trade(id, buyer, seller, price, quantity, block.timestamp, fromZone, toZone, orderId, Status.Pending));
+
+        _idToIndex[id] = IndexPosition(_history.length - 1, true);
+
+        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
     }
 
     function createId(
@@ -155,30 +158,29 @@ contract History is QuickSort, Ownable {
         uint256 quantity,
         uint8 fromZone,
         uint8 toZone,
-        bytes16 buyId,
-        bytes16 sellId,
+        bytes16 orderId,
         uint256 timestamp,
         Status status
     ) external onlyOwner {
         bytes16 id = createId(block.timestamp, price, quantity, buyer);
-        _history.push(Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, buyId, sellId, status));
-
+        _history.push(Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, orderId, status));
+        _idToIndex[id] = IndexPosition(_history.length - 1, true);
         emit ManualHistoryAdded(id);
     }
 
-    function rejectTrade(uint256 index) public onlyOwner {
-        _history[index].status = Status.Rejected;
-        emit TradeRejected(_history[index].id);
+    function rejectTrade(bytes16 id) public onlyOwner guardId(id) {
+        _history[_idToIndex[id].index].status = Status.Rejected;
+        emit TradeRejected(_history[_idToIndex[id].index].id);
     }
 
-    function invalidateTrade(uint256 index) public onlyWriters("Trade can only be invalidated by the orderbook") {
-        _history[index].status = Status.Invalid;
-        emit TradeInvalidated(_history[index].id);
+    function invalidateTrade(bytes16 id) public onlyWriters("Trade can only be invalidated by the orderbook") guardId(id) {
+        _history[_idToIndex[id].index].status = Status.Invalid;
+        emit TradeInvalidated(_history[_idToIndex[id].index].id);
     }
 
-    function completeTrade(uint256 index) public onlyWriters("Only writers can update history") {
-        _history[index].status = Status.Completed;
-        emit TradeCompleted(_history[index].id);
+    function completeTrade(bytes16 id) public onlyWriters("Only writers can update history") guardId(id) {
+        _history[_idToIndex[id].index].status = Status.Completed;
+        emit TradeCompleted(id);
     }
 
     function addWriter(address who) public onlyOwner {
@@ -194,15 +196,12 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(
-        bytes16 id,
-        address buyer,
-        address seller,
-        uint256 price,
-        uint256 quantity,
-        uint8 fromZone,
-        uint8 toZone
-    );
+    modifier guardId(bytes16 id) {
+        require(_idToIndex[id].isValid, "The ID provided is not valid");
+        _;
+    }
+
+    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, bytes16 orderId);
     event ManualHistoryAdded(bytes16 id);
     event TradeCompleted(bytes16 id);
     event TradeInvalidated(bytes16 id);
