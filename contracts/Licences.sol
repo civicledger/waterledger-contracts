@@ -67,24 +67,6 @@ contract Licences is Ownable {
         return (_licences[licenceIndex].ethAccount, _licences[licenceIndex].waterAccountIds);
     }
 
-    function getLicenceStruct(uint256 licenceIndex)
-        public
-        view
-        returns (
-            bool,
-            address,
-            uint256,
-            uint256
-        )
-    {
-        return (
-            _licences[licenceIndex].licenceExists,
-            _licences[licenceIndex].ethAccount,
-            _licences[licenceIndex].validFrom,
-            _licences[licenceIndex].validTo
-        );
-    }
-
     function licencesLength() public view returns (uint256) {
         return _licences.length;
     }
@@ -92,8 +74,6 @@ contract Licences is Ownable {
     function hasValid(address who) public view returns (bool) {
         return _licences[_addressToLicenceIndex[who]].licenceExists;
     }
-
-    event Debug(bool exists, uint256 from, uint256 current, uint256 to);
 
     function addLicenceWaterAccount(
         uint256 licenceIndex,
