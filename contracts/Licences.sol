@@ -72,11 +72,7 @@ contract Licences is Ownable {
     }
 
     function hasValid(address who) public view returns (bool) {
-        Licence storage licence = _licences[_addressToLicenceIndex[who]];
-        if (licence.licenceExists) {
-            return licence.validFrom > now && licence.validTo < now;
-        }
-        return false;
+        return _licences[_addressToLicenceIndex[who]].licenceExists;
     }
 
     function addLicenceWaterAccount(
@@ -100,10 +96,7 @@ contract Licences is Ownable {
     }
 
     function getLicenceIndexForWaterAccountId(bytes32 waterAccountId) public view returns (uint256) {
-        require(
-            _licences[_waterAccountIdToLicenceIndex[waterAccountId]].licenceExists,
-            "There is no matching water account id"
-        );
+        require(_licences[_waterAccountIdToLicenceIndex[waterAccountId]].licenceExists, "There is no matching water account id");
         return _waterAccountIdToLicenceIndex[waterAccountId];
     }
 

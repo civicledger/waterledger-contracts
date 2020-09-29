@@ -1,9 +1,15 @@
-const Zone = artifacts.require("Zone");
+const Zones = artifacts.require("Zones");
 const OrderBook = artifacts.require("OrderBook");
 const Licences = artifacts.require("Licences");
 const History = artifacts.require("History");
 
-const zones = ["Barron Zone A", "Barron Zone B", "Barron Zone C", "Barron Zone D", "Barron Zone E"];
+const zones = [
+  { name: "Barron Zone A", supply: 100000, max: 1000000, min: 1000000 },
+  { name: "Barron Zone B", supply: 100000, max: 1000000, min: 1000000 },
+  { name: "Barron Zone C", supply: 100000, max: 100000000, min: 0 },
+  { name: "Barron Zone D", supply: 100000, max: 1000000, min: 1000000 },
+  { name: "Barron Zone E", supply: 100000, max: 1000000, min: 1000000 },
+];
 
 module.exports = async deployer => {
   // This is duplicated due to a deployer bug which causes the first deployed
@@ -16,11 +22,13 @@ module.exports = async deployer => {
 
   const licencesInstance = await deployer.deploy(Licences);
 
-  zones.forEach(async zoneName => {
-    const zoneInstance = await deployer.deploy(Zone, 100000, zoneName, orderBookInstance.address, 0, 10000);
-    await orderBookInstance.addZone(web3.utils.toHex(zoneName), zoneInstance.address);
+  const zonesInstance = await deployer.deploy(Zones, orderBookInstance.address);
+
+  zones.forEach(async zone => {
+    await zonesInstance.addZone(web3.utils.toHex(zone.name), zone.supply, zone.min, zone.max);
   });
 
   await orderBookInstance.addHistoryContract(historyInstance.address);
+  await orderBookInstance.addZonesContract(zonesInstance.address);
   await orderBookInstance.addLicencesContract(licencesInstance.address);
 };

@@ -7,8 +7,9 @@ contract("Licences", function (accounts) {
   let user1Address = accounts[1];
   let user2Address = accounts[2];
   let nonOwner = accounts[3];
-  const fromDate = Math.floor(new Date().getTime() / 1000);
-  const toDate = Math.floor(Date.UTC("2020", "06", "30", "23", "59", "59") / 1000);
+  const fromDate = Math.floor(new Date().getTime() / 1000) - 20000;
+
+  const toDate = Math.floor(Date.UTC("2022", "06", "30", "23", "59", "59") / 1000);
 
   beforeEach(async () => (contract = await Licences.new()));
 
@@ -24,6 +25,13 @@ contract("Licences", function (accounts) {
       await contract.issue(user2Address, fromDate, toDate);
       const licence = await contract.getLicence(0);
       assert.equal(licence[0], user2Address, "Address is not saved successfully");
+    });
+
+    it("can check a licence", async function () {
+      await contract.issue(user2Address, fromDate, toDate);
+      const hasValidLicence = await contract.hasValid(user2Address);
+
+      assert.ok(hasValidLicence, "Address not returning as valid licence");
     });
   });
 
@@ -93,10 +101,7 @@ contract("Licences", function (accounts) {
     });
 
     xit("cannot get the licence from an invalid waterAccountID", async () => {
-      await expectRevert(
-        contract.getLicenceIndexForWaterAccountId(web3.utils.toHex("NONEXISTENT")),
-        "There is no matching water account id"
-      );
+      await expectRevert(contract.getLicenceIndexForWaterAccountId(web3.utils.toHex("NONEXISTENT")), "There is no matching water account id");
     });
   });
 });
