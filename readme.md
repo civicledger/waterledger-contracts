@@ -1,4 +1,5 @@
 # WaterLedger Smart Contracts
+
 The WaterLedger platform is a water trading platform across four smart contracts. These contracts have a life of a single financial year, and the scope of a given water scheme.
 
 ## Usage
@@ -11,7 +12,7 @@ The contracts can be downloaded as a standard git repository, and then the typic
 
 **OrderBook** - The orderbook is the primary listing of unmatched orders. It is the contract that implements the rules around what is a valid trade. In the current model of WaterLedger orders are listed, whether as a buy or sell order, and the order is then accepted by another licence holder.
 
-**History** - Storage for trades, which consist of accepted orders. 
+**History** - Storage for trades, which consist of accepted orders.
 
 **Zones** - The Zones contract stores balances for each licence, and the details (such as minimum and maximum balances) of each zone. The pattern for deployment of this differs from most contracts, as the contract is deployed and then each zone in the Scheme needs to be added.
 
@@ -21,7 +22,7 @@ There are additional non-Solidity smart contracts written in DAML that handle th
 
 The following entity relationship diagram covers the primary fields and the relationships between the contracts. Note that this is not exhaustive, and there are minor contracts such as abstracts and libraries that are not featured.
 
-![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/waterledger-erd.png)
+![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/smart-contract-final.png)
 
 ## Deployment
 
@@ -30,7 +31,7 @@ In order to obtain a valid instance of all of the contracts, there are several s
 The following deployment steps from Truffle's deployment system demonstrate the required approach.
 
 ```javascript
-const zones = ['Barron Zone A', 'Barron Zone B', 'Barron Zone C', 'Barron Zone D', 'Barron Zone E'];
+const zones = ["Barron Zone A", "Barron Zone B", "Barron Zone C", "Barron Zone D", "Barron Zone E"];
 
 const orderBookInstance = await deployer.deploy(OrderBook);
 const historyInstance = await deployer.deploy(History, orderBookInstance.address);
@@ -51,4 +52,5 @@ await orderBookInstance.addLicencesContract(licenceInstance.address);
 Testing is done using standard Truffle test harness and JavaScript testing. The testing command is `truffle test`, assuming this feature is available. There is no direct Solidity testing. Testing is to be expanded over the course of WaterLedger's lifecycle.
 
 ## Upgradeability
+
 Each financial year a new complete set of contracts is deployed, resetting the system. This why the contracts do not implement upgradeable contract patterns.
