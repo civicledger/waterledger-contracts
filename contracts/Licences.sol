@@ -28,6 +28,7 @@ contract Licences is Ownable {
     Licence[] public _licences;
     mapping(address => uint256) public _addressToLicenceIndex;
     mapping(bytes32 => uint256) public _waterAccountIdToLicenceIndex;
+    mapping(address => mapping(uint8 => bytes32)) public _addressToZoneIndexToWaterAccountId;
 
     constructor() public Ownable() {
         _authorities[msg.sender] = true;
@@ -84,6 +85,7 @@ contract Licences is Ownable {
         _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
         _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
+        _addressToZoneIndexToWaterAccountId[_licences[licenceIndex].ethAccount][zoneIndex] = waterAccountId;
         emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
     }
 
@@ -115,6 +117,10 @@ contract Licences is Ownable {
         }
 
         return waterAccountArray;
+    }
+
+    function getWaterAccountIdByAddressAndZone(address ethAccount, uint8 zoneIndex) public view returns (bytes32) {
+        return _addressToZoneIndexToWaterAccountId[ethAccount][zoneIndex];
     }
 
     modifier onlyAuthority() {
