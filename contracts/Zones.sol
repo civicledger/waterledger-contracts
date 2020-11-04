@@ -46,13 +46,10 @@ contract Zones is Ownable {
         bytes32 waterAccountId,
         uint256 quantity
     ) public onlyOwner {
-        emit DebugBytes32(waterAccountId);
         balances[zoneIndex][waterAccountId] = quantity;
         emit Allocation(zoneIndex, waterAccountId, quantity);
         emit BalanceUpdated(waterAccountId, balances[zoneIndex][waterAccountId]);
     }
-
-    event DebugBytes32(bytes32 testValue);
 
     function createId(uint256 timestamp, bytes32 name) private pure returns (bytes16) {
         return bytes16(keccak256(abi.encode(timestamp, name)));

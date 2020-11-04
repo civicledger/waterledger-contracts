@@ -123,20 +123,11 @@ contract OrderBook is Ownable {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zoneIndex);
         uint256 balance = _zones.getBalanceForZone(waterAccountId, zoneIndex);
-
-        emit DebugBytes32(waterAccountId);
-        emit DebugUint256(balance);
-        emit DebugUint8(zoneIndex);
-
         require(_zones.getBalanceForZone(waterAccountId, zoneIndex) >= quantity, "Insufficient water allocation");
         bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Sell);
         _zones.debit(zoneIndex, waterAccountId, quantity);
         _unmatchedSells.push(id);
     }
-
-    event DebugBytes32(bytes32 testValue);
-    event DebugUint256(uint256 testValue);
-    event DebugUint8(uint8 testValue);
 
     function addBuyLimitOrder(
         uint256 price,
