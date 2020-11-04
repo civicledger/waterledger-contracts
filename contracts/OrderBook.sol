@@ -66,8 +66,10 @@ contract OrderBook is Ownable {
     function completeTrade(bytes16 tradeId) public onlyOwner {
         (, address buyer, , , uint256 quantity, , uint8 toZone) = _history.getTradeDetails(tradeId);
 
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(buyer, toZone);
+
         _history.completeTrade(tradeId);
-        _zones.credit(toZone, buyer, quantity);
+        _zones.credit(toZone, waterAccountId, quantity);
     }
 
     function getLastTradedPrice() public view returns (uint256) {
@@ -119,11 +121,22 @@ contract OrderBook is Ownable {
         uint8 zoneIndex
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        require(_zones.getBalanceForZone(msg.sender, zoneIndex) >= quantity, "Insufficient water allocation");
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zoneIndex);
+        uint256 balance = _zones.getBalanceForZone(waterAccountId, zoneIndex);
+
+        emit DebugBytes32(waterAccountId);
+        emit DebugUint256(balance);
+        emit DebugUint8(zoneIndex);
+
+        require(_zones.getBalanceForZone(waterAccountId, zoneIndex) >= quantity, "Insufficient water allocation");
         bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Sell);
-        _zones.debit(zoneIndex, msg.sender, quantity);
+        _zones.debit(zoneIndex, waterAccountId, quantity);
         _unmatchedSells.push(id);
     }
+
+    event DebugBytes32(bytes32 testValue);
+    event DebugUint256(uint256 testValue);
+    event DebugUint8(uint8 testValue);
 
     function addBuyLimitOrder(
         uint256 price,
@@ -205,9 +218,11 @@ contract OrderBook is Ownable {
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _orders[_idToIndex[id].index];
 
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(order.owner, order.zone);
+
         if (order.orderType == OrderType.Sell) {
             removeUnmatchedSellId(order.id);
-            _zones.credit(order.zone, order.owner, order.quantity);
+            _zones.credit(order.zone, waterAccountId, order.quantity);
         } else {
             removeUnmatchedBuyId(order.id);
         }
