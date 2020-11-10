@@ -122,7 +122,6 @@ contract OrderBook is Ownable {
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
         bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zoneIndex);
-        uint256 balance = _zones.getBalanceForZone(waterAccountId, zoneIndex);
         require(_zones.getBalanceForZone(waterAccountId, zoneIndex) >= quantity, "Insufficient water allocation");
         bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Sell);
         _zones.debit(zoneIndex, waterAccountId, quantity);
