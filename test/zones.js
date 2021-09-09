@@ -58,7 +58,9 @@ contract("Zones Contract", function (accounts) {
       const balance4 = await contractInstance.getBalanceForZone(ALICE_WA3, 3);
 
       assert.equal(balance1, 20000, "Wrong allocation on zone");
-      assert.equal(balance2, 30000, "Wrong allocation on zone");
+      assert.equal(balance2, 0, "Wrong allocation on zone");
+      assert.equal(balance3, 30000, "Wrong allocation on zone");
+      assert.equal(balance3, 0, "Wrong allocation on zone");
     });
 
     it("triggers allocation event", async () => {

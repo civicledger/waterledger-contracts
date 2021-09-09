@@ -13,34 +13,6 @@ contract("Licences", function (accounts) {
 
   beforeEach(async () => (contract = await Licences.new()));
 
-  describe("Test gas usage", () => {
-    it("runs an function with no event", async () => {
-      const tx = await contract.eventTest();
-      const gas = tx.receipt.gasUsed;
-      console.log(gas);
-    });
-    it("runs an event with no arguments", async () => {
-      const tx = await contract.eventTest1();
-      const gas = tx.receipt.gasUsed;
-      console.log(gas);
-    });
-    it("runs an event with one arguments", async () => {
-      const tx = await contract.eventTest2();
-      const gas = tx.receipt.gasUsed;
-      console.log(gas);
-    });
-    it("runs an event with two arguments", async () => {
-      const tx = await contract.eventTest3(accounts[4]);
-      const gas = tx.receipt.gasUsed;
-      console.log(gas);
-    });
-    it("runs an event with three arguments", async () => {
-      const tx = await contract.eventTest4(accounts[4]);
-      const gas = tx.receipt.gasUsed;
-      console.log(gas);
-    });
-  });
-
   describe("Licences", function () {
     it("can add a licence", async function () {
       const licencesLength = await contract.licencesLength();
