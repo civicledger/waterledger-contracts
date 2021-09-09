@@ -22,8 +22,9 @@ contract Licences is Ownable {
     struct WaterAccount {
         bytes32 waterAccountId;
         uint8 zoneIndex;
-        string zoneString;
     }
+
+    address myAddress;
 
     Licence[] public _licences;
     mapping(address => uint256) public _addressToLicenceIndex;
@@ -60,6 +61,30 @@ contract Licences is Ownable {
         emit LicenceCompleted(licenceIndex, _licences[licenceIndex].ethAccount);
     }
 
+    function eventTest() public {
+        myAddress = msg.sender;
+    }
+
+    function eventTest1() public {
+        myAddress = msg.sender;
+        emit Event1();
+    }
+
+    function eventTest2() public {
+        myAddress = msg.sender;
+        emit Event2(msg.sender);
+    }
+
+    function eventTest3(address testAddress) public {
+        myAddress = msg.sender;
+        emit Event3(msg.sender, testAddress);
+    }
+
+    function eventTest4(address testAddress) public {
+        myAddress = msg.sender;
+        emit Event4(msg.sender, testAddress, "test");
+    }
+
     function revoke(address who) public onlyAuthority() {
         delete _licences[_addressToLicenceIndex[who]];
     }
@@ -79,14 +104,28 @@ contract Licences is Ownable {
     function addLicenceWaterAccount(
         uint256 licenceIndex,
         bytes32 waterAccountId,
-        uint8 zoneIndex,
-        string memory zoneString
+        uint8 zoneIndex
     ) public onlyOwner {
-        _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
+        _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
         _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
         _addressToZoneIndexToWaterAccountId[_licences[licenceIndex].ethAccount][zoneIndex] = waterAccountId;
         emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
+    }
+
+    function addAllLicenceWaterAccounts(
+        uint256 licenceIndex,
+        bytes32[] memory waterAccountIds
+    ) public onlyOwner {
+        for (uint8 i = 0; i < waterAccountIds.length; i++) {
+            if(waterAccountIds[i] != "") {
+                _licences[licenceIndex].waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], i);
+                _licences[licenceIndex].waterAccountIds.push(waterAccountIds[i]);
+                _waterAccountIdToLicenceIndex[waterAccountIds[i]] = licenceIndex;
+                _addressToZoneIndexToWaterAccountId[_licences[licenceIndex].ethAccount][i] = waterAccountIds[i];
+                emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
+            }
+        }
     }
 
     function purchase() public payable {
@@ -131,4 +170,9 @@ contract Licences is Ownable {
     event LicenceAdded(uint256 index, address ethAccount);
     event WaterAccountAdded(address ethAccount);
     event LicenceCompleted(uint256 index, address ethAccount);
+
+    event Event1();
+    event Event2(address from);
+    event Event3(address from, address to);
+    event Event4(address from, address to, string message);
 }

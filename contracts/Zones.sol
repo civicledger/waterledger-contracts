@@ -51,6 +51,16 @@ contract Zones is Ownable {
         emit BalanceUpdated(waterAccountId, balances[zoneIndex][waterAccountId]);
     }
 
+    function allocateAll(bytes32[] memory waterAccountIds, uint256[] memory quantities) public {
+        for (uint8 i = 0; i < waterAccountIds.length; i++) {
+            if(waterAccountIds[id]) {
+            balances[i][waterAccountIds[i]] = quantities[i];
+            emit Allocation(i, waterAccountIds[i], quantities[i]);
+            emit BalanceUpdated(waterAccountIds[i], balances[i][waterAccountIds[i]]);
+            }
+        }
+    }
+
     function createId(uint256 timestamp, bytes32 name) private pure returns (bytes16) {
         return bytes16(keccak256(abi.encode(timestamp, name)));
     }

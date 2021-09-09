@@ -13,6 +13,34 @@ contract("Licences", function (accounts) {
 
   beforeEach(async () => (contract = await Licences.new()));
 
+  describe("Test gas usage", () => {
+    it("runs an function with no event", async () => {
+      const tx = await contract.eventTest();
+      const gas = tx.receipt.gasUsed;
+      console.log(gas);
+    });
+    it("runs an event with no arguments", async () => {
+      const tx = await contract.eventTest1();
+      const gas = tx.receipt.gasUsed;
+      console.log(gas);
+    });
+    it("runs an event with one arguments", async () => {
+      const tx = await contract.eventTest2();
+      const gas = tx.receipt.gasUsed;
+      console.log(gas);
+    });
+    it("runs an event with two arguments", async () => {
+      const tx = await contract.eventTest3(accounts[4]);
+      const gas = tx.receipt.gasUsed;
+      console.log(gas);
+    });
+    it("runs an event with three arguments", async () => {
+      const tx = await contract.eventTest4(accounts[4]);
+      const gas = tx.receipt.gasUsed;
+      console.log(gas);
+    });
+  });
+
   describe("Licences", function () {
     it("can add a licence", async function () {
       const licencesLength = await contract.licencesLength();
@@ -39,52 +67,68 @@ contract("Licences", function (accounts) {
     beforeEach(async () => await contract.issue(user2Address, fromDate, toDate));
 
     it("can add a water account to a licence", async function () {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1, "Barron Zone B");
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
       const waterAccount = await contract.getWaterAccountForWaterAccountId(web3.utils.toHex("WL0000002"));
       assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), "WL0000002");
     });
 
     it("can add multiple water accounts to a licence", async function () {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1, "Barron Zone B");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2, "Barron Zone C");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4, "Barron Zone E");
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4);
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(web3.utils.toHex("WL0000004"));
 
       assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), "WL0000004");
-      assert.equal(waterAccount.zoneString, "Barron Zone E");
+    });
+
+    it("can add multiple water accounts to a licence in one step", async function () {
+      await contract.addAllLicenceWaterAccounts(0, [web3.utils.toHex("WL0000002"), web3.utils.toHex("WL0000003")]);
+
+      const waterAccount = await contract.getWaterAccountForWaterAccountId(web3.utils.toHex("WL0000003"));
+      const waterAccounts = await contract.getWaterAccountsForLicence(0);
+
+      assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), "WL0000003");
+    });
+
+    it("can add multiple water accounts to a licence in one step with sparse arrays", async function () {
+      await contract.addAllLicenceWaterAccounts(0, [web3.utils.toHex("WL0000001"), web3.utils.toHex(""), web3.utils.toHex("WL0000003")]);
+
+      const waterAccounts = await contract.getWaterAccountsForLicence(0);
+      // console.log(waterAccounts);
+      assert.equal(waterAccounts.length, 2, "There should be two water accounts");
+      assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
+      assert.equal(Number(waterAccounts[1].zoneIndex), 2);
     });
 
     it("can get all the water accounts for a licence", async function () {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1, "Barron Zone B");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2, "Barron Zone C");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4, "Barron Zone E");
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4);
 
       const waterAccounts = await contract.getWaterAccountsForLicence(0);
 
       assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
       assert.equal(+waterAccounts[0].zoneIndex, 1);
       assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
-      assert.equal(waterAccounts[2].zoneString, "Barron Zone E");
     });
 
     it("can get all the waterAccountIds for a licence", async function () {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1, "Barron Zone B");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2, "Barron Zone C");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4, "Barron Zone E");
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4);
 
       const waterAccounts = await contract.getWaterAccountsForLicence(0);
 
       assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
       assert.equal(+waterAccounts[0].zoneIndex, 1);
       assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
-      assert.equal(waterAccounts[2].zoneString, "Barron Zone E");
     });
 
     it("can get the water accounts from a given waterAccountID", async () => {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1, "Barron Zone B");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2, "Barron Zone C");
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4, "Barron Zone E");
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2);
+      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4);
 
       const licenceIndex = await contract.getLicenceIndexForWaterAccountId(web3.utils.toHex("WL0000003"));
 
@@ -93,7 +137,6 @@ contract("Licences", function (accounts) {
       assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
       assert.equal(+waterAccounts[0].zoneIndex, 1);
       assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
-      assert.equal(waterAccounts[2].zoneString, "Barron Zone E");
     });
 
     it("cannot get the water accounts from an invalid waterAccountID", async () => {
@@ -105,3 +148,9 @@ contract("Licences", function (accounts) {
     });
   });
 });
+
+const getGasCostInEth = tx => {
+  const gasUsedGweiPrice = tx.receipt.gasUsed * 5;
+  const gasUsedWeiPrice = web3.utils.toWei(gasUsedGweiPrice + "", "gwei");
+  return web3.utils.fromWei(gasUsedWeiPrice + "", "ether");
+};
