@@ -50,17 +50,17 @@ contract("Zones Contract", function (accounts) {
     });
 
     it.only("can be allocated all at once sparsely", async () => {
-      await contractInstance.allocateAll([ALICE_WA0, "", ALICE_WA2], [20000, 0, 30000]);
+      await contractInstance.allocateAll([ALICE_WA0, web3.utils.toHex(""), ALICE_WA2], [20000, 0, 30000]);
 
       const balance1 = await contractInstance.getBalanceForZone(ALICE_WA0, 0);
       const balance2 = await contractInstance.getBalanceForZone(ALICE_WA1, 1);
       const balance3 = await contractInstance.getBalanceForZone(ALICE_WA2, 2);
       const balance4 = await contractInstance.getBalanceForZone(ALICE_WA3, 3);
 
-      assert.equal(balance1, 20000, "Wrong allocation on zone");
-      assert.equal(balance2, 0, "Wrong allocation on zone");
-      assert.equal(balance3, 30000, "Wrong allocation on zone");
-      assert.equal(balance3, 0, "Wrong allocation on zone");
+      assert.equal(balance1, 20000, "Wrong allocation on zone 1");
+      assert.equal(balance2, 0, "Wrong allocation on zone 2");
+      assert.equal(balance3, 30000, "Wrong allocation on zone 3");
+      assert.equal(balance4, 0, "Wrong allocation on zone 4");
     });
 
     it("triggers allocation event", async () => {

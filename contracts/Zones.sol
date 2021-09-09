@@ -53,10 +53,10 @@ contract Zones is Ownable {
 
     function allocateAll(bytes32[] memory waterAccountIds, uint256[] memory quantities) public {
         for (uint8 i = 0; i < waterAccountIds.length; i++) {
-            if(waterAccountIds[id]) {
-            balances[i][waterAccountIds[i]] = quantities[i];
-            emit Allocation(i, waterAccountIds[i], quantities[i]);
-            emit BalanceUpdated(waterAccountIds[i], balances[i][waterAccountIds[i]]);
+            if(waterAccountIds[i] != "") {
+                balances[i][waterAccountIds[i]] = quantities[i];
+                emit Allocation(i, waterAccountIds[i], quantities[i]);
+                emit BalanceUpdated(waterAccountIds[i], balances[i][waterAccountIds[i]]);
             }
         }
     }

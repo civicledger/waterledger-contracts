@@ -100,6 +100,7 @@ contract Licences is Ownable {
                 emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
             }
         }
+        emit LicenceCompleted(licenceIndex, _licences[licenceIndex].ethAccount);
     }
 
     function purchase() public payable {
