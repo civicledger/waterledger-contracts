@@ -58,7 +58,6 @@ contract("Licences", function (accounts) {
       await contract.addAllLicenceWaterAccounts(0, [web3.utils.toHex("WL0000002"), web3.utils.toHex("WL0000003")]);
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(web3.utils.toHex("WL0000003"));
-      const waterAccounts = await contract.getWaterAccountsForLicence(0);
 
       assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), "WL0000003");
     });
@@ -67,7 +66,7 @@ contract("Licences", function (accounts) {
       await contract.addAllLicenceWaterAccounts(0, [web3.utils.toHex("WL0000001"), web3.utils.toHex(""), web3.utils.toHex("WL0000003")]);
 
       const waterAccounts = await contract.getWaterAccountsForLicence(0);
-      // console.log(waterAccounts);
+
       assert.equal(waterAccounts.length, 2, "There should be two water accounts");
       assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
       assert.equal(Number(waterAccounts[1].zoneIndex), 2);
