@@ -24,8 +24,6 @@ contract Licences is Ownable {
         uint8 zoneIndex;
     }
 
-    address myAddress;
-
     Licence[] public _licences;
     mapping(address => uint256) public _addressToLicenceIndex;
     mapping(bytes32 => uint256) public _waterAccountIdToLicenceIndex;
@@ -59,30 +57,6 @@ contract Licences is Ownable {
 
     function issueCompleted(uint256 licenceIndex) public onlyAuthority {
         emit LicenceCompleted(licenceIndex, _licences[licenceIndex].ethAccount);
-    }
-
-    function eventTest() public {
-        myAddress = msg.sender;
-    }
-
-    function eventTest1() public {
-        myAddress = msg.sender;
-        emit Event1();
-    }
-
-    function eventTest2() public {
-        myAddress = msg.sender;
-        emit Event2(msg.sender);
-    }
-
-    function eventTest3(address testAddress) public {
-        myAddress = msg.sender;
-        emit Event3(msg.sender, testAddress);
-    }
-
-    function eventTest4(address testAddress) public {
-        myAddress = msg.sender;
-        emit Event4(msg.sender, testAddress, "test");
     }
 
     function revoke(address who) public onlyAuthority() {
@@ -170,9 +144,4 @@ contract Licences is Ownable {
     event LicenceAdded(uint256 index, address ethAccount);
     event WaterAccountAdded(address ethAccount);
     event LicenceCompleted(uint256 index, address ethAccount);
-
-    event Event1();
-    event Event2(address from);
-    event Event3(address from, address to);
-    event Event4(address from, address to, string message);
 }
