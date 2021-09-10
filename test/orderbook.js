@@ -471,7 +471,6 @@ const createOrderBook = async accounts => {
   await licencesInstance.addLicenceWaterAccount(1, BOB_WA0, 0, zoneName);
   await licencesInstance.addLicenceWaterAccount(1, BOB_WA1, 1, zoneNameB);
   await licencesInstance.addLicenceWaterAccount(1, BOB_WA2, 2, zoneNameC);
-  // addLicenceWaterAccount;
 
   await contractInstance.addHistoryContract(historyInstance.address);
   await contractInstance.addZonesContract(zonesInstance.address);

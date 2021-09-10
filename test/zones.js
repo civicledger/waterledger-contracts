@@ -10,6 +10,8 @@ contract("Zones Contract", function (accounts) {
 
   const ALICE_WA0 = web3.utils.toHex("AL-000");
   const ALICE_WA1 = web3.utils.toHex("AL-001");
+  const ALICE_WA2 = web3.utils.toHex("AL-002");
+  const ALICE_WA3 = web3.utils.toHex("AL-003");
 
   // const AMOUNT = 2000;
 
@@ -18,6 +20,8 @@ contract("Zones Contract", function (accounts) {
     contractInstance = await Zones.new(orderbookInstance.address);
     await contractInstance.addZone(web3.utils.toHex("Barron Zone A"), 1000000, 0, 100000000);
     await contractInstance.addZone(web3.utils.toHex("Barron Zone B"), 1000000, 0, 100000000);
+    await contractInstance.addZone(web3.utils.toHex("Barron Zone C"), 1000000, 0, 100000000);
+    await contractInstance.addZone(web3.utils.toHex("Barron Zone D"), 1000000, 0, 100000000);
   });
 
   describe("Instantiation and Zone Management", function () {
@@ -35,6 +39,28 @@ contract("Zones Contract", function (accounts) {
       const balance2 = await contractInstance.getBalanceForZone(ALICE_WA1, 1);
       assert.equal(balance1, 0, "Wrong allocation on unallocated zone");
       assert.equal(balance2, 30000, "Wrong allocation on zone");
+    });
+
+    it("can be allocated all at once", async () => {
+      await contractInstance.allocateAll([ALICE_WA0, ALICE_WA1], [20000, 30000]);
+      const balance1 = await contractInstance.getBalanceForZone(ALICE_WA0, 0);
+      const balance2 = await contractInstance.getBalanceForZone(ALICE_WA1, 1);
+      assert.equal(balance1, 20000, "Wrong allocation on zone");
+      assert.equal(balance2, 30000, "Wrong allocation on zone");
+    });
+
+    it.only("can be allocated all at once sparsely", async () => {
+      await contractInstance.allocateAll([ALICE_WA0, web3.utils.toHex(""), ALICE_WA2], [20000, 0, 30000]);
+
+      const balance1 = await contractInstance.getBalanceForZone(ALICE_WA0, 0);
+      const balance2 = await contractInstance.getBalanceForZone(ALICE_WA1, 1);
+      const balance3 = await contractInstance.getBalanceForZone(ALICE_WA2, 2);
+      const balance4 = await contractInstance.getBalanceForZone(ALICE_WA3, 3);
+
+      assert.equal(balance1, 20000, "Wrong allocation on zone 1");
+      assert.equal(balance2, 0, "Wrong allocation on zone 2");
+      assert.equal(balance3, 30000, "Wrong allocation on zone 3");
+      assert.equal(balance4, 0, "Wrong allocation on zone 4");
     });
 
     it("triggers allocation event", async () => {

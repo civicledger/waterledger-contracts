@@ -22,7 +22,6 @@ contract Licences is Ownable {
     struct WaterAccount {
         bytes32 waterAccountId;
         uint8 zoneIndex;
-        string zoneString;
     }
 
     Licence[] public _licences;
@@ -79,14 +78,29 @@ contract Licences is Ownable {
     function addLicenceWaterAccount(
         uint256 licenceIndex,
         bytes32 waterAccountId,
-        uint8 zoneIndex,
-        string memory zoneString
+        uint8 zoneIndex
     ) public onlyOwner {
-        _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex, zoneString);
+        _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
         _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
         _addressToZoneIndexToWaterAccountId[_licences[licenceIndex].ethAccount][zoneIndex] = waterAccountId;
         emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
+    }
+
+    function addAllLicenceWaterAccounts(
+        uint256 licenceIndex,
+        bytes32[] memory waterAccountIds
+    ) public onlyOwner {
+        for (uint8 i = 0; i < waterAccountIds.length; i++) {
+            if(waterAccountIds[i] != "") {
+                _licences[licenceIndex].waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], i);
+                _licences[licenceIndex].waterAccountIds.push(waterAccountIds[i]);
+                _waterAccountIdToLicenceIndex[waterAccountIds[i]] = licenceIndex;
+                _addressToZoneIndexToWaterAccountId[_licences[licenceIndex].ethAccount][i] = waterAccountIds[i];
+                emit WaterAccountAdded(_licences[licenceIndex].ethAccount);
+            }
+        }
+        emit LicenceCompleted(licenceIndex, _licences[licenceIndex].ethAccount);
     }
 
     function purchase() public payable {
