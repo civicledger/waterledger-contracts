@@ -72,16 +72,20 @@ contract("Licences", function (accounts) {
       assert.equal(Number(waterAccounts[1].zoneIndex), 2);
     });
 
-    it("can get all the water accounts for a licence", async function () {
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000002"), 1);
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000003"), 2);
-      await contract.addLicenceWaterAccount(0, web3.utils.toHex("WL0000004"), 4);
+    it("can add multiple water accounts using real-world data", async function () {
+      const accounts = [
+        "0x46412d3132323000000000000000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      ];
+      await contract.addAllLicenceWaterAccounts(0, accounts);
+    });
 
-      const waterAccounts = await contract.getWaterAccountsForLicence(0);
+    it("can add multiple water accounts to a licence in one step", async function () {
+      await contract.addAllLicenceWaterAccounts(0, [web3.utils.toHex("WL0000002"), web3.utils.toHex("WL0000003")]);
 
-      assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
-      assert.equal(+waterAccounts[0].zoneIndex, 1);
-      assert.equal(web3.utils.hexToUtf8(waterAccounts[1].waterAccountId), "WL0000003");
+      const waterAccount = await contract.getWaterAccountForWaterAccountId(web3.utils.toHex("WL0000003"));
+
+      assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), "WL0000003");
     });
 
     it("can get all the waterAccountIds for a licence", async function () {
@@ -114,8 +118,20 @@ contract("Licences", function (accounts) {
       await expectRevert(contract.getWaterAccountsForLicence(0), "There are no water accounts for this licence");
     });
 
-    xit("cannot get the licence from an invalid waterAccountID", async () => {
+    it("cannot get the licence from an invalid waterAccountID", async () => {
       await expectRevert(contract.getLicenceIndexForWaterAccountId(web3.utils.toHex("NONEXISTENT")), "There is no matching water account id");
+    });
+  });
+
+  describe("Issue and then assign water accounts", function () {
+    it("can add a licence and then assign it licences", async function () {
+      const licencesLength = await contract.licencesLength();
+
+      const tx1 = await contract.issue(user2Address, fromDate, toDate);
+      const licencesLengthAfter = await contract.licencesLength();
+      const tx2 = await contract.addLicenceWaterAccount(licencesLength, web3.utils.toHex("WL0000002"), 100);
+
+      assert.equal(Number(licencesLengthAfter), Number(licencesLength) + 1, "Licences length should be incremented");
     });
   });
 });
