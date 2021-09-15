@@ -79,7 +79,7 @@ contract Licences is Ownable {
         uint256 licenceIndex,
         bytes32 waterAccountId,
         uint8 zoneIndex
-    ) public onlyOwner {
+    ) public onlyAuthority {
         _licences[licenceIndex].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex);
         _licences[licenceIndex].waterAccountIds.push(waterAccountId);
         _waterAccountIdToLicenceIndex[waterAccountId] = licenceIndex;
@@ -90,7 +90,7 @@ contract Licences is Ownable {
     function addAllLicenceWaterAccounts(
         uint256 licenceIndex,
         bytes32[] memory waterAccountIds
-    ) public onlyOwner {
+    ) public onlyAuthority {
         for (uint8 i = 0; i < waterAccountIds.length; i++) {
             if(waterAccountIds[i] != "") {
                 _licences[licenceIndex].waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], i);
