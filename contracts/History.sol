@@ -1,12 +1,11 @@
-pragma solidity ^0.6.2;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
 
-import "@openzeppelin/contracts/math/SafeMath.sol";
+pragma solidity 0.8.0;
+
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./QuickSort.sol";
 
 contract History is QuickSort, Ownable {
-    using SafeMath for uint256;
 
     enum Status {Pending, Completed, Rejected, Invalid}
 
@@ -33,7 +32,7 @@ contract History is QuickSort, Ownable {
 
     mapping(bytes16 => IndexPosition) _idToIndex;
 
-    constructor(address orderBook) public {
+    constructor(address orderBook) {
         _allowedWriters[msg.sender] = true;
         _allowedWriters[orderBook] = true;
     }
