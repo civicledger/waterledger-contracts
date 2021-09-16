@@ -49,7 +49,7 @@ contract("Zones Contract", function (accounts) {
       assert.equal(balance2, 30000, "Wrong allocation on zone");
     });
 
-    it.only("can be allocated all at once sparsely", async () => {
+    it("can be allocated all at once sparsely", async () => {
       await contractInstance.allocateAll([ALICE_WA0, web3.utils.toHex(""), ALICE_WA2], [20000, 0, 30000]);
 
       const balance1 = await contractInstance.getBalanceForZone(ALICE_WA0, 0);

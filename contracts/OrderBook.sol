@@ -1,5 +1,6 @@
-pragma solidity ^0.6.2;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Zones.sol";
@@ -42,7 +43,7 @@ contract OrderBook is Ownable {
 
     string private _scheme;
 
-    constructor(string memory scheme, uint256 year) public Ownable() {
+    constructor(string memory scheme, uint256 year) Ownable() {
         _scheme = scheme;
         _year = year;
     }

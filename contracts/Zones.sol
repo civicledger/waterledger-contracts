@@ -1,5 +1,6 @@
-pragma solidity >=0.4.25 <0.7.0;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -24,7 +25,7 @@ contract Zones is Ownable {
 
     mapping(bytes16 => IndexPosition) private _idToIndex;
 
-    constructor(address orderbook) public Ownable() {
+    constructor(address orderbook) Ownable() {
         _orderbook = orderbook;
     }
 

@@ -1,4 +1,6 @@
-pragma solidity ^0.6.2;
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.0;
 
 interface EIP1753 {
     function grantAuthority(address who) external;
@@ -9,6 +11,7 @@ interface EIP1753 {
 
     function issue(
         address who,
+        bytes32 identifier,
         uint256 from,
         uint256 to
     ) external;
