@@ -16,8 +16,8 @@ contract History is QuickSort, Ownable {
         uint256 averagePrice;
         uint256 quantity;
         uint256 timeStamp;
-        uint8 fromZone;
-        uint8 toZone;
+        bytes32 fromZone;
+        bytes32 toZone;
         bytes16 orderId;
         Status status;
     }
@@ -51,8 +51,8 @@ contract History is QuickSort, Ownable {
             address,
             uint256,
             uint256,
-            uint8,
-            uint8
+            bytes32,
+            bytes32
         )
     {
         Trade memory trade = _history[_idToIndex[id].index];
@@ -128,8 +128,8 @@ contract History is QuickSort, Ownable {
         address seller,
         uint256 price,
         uint256 quantity,
-        uint8 fromZone,
-        uint8 toZone,
+        bytes32 fromZone,
+        bytes32 toZone,
         bytes16 orderId
     ) external onlyWriters("Only writers can add history") {
         bytes16 id = createId(block.timestamp, price, quantity, buyer);
@@ -155,8 +155,8 @@ contract History is QuickSort, Ownable {
         address seller,
         uint256 price,
         uint256 quantity,
-        uint8 fromZone,
-        uint8 toZone,
+        bytes32 fromZone,
+        bytes32 toZone,
         bytes16 orderId,
         uint256 timestamp,
         Status status
@@ -200,7 +200,7 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, bytes16 orderId);
+    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromZone, bytes32 toZone, bytes16 orderId);
     event ManualHistoryAdded(bytes16 id);
     event TradeCompleted(bytes16 id);
     event TradeInvalidated(bytes16 id);

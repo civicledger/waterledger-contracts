@@ -6,117 +6,128 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Zones is Ownable {
     struct Zone {
-        bytes16 id;
-        bytes32 name;
+        bytes32 identifier;
+        bool zoneExists;
         uint256 supply;
         uint256 min;
         uint256 max;
     }
 
-    Zone[] private zones;
+    mapping(bytes32 => Zone) private zones;
     address private _orderbook;
 
-    mapping(uint8 => mapping(bytes32 => uint256)) private balances;
+    bytes32[] private zoneList;
 
-    struct IndexPosition {
-        uint256 index;
-        bool isValid;
-    }
-
-    mapping(bytes16 => IndexPosition) private _idToIndex;
+    mapping(bytes32 => mapping(bytes32 => uint256)) private balances;
 
     constructor(address orderbook) Ownable() {
         _orderbook = orderbook;
     }
 
     function addZone(
-        bytes32 name,
+        bytes32 identifier,
         uint256 supply,
         uint256 min,
         uint256 max
     ) public onlyOwner {
-        bytes16 id = createId(block.timestamp, name);
-        uint8 zoneIndex = uint8(zones.length);
-        _idToIndex[id] = IndexPosition(zoneIndex, true);
-        zones.push(Zone(id, name, supply, min, max));
-        emit ZoneAdded(id, zoneIndex);
+        zones[identifier] = Zone(identifier, true, supply, min, max);
+        zoneList.push(identifier);
+        emit ZoneAdded(identifier);
     }
 
-    function allocate(
-        uint8 zoneIndex,
-        bytes32 waterAccountId,
-        uint256 quantity
-    ) public onlyOwner {
-        balances[zoneIndex][waterAccountId] = quantity;
-        emit Allocation(zoneIndex, waterAccountId, quantity);
-        emit BalanceUpdated(waterAccountId, balances[zoneIndex][waterAccountId]);
-    }
-
-    function allocateAll(bytes32[] memory waterAccountIds, uint256[] memory quantities) public {
-        for (uint8 i = 0; i < waterAccountIds.length; i++) {
-            if(waterAccountIds[i] != "") {
-                balances[i][waterAccountIds[i]] = quantities[i];
-                emit Allocation(i, waterAccountIds[i], quantities[i]);
-                emit BalanceUpdated(waterAccountIds[i], balances[i][waterAccountIds[i]]);
-            }
-        }
-    }
-
-    function createId(uint256 timestamp, bytes32 name) private pure returns (bytes16) {
-        return bytes16(keccak256(abi.encode(timestamp, name)));
+    function getZoneList() public view returns (bytes32[] memory) {
+        return zoneList;
     }
 
     function getZones() public view returns (Zone[] memory) {
-        return zones;
+        Zone[] memory zonesArray = new Zone[](zoneList.length);
+        for(uint8 i = 0; i < zoneList.length; i++) {
+            zonesArray[i] = zones[zoneList[i]];
+        }
+        return zonesArray;
+    }
+
+    function addAllZones(
+        bytes32[] memory identifiers,
+        uint256[] memory supplies,
+        uint256[] memory mins,
+        uint256[] memory maxes
+    ) public onlyOwner {
+        for (uint8 i = 0; i < identifiers.length; i++) {
+            zones[identifiers[i]] = Zone(identifiers[i], true, supplies[i], mins[i], maxes[i]);
+            zoneList.push(identifiers[i]);
+        }
+        emit ZonesAdded();
+    }
+
+    function allocate(
+        bytes32 identifier,
+        bytes32 waterAccountId,
+        uint256 quantity
+    ) public onlyOwner {
+        require(zones[identifier].zoneExists, "This zone is not valid");
+        balances[identifier][waterAccountId] = quantity;
+        emit Allocation(identifier, waterAccountId, quantity);
+        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
+    }
+
+    function allocateAll(bytes32[] memory identifiers, bytes32[] memory waterAccountIds,  uint256[] memory quantities) public {
+        for (uint8 i = 0; i < waterAccountIds.length; i++) {
+            balances[identifiers[i]][waterAccountIds[i]] = quantities[i];
+        }
+        emit BalancesUpdated(waterAccountIds, quantities);
+        emit AllocationsComplete();
     }
 
     function debit(
-        uint8 zoneIndex,
+        bytes32 identifier,
         bytes32 waterAccountId,
         uint256 quantity
     ) public onlyOrderBook {
-        bool isValid = isFromTransferValid(zoneIndex, quantity);
+        bool isValid = isFromTransferValid(identifier, quantity);
 
+        require(zones[identifier].zoneExists, "This zone is not valid");
         require(isValid, "Debit transfer not valid");
-        require(balances[zoneIndex][waterAccountId] > quantity, "Balance not available");
+        require(balances[identifier][waterAccountId] >= quantity, "Balance not available");
 
-        zones[zoneIndex].supply -= quantity;
-        balances[zoneIndex][waterAccountId] -= quantity;
-        emit Debit(waterAccountId, zones[zoneIndex].id, quantity);
-        emit BalanceUpdated(waterAccountId, balances[zoneIndex][waterAccountId]);
+        zones[identifier].supply -= quantity;
+        balances[identifier][waterAccountId] -= quantity;
+        emit Debit(waterAccountId, identifier, quantity);
+        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
     function credit(
-        uint8 zoneIndex,
+        bytes32 identifier,
         bytes32 waterAccountId,
         uint256 quantity
     ) public onlyOrderBook {
-        bool isValid = isToTransferValid(zoneIndex, quantity);
+        bool isValid = isToTransferValid(identifier, quantity);
 
+        require(zones[identifier].zoneExists, "This zone is not valid");
         require(isValid, "Credit transfer not valid");
 
-        zones[zoneIndex].supply += quantity;
-        balances[zoneIndex][waterAccountId] += quantity;
-        emit Credit(waterAccountId, zones[zoneIndex].id, quantity);
-        emit BalanceUpdated(waterAccountId, balances[zoneIndex][waterAccountId]);
+        zones[identifier].supply += quantity;
+        balances[identifier][waterAccountId] += quantity;
+        emit Credit(waterAccountId, identifier, quantity);
+        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
-    function restoreSupply(uint8 zoneIndex, uint256 quantity) public onlyOrderBook {
-        zones[zoneIndex].supply += quantity;
+    function restoreSupply(bytes32 identifier, uint256 quantity) public onlyOrderBook {
+        zones[identifier].supply += quantity;
     }
 
-    function isToTransferValid(uint8 zoneIndex, uint256 value) public view returns (bool) {
-        Zone memory zone = zones[zoneIndex];
+    function isToTransferValid(bytes32 identifier, uint256 value) public view returns (bool) {
+        Zone memory zone = zones[identifier];
         return (zone.supply + value) <= zone.max;
     }
 
-    function isFromTransferValid(uint8 zoneIndex, uint256 value) public view returns (bool) {
-        Zone memory zone = zones[zoneIndex];
+    function isFromTransferValid(bytes32 identifier, uint256 value) public view returns (bool) {
+        Zone memory zone = zones[identifier];
         return (zone.supply - value) >= zone.min;
     }
 
-    function getBalanceForZone(bytes32 waterAccountId, uint8 zoneIndex) public view returns (uint256) {
-        return balances[zoneIndex][waterAccountId];
+    function getBalanceForZone(bytes32 waterAccountId, bytes32 identifier) public view returns (uint256) {
+        return balances[identifier][waterAccountId];
     }
 
     modifier onlyOrderBook() {
@@ -127,9 +138,12 @@ contract Zones is Ownable {
         _;
     }
 
-    event Credit(bytes32 waterAccountId, bytes16 zoneId, uint256 quantity);
-    event Debit(bytes32 waterAccountId, bytes16 zoneId, uint256 quantity);
+    event Credit(bytes32 waterAccountId, bytes32 identifier, uint256 quantity);
+    event Debit(bytes32 waterAccountId, bytes32 identifier, uint256 quantity);
     event BalanceUpdated(bytes32 waterAccountId, uint256 balance);
-    event Allocation(uint8 zoneIndex, bytes32 waterAccountId, uint256 quantity);
-    event ZoneAdded(bytes16 id, uint8 zoneIndex);
+    event BalancesUpdated(bytes32[] waterAccountIds, uint256[] balances);
+    event Allocation(bytes32 identifier, bytes32 waterAccountId, uint256 quantity);
+    event AllocationsComplete();
+    event ZoneAdded(bytes32 identifier);
+    event ZonesAdded();
 }

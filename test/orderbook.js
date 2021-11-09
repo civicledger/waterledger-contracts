@@ -5,24 +5,31 @@ const Licences = artifacts.require("Licences");
 const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { subHours, addYears, getUnixTime } = require("date-fns");
 
-const zoneName = "Barron Zone A";
-const zoneNameB = "Barron Zone B";
-const zoneNameC = "Barron Zone C";
-const zoneNameD = "Barron Zone D";
-const zoneNameE = "Barron Zone E";
+const toHex = web3.utils.toHex;
+const fromHex = web3.utils.hexToUtf8;
+
+const demoaString = "barron-a";
+const demobString = "barron-b";
+const democString = "barron-c";
+const demodString = "barron-d";
+
+const demoaHex = toHex(demoaString);
+const demobHex = toHex(demobString);
+const democHex = toHex(democString);
+const demodHex = toHex(demodString);
 
 var contractInstance;
 var zonesInstance;
 var historyInstance;
 var licencesInstance;
 
-const ALICE_WA0 = web3.utils.toHex("AL-000");
-const ALICE_WA1 = web3.utils.toHex("AL-001");
-const ALICE_WA2 = web3.utils.toHex("AL-002");
+const ALICE_WA0 = toHex("AL-000");
+const ALICE_WA1 = toHex("AL-001");
+const ALICE_WA2 = toHex("AL-002");
 
-const BOB_WA0 = web3.utils.toHex("BB-000");
-const BOB_WA1 = web3.utils.toHex("BB-001");
-const BOB_WA2 = web3.utils.toHex("BB-002");
+const BOB_WA0 = toHex("BB-000");
+const BOB_WA1 = toHex("BB-001");
+const BOB_WA2 = toHex("BB-002");
 
 const statuses = ["Pending", "Completed", "Rejected", "Invalid"];
 
@@ -52,7 +59,7 @@ contract("OrderBook", function (accounts) {
   describe("OrderBook limit buys", () => {
     it("can place a buy order that is unmatched", async () => {
       const buysBefore = await contractInstance.getOrderBookBuys();
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const buysAfter = await contractInstance.getOrderBookBuys();
 
       assert.equal(buysBefore.length, 0, "Buys should not have any entries");
@@ -62,7 +69,7 @@ contract("OrderBook", function (accounts) {
 
     it("cannot get an order with an invalid id", async () => {
       const testId = "0x4920686176652031303021";
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const buys = await contractInstance.getOrderBookBuys();
       assert.equal(buys.length, 1, "Buys should have one entry");
 
@@ -70,7 +77,7 @@ contract("OrderBook", function (accounts) {
     });
 
     it("can place a buy order and get the order by id", async () => {
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const buys = await contractInstance.getOrderBookBuys();
       const buy = await contractInstance.getOrderById(buys[0].id);
 
@@ -79,11 +86,11 @@ contract("OrderBook", function (accounts) {
     });
 
     it("can place a buy order that is matched", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 100);
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 100);
 
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const [{ id }] = await contractInstance.getOrderBookBuys();
-      const tx = await contractInstance.acceptOrder(id, 0, { from: ALICE });
+      const tx = await contractInstance.acceptOrder(id, demoaHex, { from: ALICE });
       expectEvent(tx, "OrderAccepted");
 
       const history = await historyInstance.getHistory(10);
@@ -92,38 +99,38 @@ contract("OrderBook", function (accounts) {
     });
 
     it("cannot accept buying orders from the seller", async () => {
-      await zonesInstance.allocate(0, BOB_WA0, 100);
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await zonesInstance.allocate(demoaHex, BOB_WA0, 100);
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const [{ id }] = await contractInstance.getOrderBookBuys();
-      expectRevert(contractInstance.acceptOrder(id, 0, { from: BOB }), "You cannot accept your own order");
+      expectRevert(contractInstance.acceptOrder(id, demoaHex, { from: BOB }), "You cannot accept your own order");
     });
 
     it("can be accepted across zones", async () => {
-      await zonesInstance.allocate(1, ALICE_WA1, 100);
+      await zonesInstance.allocate(demobHex, ALICE_WA1, 100);
 
-      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
       const [{ id }] = await contractInstance.getOrderBookBuys();
-      await contractInstance.acceptOrder(id, 1, { from: ALICE });
+      await contractInstance.acceptOrder(id, demobHex, { from: ALICE });
       const history = await historyInstance.getHistory(10);
 
       assert.equal(history.length, 1, "Status should be set as Pending");
       assert.equal(history[0].status, "0", "Status should be set as Pending");
       assert.equal(history[0].buyer, BOB, "Buyer should be Bob");
       assert.equal(history[0].seller, ALICE, "Seller should be Alice");
-      assert.equal(history[0].fromZone, "1", "From Zone incorrect");
-      assert.equal(history[0].toZone, "0", "To Zone incorrect");
+      assert.equal(fromHex(history[0].fromZone), demobString, "From Zone incorrect");
+      assert.equal(fromHex(history[0].toZone), demoaString, "To Zone incorrect");
       assert.equal(history[0].orderId, id, "Buy Id is not correct");
     });
   });
 
   describe("OrderBook limit sells", () => {
     it("can place a sell order - unmatched", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 100);
-      const balanceBefore = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 100);
+      const balanceBefore = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
 
-      await contractInstance.addSellLimitOrder(sellLimitPrice, defaultSellQuantity, 0, { from: ALICE });
+      await contractInstance.addSellLimitOrder(sellLimitPrice, defaultSellQuantity, demoaHex, { from: ALICE });
 
-      const balanceAfter = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+      const balanceAfter = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
 
       assert.equal(Number(balanceAfter), Number(balanceBefore) - defaultSellQuantity, "Balance not correctly reduced");
 
@@ -133,11 +140,11 @@ contract("OrderBook", function (accounts) {
     });
 
     it("can accept a sell order", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 300);
-      await contractInstance.addSellLimitOrder(100, 50, 0, { from: ALICE });
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 300);
+      await contractInstance.addSellLimitOrder(100, 50, demoaHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
 
-      const tx = await contractInstance.acceptOrder(id, 0, { from: BOB });
+      const tx = await contractInstance.acceptOrder(id, demoaHex, { from: BOB });
       expectEvent(tx, "OrderAccepted", { orderId: id, buyer: BOB });
 
       const sellsAfter = await contractInstance.getOrderBookSells();
@@ -145,16 +152,16 @@ contract("OrderBook", function (accounts) {
     });
 
     it("can place multiple sell orders", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 300);
-      const balanceBefore = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 300);
+      const balanceBefore = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
 
-      await contractInstance.addSellLimitOrder(100, 50, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(200, 40, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(123, 30, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(321, 20, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(222, 10, 0, { from: ALICE });
+      await contractInstance.addSellLimitOrder(100, 50, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(200, 40, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(123, 30, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(321, 20, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(222, 10, demoaHex, { from: ALICE });
 
-      const balanceAfter = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+      const balanceAfter = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
 
       assert.equal(Number(balanceAfter), 150, "Balance not correctly reduced");
       const sellsAfter = await contractInstance.getOrderBookSells();
@@ -165,11 +172,11 @@ contract("OrderBook", function (accounts) {
     it("can place a sell order that is then accepted", async () => {
       const lastTradedPriceBefore = await contractInstance.getLastTradedPrice();
 
-      await zonesInstance.allocate(0, ALICE_WA0, 100);
-      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: ALICE });
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 100);
+      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: ALICE });
       const sells = await contractInstance.getOrderBookSells();
 
-      await contractInstance.acceptOrder(sells[0].id, 0, { from: BOB });
+      await contractInstance.acceptOrder(sells[0].id, demoaHex, { from: BOB });
       const sellsAfter = await contractInstance.getOrderBookSells();
       const history = await historyInstance.getHistory(10);
 
@@ -191,10 +198,10 @@ contract("OrderBook", function (accounts) {
 
   describe("Cross zone transfers", () => {
     it("can match across zones", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 100);
-      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: ALICE });
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 100);
+      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
-      await contractInstance.acceptOrder(id, 1, { from: BOB });
+      await contractInstance.acceptOrder(id, demobHex, { from: BOB });
 
       const buysAfter = await contractInstance.getOrderBookBuys();
       const sellsAfter = await contractInstance.getOrderBookSells();
@@ -203,47 +210,27 @@ contract("OrderBook", function (accounts) {
       assert.equal(history.length, 1, "History should have one entry");
       assert.equal(history[0].buyer, BOB, "Buyer should be BOB");
       assert.equal(history[0].status, "0", "Status should be set as Pending");
-      assert.equal(history[0].fromZone, "0", "From Zone is incorrect");
-      assert.equal(history[0].toZone, "1", "To Zone is incorrect");
+      assert.equal(fromHex(history[0].fromZone), demoaString, "From Zone is incorrect");
+      assert.equal(fromHex(history[0].toZone), demobString, "To Zone is incorrect");
       assert.equal(buysAfter.length, 0, "Buys should have no entries after match");
       assert.equal(sellsAfter.length, 0, "Sells should have no entries after match");
     });
 
     it("can be completed across zones", async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 100);
-      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: ALICE });
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 100);
+      await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
-      await contractInstance.acceptOrder(id, 1, { from: BOB });
+      await contractInstance.acceptOrder(id, demobHex, { from: BOB });
       const history = await historyInstance.getHistory(1);
 
-      const beforeBalance = await zonesInstance.getBalanceForZone(BOB_WA1, 1);
+      const beforeBalance = await zonesInstance.getBalanceForZone(BOB_WA1, demobHex);
       await contractInstance.completeTrade(history[0].id);
-      const afterBalance = await zonesInstance.getBalanceForZone(BOB_WA1, 1);
+      const afterBalance = await zonesInstance.getBalanceForZone(BOB_WA1, demobHex);
 
       assert.equal(Number(history.length), 1, "History should have one entry");
       assert.equal(history[0].status, "0", "Status should be set as Pending");
       assert.equal(beforeBalance, 0, "Balance before transfer should be zero");
       assert.equal(afterBalance, defaultBuyQuantity, "Balance after transfer is not correct");
-    });
-  });
-
-  describe("Matches that cannot be filled", () => {
-    it("Should NOT attempt to match multiple orders", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 500);
-      await zonesInstance.allocate(2, BOB_WA2, 200);
-      await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(110, 60, 2, { from: BOB });
-
-      const history = await historyInstance.getHistory(10);
-      const buysAfter = await contractInstance.getOrderBookBuys();
-      const sellsAfter = await contractInstance.getOrderBookSells();
-
-      assert.equal(history.length, 0, "History should have no entries");
-      assert.equal(buysAfter.length, 1, "Buys should have one entry");
-      assert.equal(sellsAfter.length, 4, "Sells should have one entry");
     });
   });
 
@@ -269,16 +256,13 @@ contract("OrderBook", function (accounts) {
       assert.equal(Number(zones[3].supply), 600000, "Supply is not correct");
       assert.equal(Number(zones[3].min), 500000, "Minimum is not correct");
       assert.equal(Number(zones[3].max), 1000000, "Maximum is not correct");
-      assert.equal(Number(zones[4].supply), 900000, "Supply is not correct");
-      assert.equal(Number(zones[4].min), 800000, "Minimum is not correct");
-      assert.equal(Number(zones[4].max), 1000000, "Maximum is not correct");
     });
 
     it("should not be affected if there is no cross zone", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 2000);
-      await contractInstance.addSellLimitOrder(100, 1500, 2, { from: ALICE });
+      await zonesInstance.allocate(democHex, ALICE_WA2, 2000);
+      await contractInstance.addSellLimitOrder(100, 1500, democHex, { from: ALICE });
       const [{ id: orderId }] = await contractInstance.getOrderBookSells();
-      await contractInstance.acceptOrder(orderId, 2, { from: BOB });
+      await contractInstance.acceptOrder(orderId, democHex, { from: BOB });
 
       const [{ id, status }] = await historyInstance.getHistory(1);
 
@@ -286,27 +270,27 @@ contract("OrderBook", function (accounts) {
     });
 
     it("should not error on a correct cross zone transfer", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 2000);
-      await contractInstance.addSellLimitOrder(100, 800, 2, { from: ALICE });
+      await zonesInstance.allocate(democHex, ALICE_WA2, 2000);
+      await contractInstance.addSellLimitOrder(100, 800, democHex, { from: ALICE });
       const [{ id: orderId }] = await contractInstance.getOrderBookSells();
-      await contractInstance.acceptOrder(orderId, 3, { from: BOB });
+      await contractInstance.acceptOrder(orderId, demodHex, { from: BOB });
       const [{ id, status }] = await historyInstance.getHistory(1);
 
       assert.equal(statuses[status], "Pending", "Validation not correctly working");
     });
 
     it("should reject if maximum is exceeded", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 800000);
+      await zonesInstance.allocate(democHex, ALICE_WA2, 800000);
 
-      await contractInstance.addSellLimitOrder(100, 500000, 2, { from: ALICE });
+      await contractInstance.addSellLimitOrder(100, 500000, democHex, { from: ALICE });
       const [{ id: orderId }] = await contractInstance.getOrderBookSells();
-      expectRevert(contractInstance.acceptOrder(orderId, 3, { from: BOB }), "Transfer volumes are not valid");
+      expectRevert(contractInstance.acceptOrder(orderId, demodHex, { from: BOB }), "Transfer volumes are not valid");
     });
   });
 
   describe("Events", () => {
     it("triggers an addBuyOrder event", async () => {
-      const receipt = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, 0, { from: BOB });
+      const receipt = await contractInstance.addBuyLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: BOB });
 
       const [{ id }] = await contractInstance.getOrderBookBuys();
 
@@ -315,13 +299,12 @@ contract("OrderBook", function (accounts) {
         licenceAddress: BOB,
         price: new BN(buyLimitPrice),
         quantity: new BN(defaultBuyQuantity),
-        zone: new BN(0),
       });
     });
 
     it("triggers an addSellOrder event", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 200);
-      const receipt = await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
+      await zonesInstance.allocate(democHex, ALICE_WA2, 200);
+      const receipt = await contractInstance.addSellLimitOrder(100, 20, democHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
 
       expectEvent(receipt, "OrderAdded", {
@@ -329,20 +312,19 @@ contract("OrderBook", function (accounts) {
         licenceAddress: ALICE,
         price: new BN(100),
         quantity: new BN(20),
-        zone: new BN(2),
       });
     });
 
     it("triggers a BuyOrderDeleted event", async () => {
-      await contractInstance.addBuyLimitOrder(100, 20, 0, { from: BOB });
+      await contractInstance.addBuyLimitOrder(100, 20, demoaHex, { from: BOB });
       const [{ id }] = await contractInstance.getOrderBookBuys();
       const receipt = await contractInstance.deleteOrder(id, { from: BOB });
       expectEvent(receipt, "OrderDeleted", { id });
     });
 
     it("triggers a SellOrderDeleted event", async () => {
-      await zonesInstance.allocate(2, ALICE_WA2, 200);
-      await contractInstance.addSellLimitOrder(100, 20, 2, { from: ALICE });
+      await zonesInstance.allocate(democHex, ALICE_WA2, 200);
+      await contractInstance.addSellLimitOrder(100, 20, democHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
       const receipt = await contractInstance.deleteOrder(id, { from: ALICE });
       expectEvent(receipt, "OrderDeleted", { id });
@@ -351,23 +333,23 @@ contract("OrderBook", function (accounts) {
 
   describe("Order Deletion", () => {
     beforeEach(async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 2000);
-      await zonesInstance.allocate(0, BOB_WA0, 2000);
-      await contractInstance.addBuyLimitOrder(110, 20, 0, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(120, 20, 0, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(130, 20, 0, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(140, 20, 0, { from: ALICE });
-      await contractInstance.addBuyLimitOrder(150, 20, 0, { from: BOB });
-      await contractInstance.addBuyLimitOrder(160, 20, 0, { from: BOB });
-      await contractInstance.addBuyLimitOrder(170, 20, 0, { from: BOB });
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 2000);
+      await zonesInstance.allocate(demoaHex, BOB_WA0, 2000);
+      await contractInstance.addBuyLimitOrder(110, 20, demoaHex, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(120, 20, demoaHex, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(130, 20, demoaHex, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(140, 20, demoaHex, { from: ALICE });
+      await contractInstance.addBuyLimitOrder(150, 20, demoaHex, { from: BOB });
+      await contractInstance.addBuyLimitOrder(160, 20, demoaHex, { from: BOB });
+      await contractInstance.addBuyLimitOrder(170, 20, demoaHex, { from: BOB });
 
-      await contractInstance.addSellLimitOrder(110, 30, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(130, 30, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(140, 30, 0, { from: ALICE });
-      await contractInstance.addSellLimitOrder(150, 30, 0, { from: BOB });
-      await contractInstance.addSellLimitOrder(160, 30, 0, { from: BOB });
-      await contractInstance.addSellLimitOrder(170, 30, 0, { from: BOB });
+      await contractInstance.addSellLimitOrder(110, 30, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(120, 30, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(130, 30, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(140, 30, demoaHex, { from: ALICE });
+      await contractInstance.addSellLimitOrder(150, 30, demoaHex, { from: BOB });
+      await contractInstance.addSellLimitOrder(160, 30, demoaHex, { from: BOB });
+      await contractInstance.addSellLimitOrder(170, 30, demoaHex, { from: BOB });
     });
 
     it("should allow deletion of record", async () => {
@@ -393,7 +375,7 @@ contract("OrderBook", function (accounts) {
       let buys = await contractInstance.getOrderBookBuys();
       buys = buys.filter(order => order.owner === BOB);
 
-      await contractInstance.acceptOrder(buys[0].id, 3, { from: ALICE });
+      await contractInstance.acceptOrder(buys[0].id, demodHex, { from: ALICE });
 
       expectRevert(contractInstance.deleteOrder(buys[0].id, { from: BOB }), "This order has been matched");
     });
@@ -406,25 +388,25 @@ contract("OrderBook", function (accounts) {
 
   describe("Sell Order Deletion", () => {
     beforeEach(async () => {
-      await zonesInstance.allocate(0, ALICE_WA0, 200);
+      await zonesInstance.allocate(demoaHex, ALICE_WA0, 200);
     });
 
-    xit("Should manage zone balance with addition/deletion of sell limit order", async () => {
-      await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });
-      const beforeDeletion = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+    it("Should manage zone balance with addition/deletion of sell limit order", async () => {
+      await contractInstance.addSellLimitOrder(120, 30, demoaHex, { from: ALICE });
+      const beforeDeletion = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
       const [{ id }] = await contractInstance.getOrderBookSells();
       await contractInstance.deleteOrder(id, { from: ALICE });
-      const afterDeletion = await zonesInstance.getBalanceForZone(ALICE_WA0, 0);
+      const afterDeletion = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
       assert.equal(Number(beforeDeletion), 170, "Incorrect zone balance after creating addSellLimitOrder");
       assert.equal(Number(afterDeletion), 200, "Incorrect zone balance after deleting addSellLimitOrder");
     });
 
     xit("should manage transfer limit with addition/deletion of sell limit order", async () => {
-      await contractInstance.addSellLimitOrder(120, 30, 0, { from: ALICE });
+      await contractInstance.addSellLimitOrder(120, 30, demoaHex, { from: ALICE });
 
       const [{ id }] = await contractInstance.getOrderBookSells();
 
-      const beforeDeletion = await zoneInstance.totalSupply();
+      const beforeDeletion = await zonesInstance.totalSupply();
       await contractInstance.deleteOrder(id, { from: ALICE });
       const afterDeletion = await zoneInstance.totalSupply();
 
@@ -432,15 +414,20 @@ contract("OrderBook", function (accounts) {
       assert.equal(Number(afterDeletion), 200, "totalSupply not correctly increased whith deleteOrder()");
     });
 
-    xit("should allow reuse of previously held funds", async () => {
-      await contractInstance.addSellLimitOrder(200, 200, 0, { from: ALICE });
+    it("should allow reuse of previously held funds", async () => {
+      await contractInstance.addSellLimitOrder(200, 200, demoaHex, { from: ALICE });
       const [{ id }] = await contractInstance.getOrderBookSells();
+      const beforeDelete = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
       await contractInstance.deleteOrder(id, { from: ALICE });
-      const beforeReuse = await zoneInstance.totalSupply();
-      await contractInstance.addSellLimitOrder(150, 150, 0, { from: ALICE });
+      const afterDelete = await zonesInstance.getBalanceForZone(ALICE_WA0, demoaHex);
+
+      // console.log(Number(beforeDelete));
+      // console.log(Number(afterDelete));
+      await contractInstance.addSellLimitOrder(150, 150, demoaHex, { from: ALICE });
       const [order] = await contractInstance.getOrderBookSells();
 
-      assert.equal(Number(beforeReuse), 200, "zone balance not refunded after deletion");
+      assert.equal(Number(beforeDelete), 0, "zone balance not refunded after deletion");
+      assert.equal(Number(afterDelete), 200, "zone balance not refunded after deletion");
       assert.equal(order.quantity, 150, "order quantity is wrong");
       assert.equal(order.price, 150, "order price is wrong");
     });
@@ -451,26 +438,25 @@ const createOrderBook = async accounts => {
   contractInstance = await OrderBook.new("Test Scheme", 2021);
   zonesInstance = await Zones.new(contractInstance.address);
 
-  await zonesInstance.addZone(web3.utils.toHex(zoneName), 1000000, 0, 100000000);
-  await zonesInstance.addZone(web3.utils.toHex(zoneNameB), 1000000, 0, 100000000);
-  await zonesInstance.addZone(web3.utils.toHex(zoneNameC), 1000000, 0, 100000000);
-  await zonesInstance.addZone(web3.utils.toHex(zoneNameD), 600000, 500000, 1000000);
-  await zonesInstance.addZone(web3.utils.toHex(zoneNameE), 900000, 800000, 1000000);
+  const zoneIdentifiers = [toHex("barron-a"), toHex("barron-b"), toHex("barron-c"), toHex("barron-d")];
+  const zoneSupplies = [1000000, 1000000, 1000000, 600000, 900000];
+  const zoneMins = [0, 0, 0, 500000, 800000];
+  const zoneMaxes = [100000000, 100000000, 100000000, 1000000, 1000000];
+
+  await zonesInstance.addAllZones(zoneIdentifiers, zoneSupplies, zoneMins, zoneMaxes);
 
   historyInstance = await History.new(contractInstance.address);
   licencesInstance = await Licences.new();
   const start = getUnixTime(subHours(new Date(), 2));
   const end = getUnixTime(addYears(new Date(), 1));
 
-  await licencesInstance.issue(accounts[1], start, end);
-  await licencesInstance.addLicenceWaterAccount(0, ALICE_WA0, 0, zoneName);
-  await licencesInstance.addLicenceWaterAccount(0, ALICE_WA1, 1, zoneNameB);
-  await licencesInstance.addLicenceWaterAccount(0, ALICE_WA2, 2, zoneNameC);
+  await licencesInstance.issue(accounts[1], toHex("WL-000001234"), start, end);
 
-  await licencesInstance.issue(accounts[2], start, end);
-  await licencesInstance.addLicenceWaterAccount(1, BOB_WA0, 0, zoneName);
-  await licencesInstance.addLicenceWaterAccount(1, BOB_WA1, 1, zoneNameB);
-  await licencesInstance.addLicenceWaterAccount(1, BOB_WA2, 2, zoneNameC);
+  await licencesInstance.addAllLicenceWaterAccounts(toHex("WL-000001234"), [ALICE_WA0, ALICE_WA1, ALICE_WA2], [demoaHex, demobHex, democHex]);
+
+  await licencesInstance.issue(accounts[2], toHex("WL-000054321"), start, end);
+
+  await licencesInstance.addAllLicenceWaterAccounts(toHex("WL-000054321"), [BOB_WA0, BOB_WA1, BOB_WA2], [demoaHex, demobHex, democHex]);
 
   await contractInstance.addHistoryContract(historyInstance.address);
   await contractInstance.addZonesContract(zonesInstance.address);

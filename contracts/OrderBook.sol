@@ -33,7 +33,7 @@ contract OrderBook is Ownable {
         uint256 quantity;
         uint256 timeStamp;
         uint256 matchedTimeStamp;
-        uint8 zone;
+        bytes32 zone;
     }
 
     Order[] private _orders;
@@ -65,7 +65,7 @@ contract OrderBook is Ownable {
     }
 
     function completeTrade(bytes16 tradeId) public onlyOwner {
-        (, address buyer, , , uint256 quantity, , uint8 toZone) = _history.getTradeDetails(tradeId);
+        (, address buyer, , , uint256 quantity, , bytes32 toZone) = _history.getTradeDetails(tradeId);
 
         bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(buyer, toZone);
 
@@ -119,41 +119,41 @@ contract OrderBook is Ownable {
     function addSellLimitOrder(
         uint256 price,
         uint256 quantity,
-        uint8 zoneIndex
+        bytes32 zone
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zoneIndex);
-        require(_zones.getBalanceForZone(waterAccountId, zoneIndex) >= quantity, "Insufficient water allocation");
-        bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Sell);
-        _zones.debit(zoneIndex, waterAccountId, quantity);
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zone);
+        require(_zones.getBalanceForZone(waterAccountId, zone) >= quantity, "Insufficient water allocation");
+        bytes16 id = addOrder(price, quantity, zone, OrderType.Sell);
+        _zones.debit(zone, waterAccountId, quantity);
         _unmatchedSells.push(id);
     }
 
     function addBuyLimitOrder(
         uint256 price,
         uint256 quantity,
-        uint8 zoneIndex
+        bytes32 zone
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        bytes16 id = addOrder(price, quantity, zoneIndex, OrderType.Buy);
+        bytes16 id = addOrder(price, quantity, zone, OrderType.Buy);
         _unmatchedBuys.push(id);
     }
 
     function addOrder(
         uint256 price,
         uint256 quantity,
-        uint8 zoneIndex,
+        bytes32 zone,
         OrderType orderType
     ) internal returns (bytes16) {
         require(_licences.hasValid(msg.sender), "Sender has no valid licence");
         bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
-        _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, zoneIndex));
+        _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, zone));
         _idToIndex[id] = IndexPosition(_orders.length - 1, true);
-        emit OrderAdded(id, msg.sender, price, quantity, zoneIndex, orderType);
+        emit OrderAdded(id, msg.sender, price, quantity, zone, orderType);
         return id;
     }
 
-    function acceptOrder(bytes16 id, uint8 zone) public guardId(id) {
+    function acceptOrder(bytes16 id, bytes32 zone) public guardId(id) {
         require(_licences.hasValid(msg.sender), "Sender has no valid licence");
         Order storage order = _orders[_idToIndex[id].index];
         require(order.owner != msg.sender, "You cannot accept your own order");
@@ -162,8 +162,8 @@ contract OrderBook is Ownable {
 
         _lastTradedPrice = order.price;
 
-        uint8 toZone = order.orderType == OrderType.Sell ? zone : order.zone;
-        uint8 fromZone = order.orderType == OrderType.Sell ? order.zone : zone;
+        bytes32 toZone = order.orderType == OrderType.Sell ? zone : order.zone;
+        bytes32 fromZone = order.orderType == OrderType.Sell ? order.zone : zone;
 
         address buyer = order.orderType == OrderType.Sell ? msg.sender : order.owner;
         address seller = order.orderType == OrderType.Sell ? order.owner : msg.sender;
@@ -252,5 +252,5 @@ contract OrderBook is Ownable {
     event OrderDeleted(bytes16 id);
     event OrderUnmatched(bytes16 orderId);
     event OrderAccepted(bytes16 orderId, address indexed buyer);
-    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone, OrderType orderType);
+    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 zone, OrderType orderType);
 }

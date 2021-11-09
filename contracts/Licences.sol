@@ -22,13 +22,13 @@ contract Licences is Ownable {
 
     struct WaterAccount {
         bytes32 waterAccountId;
-        uint8 zoneIndex;
+        bytes32 zoneIdentifier;
     }
 
     mapping(bytes32 => Licence) public _licences;
     mapping(address => bytes32) public _addressToIdentifier;
     mapping(bytes32 => bytes32) public _waterAccountIdToIdentifier;
-    mapping(address => mapping(uint8 => bytes32)) public _addressToZoneIndexToWaterAccountId;
+    mapping(address => mapping(bytes32 => bytes32)) public _addressToZoneToWaterAccountId;
 
     constructor() Ownable() {
         _authorities[msg.sender] = true;
@@ -89,28 +89,28 @@ contract Licences is Ownable {
     function addLicenceWaterAccount(
         bytes32 identifier,
         bytes32 waterAccountId,
-        uint8 zoneIndex
+        bytes32 zoneIdentifier
     ) public onlyAuthority {
-        _licences[identifier].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIndex);
+        _licences[identifier].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, zoneIdentifier);
         _licences[identifier].waterAccountIds.push(waterAccountId);
         _waterAccountIdToIdentifier[waterAccountId] = identifier;
-        _addressToZoneIndexToWaterAccountId[_licences[identifier].ethAccount][zoneIndex] = waterAccountId;
+        _addressToZoneToWaterAccountId[_licences[identifier].ethAccount][zoneIdentifier] = waterAccountId;
         emit WaterAccountAdded(identifier, _licences[identifier].ethAccount);
     }
 
     function addAllLicenceWaterAccounts(
         bytes32 identifier,
-        bytes32[] memory waterAccountIds
+        bytes32[] memory waterAccountIds,
+        bytes32[] memory zoneIdentifiers
     ) public onlyAuthority {
+        require(waterAccountIds.length == zoneIdentifiers.length, "Input arrays must be the same length");
+
         Licence storage licence = _licences[identifier];
         for (uint8 i = 0; i < waterAccountIds.length; i++) {
-            if(waterAccountIds[i] != "") {
-                licence.waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], i);
-                licence.waterAccountIds.push(waterAccountIds[i]);
-                _waterAccountIdToIdentifier[waterAccountIds[i]] = identifier;
-                _addressToZoneIndexToWaterAccountId[licence.ethAccount][i] = waterAccountIds[i];
-                emit WaterAccountAdded(identifier, licence.ethAccount);
-            }
+            licence.waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], zoneIdentifiers[i]);
+            licence.waterAccountIds.push(waterAccountIds[i]);
+            _waterAccountIdToIdentifier[waterAccountIds[i]] = identifier;
+            _addressToZoneToWaterAccountId[licence.ethAccount][zoneIdentifiers[i]] = waterAccountIds[i];
         }
         emit LicenceCompleted(identifier, licence.ethAccount);
     }
@@ -145,8 +145,8 @@ contract Licences is Ownable {
         return waterAccountArray;
     }
 
-    function getWaterAccountIdByAddressAndZone(address ethAccount, uint8 zoneIndex) public view returns (bytes32) {
-        return _addressToZoneIndexToWaterAccountId[ethAccount][zoneIndex];
+    function getWaterAccountIdByAddressAndZone(address ethAccount, bytes32 zoneIdentifier) public view returns (bytes32) {
+        return _addressToZoneToWaterAccountId[ethAccount][zoneIdentifier];
     }
 
     modifier onlyAuthority() {
@@ -156,5 +156,6 @@ contract Licences is Ownable {
 
     event LicenceAdded(bytes32 indexed identifier, address indexed ethAccount);
     event WaterAccountAdded(bytes32 indexed identifier, address indexed ethAccount);
+    event WaterAccountsAdded(bytes32[] identifiers, address[] ethAccount);
     event LicenceCompleted(bytes32 indexed identifier, address indexed ethAccount);
 }
