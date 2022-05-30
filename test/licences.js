@@ -1,4 +1,5 @@
 const Licences = artifacts.require("Licences");
+const OrderBook = artifacts.require("OrderBook");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { addYears, startOfYear, getUnixTime } = require("date-fns");
 
@@ -7,6 +8,7 @@ const fromHex = web3.utils.hexToUtf8;
 
 contract("Licences", function (accounts) {
   let contract;
+  let orderbookContract;
   let user1Address = accounts[1];
   let user2Address = accounts[2];
 
@@ -29,7 +31,10 @@ contract("Licences", function (accounts) {
   const democHex = toHex(democString);
   const demodHex = toHex(demodString);
 
-  beforeEach(async () => (contract = await Licences.new()));
+  beforeEach(async () => {
+    orderbookContract = await OrderBook.new("Test Scheme", 2001);
+    contract = await Licences.new(orderbookContract.address);
+  });
 
   describe("Licences", function () {
     it("can add and retrieve a licence", async function () {
@@ -66,7 +71,7 @@ contract("Licences", function (accounts) {
       assert.equal(fromHex(waterAccount.waterAccountId), testAccount);
     });
 
-    it.only("can add multiple water accounts to a licence in one step", async function () {
+    it("can add multiple water accounts to a licence in one step", async function () {
       await contract.addAllLicenceWaterAccounts(defaultLicenceHex, [toHex("WL0000002"), toHex("WL0000003")], [demobHex, democHex]);
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(toHex("WL0000003"));
@@ -77,7 +82,7 @@ contract("Licences", function (accounts) {
       assert.equal(fromHex(waterAccountIdFromMapping), "WL0000003");
     });
 
-    it.only("can get all the waterAccountIds for a licence", async function () {
+    it("can get all the waterAccountIds for a licence", async function () {
       await contract.addAllLicenceWaterAccounts(
         defaultLicenceHex,
         [toHex("WL0000002"), toHex("WL0000003"), toHex("WL0000004")],
@@ -85,7 +90,6 @@ contract("Licences", function (accounts) {
       );
 
       const waterAccounts = await contract.getWaterAccountsForLicence(defaultLicenceHex);
-      console.log(waterAccounts);
 
       assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
       assert.equal(fromHex(waterAccounts[1].waterAccountId), "WL0000003");

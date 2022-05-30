@@ -3,6 +3,7 @@
 pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./OrderBook.sol";
 
 contract Zones is Ownable {
     struct Zone {
@@ -14,14 +15,26 @@ contract Zones is Ownable {
     }
 
     mapping(bytes32 => Zone) private zones;
-    address private _orderbook;
+    OrderBook private _orderbook;
 
     bytes32[] private zoneList;
 
     mapping(bytes32 => mapping(bytes32 => uint256)) private balances;
 
     constructor(address orderbook) Ownable() {
-        _orderbook = orderbook;
+        _orderbook = OrderBook(orderbook);
+    }
+
+    function getZoneList() public view returns (bytes32[] memory) {
+        return zoneList;
+    }
+
+    function getZones() public view returns (Zone[] memory) {
+        Zone[] memory zonesArray = new Zone[](zoneList.length);
+        for (uint8 i = 0; i < zoneList.length; i++) {
+            zonesArray[i] = zones[zoneList[i]];
+        }
+        return zonesArray;
     }
 
     function addZone(
@@ -32,19 +45,6 @@ contract Zones is Ownable {
     ) public onlyOwner {
         zones[identifier] = Zone(identifier, true, supply, min, max);
         zoneList.push(identifier);
-        emit ZoneAdded(identifier);
-    }
-
-    function getZoneList() public view returns (bytes32[] memory) {
-        return zoneList;
-    }
-
-    function getZones() public view returns (Zone[] memory) {
-        Zone[] memory zonesArray = new Zone[](zoneList.length);
-        for(uint8 i = 0; i < zoneList.length; i++) {
-            zonesArray[i] = zones[zoneList[i]];
-        }
-        return zonesArray;
     }
 
     function addAllZones(
@@ -57,7 +57,7 @@ contract Zones is Ownable {
             zones[identifiers[i]] = Zone(identifiers[i], true, supplies[i], mins[i], maxes[i]);
             zoneList.push(identifiers[i]);
         }
-        emit ZonesAdded();
+        _orderbook.triggerZonesAdded();
     }
 
     function allocate(
@@ -67,16 +67,20 @@ contract Zones is Ownable {
     ) public onlyOwner {
         require(zones[identifier].zoneExists, "This zone is not valid");
         balances[identifier][waterAccountId] = quantity;
-        emit Allocation(identifier, waterAccountId, quantity);
-        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
+        _orderbook.triggerAllocation(identifier, waterAccountId, quantity);
+        _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
-    function allocateAll(bytes32[] memory identifiers, bytes32[] memory waterAccountIds,  uint256[] memory quantities) public {
+    function allocateAll(
+        bytes32[] memory identifiers,
+        bytes32[] memory waterAccountIds,
+        uint256[] memory quantities
+    ) public {
         for (uint8 i = 0; i < waterAccountIds.length; i++) {
             balances[identifiers[i]][waterAccountIds[i]] = quantities[i];
         }
-        emit BalancesUpdated(waterAccountIds, quantities);
-        emit AllocationsComplete();
+        _orderbook.triggerBalancesUpdated(waterAccountIds, quantities);
+        _orderbook.triggerAllocationsComplete();
     }
 
     function debit(
@@ -92,8 +96,7 @@ contract Zones is Ownable {
 
         zones[identifier].supply -= quantity;
         balances[identifier][waterAccountId] -= quantity;
-        emit Debit(waterAccountId, identifier, quantity);
-        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
+        _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
     function credit(
@@ -108,8 +111,7 @@ contract Zones is Ownable {
 
         zones[identifier].supply += quantity;
         balances[identifier][waterAccountId] += quantity;
-        emit Credit(waterAccountId, identifier, quantity);
-        emit BalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
+        _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
     function restoreSupply(bytes32 identifier, uint256 quantity) public onlyOrderBook {
@@ -133,17 +135,8 @@ contract Zones is Ownable {
     modifier onlyOrderBook() {
         if (msg.sender != owner()) {
             require(address(_orderbook) != address(0), "Orderbook must be set to make this transfer");
-            require(_orderbook == msg.sender, "Only the orderbook can make this transfer");
+            require(address(_orderbook) == msg.sender, "Only the orderbook can make this transfer");
         }
         _;
     }
-
-    event Credit(bytes32 waterAccountId, bytes32 identifier, uint256 quantity);
-    event Debit(bytes32 waterAccountId, bytes32 identifier, uint256 quantity);
-    event BalanceUpdated(bytes32 waterAccountId, uint256 balance);
-    event BalancesUpdated(bytes32[] waterAccountIds, uint256[] balances);
-    event Allocation(bytes32 identifier, bytes32 waterAccountId, uint256 quantity);
-    event AllocationsComplete();
-    event ZoneAdded(bytes32 identifier);
-    event ZonesAdded();
 }

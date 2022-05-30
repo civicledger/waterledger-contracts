@@ -15,13 +15,11 @@ module.exports = async deployer => {
   // This is duplicated due to a deployer bug which causes the first deployed
   // contract to not return a usable instance
 
-  let orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
-  orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2021);
+  let orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2022);
+  orderBookInstance = await deployer.deploy(OrderBook, "Test Scheme", 2022);
 
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
-
-  const licencesInstance = await deployer.deploy(Licences);
-
+  const licencesInstance = await deployer.deploy(Licences, orderBookInstance.address);
   const zonesInstance = await deployer.deploy(Zones, orderBookInstance.address);
 
   zones.forEach(async zone => {
