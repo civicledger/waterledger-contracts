@@ -12,7 +12,7 @@ contract OrderBook is Ownable {
     History private _history;
     Licences private _licences;
     Zones private _zones;
-    uint256 private _year;
+    uint256 private immutable _year;
 
     uint256 private _lastTradedPrice;
 
@@ -98,10 +98,11 @@ contract OrderBook is Ownable {
     }
 
     function removeUnmatchedSellId(bytes32 id) internal {
-        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+        uint256 count = _unmatchedSells.length;
+        for (uint256 i = 0; i < count; i++) {
             if (_unmatchedSells[i] == id) {
                 if (i != _unmatchedSells.length - 1) {
-                    _unmatchedSells[i] = _unmatchedSells[_unmatchedSells.length - 1];
+                    _unmatchedSells[i] = _unmatchedSells[count - 1];
                 }
                 _unmatchedSells.pop();
             }
@@ -109,10 +110,11 @@ contract OrderBook is Ownable {
     }
 
     function removeUnmatchedBuyId(bytes32 id) internal {
-        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+        uint256 count = _unmatchedSells.length;
+        for (uint256 i = 0; i < count; i++) {
             if (_unmatchedBuys[i] == id) {
                 if (i != _unmatchedBuys.length - 1) {
-                    _unmatchedBuys[i] = _unmatchedBuys[_unmatchedBuys.length - 1];
+                    _unmatchedBuys[i] = _unmatchedBuys[count - 1];
                 }
                 _unmatchedBuys.pop();
             }
@@ -196,9 +198,10 @@ contract OrderBook is Ownable {
     }
 
     function getOrders(bytes16[] storage ids) internal view returns (Order[] memory) {
-        Order[] memory returnedOrders = new Order[](ids.length);
+        uint256 count = ids.length;
+        Order[] memory returnedOrders = new Order[](count);
 
-        for (uint256 i = 0; i < ids.length; i++) {
+        for (uint256 i = 0; i < count; i++) {
             returnedOrders[i] = _orders[_idToIndex[ids[i]].index];
         }
 
@@ -226,7 +229,8 @@ contract OrderBook is Ownable {
 
     function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+        uint256 sellsLength = _unmatchedSells.length;
+        for (uint256 i = 0; i < sellsLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedSells[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;
@@ -237,7 +241,8 @@ contract OrderBook is Ownable {
 
     function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+        uint256 buysLength = _unmatchedBuys.length;
+        for (uint256 i = 0; i < buysLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedBuys[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;

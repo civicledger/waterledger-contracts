@@ -15,7 +15,7 @@ contract Zones is Ownable {
     }
 
     mapping(bytes32 => Zone) private zones;
-    OrderBook private _orderbook;
+    OrderBook private immutable _orderbook;
 
     bytes32[] private zoneList;
 
@@ -31,7 +31,8 @@ contract Zones is Ownable {
 
     function getZones() public view returns (Zone[] memory) {
         Zone[] memory zonesArray = new Zone[](zoneList.length);
-        for (uint8 i = 0; i < zoneList.length; i++) {
+        uint256 count = zoneList.length;
+        for (uint8 i = 0; i < count; i++) {
             zonesArray[i] = zones[zoneList[i]];
         }
         return zonesArray;
@@ -53,7 +54,8 @@ contract Zones is Ownable {
         uint256[] memory mins,
         uint256[] memory maxes
     ) public onlyOwner {
-        for (uint8 i = 0; i < identifiers.length; i++) {
+        uint256 count = identifiers.length;
+        for (uint8 i = 0; i < count; i++) {
             zones[identifiers[i]] = Zone(identifiers[i], true, supplies[i], mins[i], maxes[i]);
             zoneList.push(identifiers[i]);
         }
@@ -76,7 +78,8 @@ contract Zones is Ownable {
         bytes32[] memory waterAccountIds,
         uint256[] memory quantities
     ) public {
-        for (uint8 i = 0; i < waterAccountIds.length; i++) {
+        uint256 count = waterAccountIds.length;
+        for (uint8 i = 0; i < count; i++) {
             balances[identifiers[i]][waterAccountIds[i]] = quantities[i];
         }
         _orderbook.triggerBalancesUpdated(waterAccountIds, quantities);

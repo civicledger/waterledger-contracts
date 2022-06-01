@@ -31,7 +31,7 @@ contract Licences is Ownable {
     mapping(bytes32 => bytes32) public _waterAccountIdToIdentifier;
     mapping(address => mapping(bytes32 => bytes32)) public _addressToZoneToWaterAccountId;
 
-    OrderBook private _orderbook;
+    OrderBook private immutable _orderbook;
 
     constructor(address orderbook) Ownable() {
         _authorities[msg.sender] = true;
