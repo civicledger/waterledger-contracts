@@ -12,7 +12,7 @@ contract OrderBook is Ownable {
     History private _history;
     Licences private _licences;
     Zones private _zones;
-    uint256 private _year;
+    uint256 private immutable _year;
 
     uint256 private _lastTradedPrice;
 
@@ -23,7 +23,10 @@ contract OrderBook is Ownable {
 
     mapping(bytes16 => IndexPosition) private _idToIndex;
 
-    enum OrderType {Sell, Buy}
+    enum OrderType {
+        Sell,
+        Buy
+    }
 
     struct Order {
         bytes16 id;
@@ -95,10 +98,11 @@ contract OrderBook is Ownable {
     }
 
     function removeUnmatchedSellId(bytes32 id) internal {
-        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+        uint256 count = _unmatchedSells.length;
+        for (uint256 i = 0; i < count; i++) {
             if (_unmatchedSells[i] == id) {
                 if (i != _unmatchedSells.length - 1) {
-                    _unmatchedSells[i] = _unmatchedSells[_unmatchedSells.length - 1];
+                    _unmatchedSells[i] = _unmatchedSells[count - 1];
                 }
                 _unmatchedSells.pop();
             }
@@ -106,10 +110,11 @@ contract OrderBook is Ownable {
     }
 
     function removeUnmatchedBuyId(bytes32 id) internal {
-        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+        uint256 count = _unmatchedSells.length;
+        for (uint256 i = 0; i < count; i++) {
             if (_unmatchedBuys[i] == id) {
                 if (i != _unmatchedBuys.length - 1) {
-                    _unmatchedBuys[i] = _unmatchedBuys[_unmatchedBuys.length - 1];
+                    _unmatchedBuys[i] = _unmatchedBuys[count - 1];
                 }
                 _unmatchedBuys.pop();
             }
@@ -193,9 +198,10 @@ contract OrderBook is Ownable {
     }
 
     function getOrders(bytes16[] storage ids) internal view returns (Order[] memory) {
-        Order[] memory returnedOrders = new Order[](ids.length);
+        uint256 count = ids.length;
+        Order[] memory returnedOrders = new Order[](count);
 
-        for (uint256 i = 0; i < ids.length; i++) {
+        for (uint256 i = 0; i < count; i++) {
             returnedOrders[i] = _orders[_idToIndex[ids[i]].index];
         }
 
@@ -223,7 +229,8 @@ contract OrderBook is Ownable {
 
     function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < _unmatchedSells.length; i++) {
+        uint256 sellsLength = _unmatchedSells.length;
+        for (uint256 i = 0; i < sellsLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedSells[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;
@@ -234,7 +241,8 @@ contract OrderBook is Ownable {
 
     function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
         uint256 count = 0;
-        for (uint256 i = 0; i < _unmatchedBuys.length; i++) {
+        uint256 buysLength = _unmatchedBuys.length;
+        for (uint256 i = 0; i < buysLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedBuys[i]].index];
             if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
                 count++;
@@ -249,8 +257,86 @@ contract OrderBook is Ownable {
         _;
     }
 
+    // OrderBook Events
     event OrderDeleted(bytes16 id);
     event OrderUnmatched(bytes16 orderId);
     event OrderAccepted(bytes16 orderId, address indexed buyer);
     event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 zone, OrderType orderType);
+
+    // Zones events
+    event BalanceUpdated(bytes32 waterAccountId, uint256 balance);
+    event BalancesUpdated(bytes32[] waterAccountIds, uint256[] balances);
+    event Allocation(bytes32 identifier, bytes32 waterAccountId, uint256 quantity);
+    event AllocationsComplete();
+    event ZonesAdded();
+
+    function triggerBalanceUpdated(bytes32 waterAccountId, uint256 balance) external onlyZonesContract {
+        emit BalanceUpdated(waterAccountId, balance);
+    }
+
+    function triggerBalancesUpdated(bytes32[] memory waterAccountIds, uint256[] memory balances) external onlyZonesContract {
+        emit BalancesUpdated(waterAccountIds, balances);
+    }
+
+    function triggerAllocation(
+        bytes32 identifier,
+        bytes32 waterAccountId,
+        uint256 quantity
+    ) external onlyZonesContract {
+        emit Allocation(identifier, waterAccountId, quantity);
+    }
+
+    function triggerAllocationsComplete() external onlyZonesContract {
+        emit AllocationsComplete();
+    }
+
+    function triggerZonesAdded() external onlyZonesContract {
+        emit ZonesAdded();
+    }
+
+    event LicenceAdded(bytes32 indexed identifier, address indexed ethAccount);
+    event WaterAccountAdded(bytes32 indexed identifier, address indexed ethAccount);
+    event WaterAccountsAdded(bytes32[] identifiers, address[] ethAccount);
+    event LicenceCompleted(bytes32 indexed identifier, address indexed ethAccount);
+
+    function triggerLicenceAdded(bytes32 identifier, address ethAccount) external {
+        emit LicenceAdded(identifier, ethAccount);
+    }
+
+    function triggerWaterAccountAdded(bytes32 identifier, address ethAccount) external {
+        emit WaterAccountAdded(identifier, ethAccount);
+    }
+
+    function triggerWaterAccountsAdded(bytes32[] memory identifiers, address[] memory ethAccount) external {
+        emit WaterAccountsAdded(identifiers, ethAccount);
+    }
+
+    function triggerLicenceCompleted(bytes32 identifier, address ethAccount) external {
+        emit LicenceCompleted(identifier, ethAccount);
+    }
+
+    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromZone, bytes32 toZone, bytes16 orderId);
+    event TradeStatusUpdated(bytes16 id, History.Status status);
+
+    function triggerHistoryAdded(
+        bytes16 id,
+        address buyer,
+        address seller,
+        uint256 price,
+        uint256 quantity,
+        bytes32 fromZone,
+        bytes32 toZone,
+        bytes16 orderId
+    ) external {
+        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
+    }
+
+    function triggerTradeStatusUpdated(bytes16 id, History.Status status) external {
+        emit TradeStatusUpdated(id, status);
+    }
+
+    modifier onlyZonesContract() {
+        // require(msg.sender == _zones, "Only Zones Contract can trigger");
+        _;
+    }
 }

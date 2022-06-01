@@ -4,10 +4,15 @@ pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./QuickSort.sol";
+import "./OrderBook.sol";
 
 contract History is QuickSort, Ownable {
-
-    enum Status {Pending, Completed, Rejected, Invalid}
+    enum Status {
+        Pending,
+        Completed,
+        Rejected,
+        Invalid
+    }
 
     struct Trade {
         bytes16 id;
@@ -32,9 +37,12 @@ contract History is QuickSort, Ownable {
 
     mapping(bytes16 => IndexPosition) _idToIndex;
 
-    constructor(address orderBook) {
+    OrderBook private _orderbook;
+
+    constructor(address orderbook) {
         _allowedWriters[msg.sender] = true;
-        _allowedWriters[orderBook] = true;
+        _allowedWriters[orderbook] = true;
+        _orderbook = OrderBook(orderbook);
     }
 
     function getTrade(bytes16 id) public view guardId(id) returns (Trade memory) {
@@ -138,7 +146,7 @@ contract History is QuickSort, Ownable {
 
         _idToIndex[id] = IndexPosition(_history.length - 1, true);
 
-        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
+        _orderbook.triggerHistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
     }
 
     function createId(
@@ -150,36 +158,19 @@ contract History is QuickSort, Ownable {
         return bytes16(keccak256(abi.encode(timestamp, price, quantity, user)));
     }
 
-    function addManualHistory(
-        address buyer,
-        address seller,
-        uint256 price,
-        uint256 quantity,
-        bytes32 fromZone,
-        bytes32 toZone,
-        bytes16 orderId,
-        uint256 timestamp,
-        Status status
-    ) external onlyOwner {
-        bytes16 id = createId(block.timestamp, price, quantity, buyer);
-        _history.push(Trade(id, buyer, seller, price, quantity, timestamp, fromZone, toZone, orderId, status));
-        _idToIndex[id] = IndexPosition(_history.length - 1, true);
-        emit ManualHistoryAdded(id);
-    }
-
     function rejectTrade(bytes16 id) public onlyOwner guardId(id) {
         _history[_idToIndex[id].index].status = Status.Rejected;
-        emit TradeRejected(_history[_idToIndex[id].index].id);
+        _orderbook.triggerTradeStatusUpdated(id, Status.Rejected);
     }
 
     function invalidateTrade(bytes16 id) public onlyWriters("Trade can only be invalidated by the orderbook") guardId(id) {
         _history[_idToIndex[id].index].status = Status.Invalid;
-        emit TradeInvalidated(_history[_idToIndex[id].index].id);
+        _orderbook.triggerTradeStatusUpdated(id, Status.Invalid);
     }
 
     function completeTrade(bytes16 id) public onlyWriters("Only writers can update history") guardId(id) {
         _history[_idToIndex[id].index].status = Status.Completed;
-        emit TradeCompleted(id);
+        _orderbook.triggerTradeStatusUpdated(id, Status.Completed);
     }
 
     function addWriter(address who) public onlyOwner {

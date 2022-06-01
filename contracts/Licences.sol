@@ -4,6 +4,7 @@ pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IEIP1753.sol";
+import "./OrderBook.sol";
 
 contract Licences is Ownable {
     string public name = "Water Ledger Licences";
@@ -30,15 +31,18 @@ contract Licences is Ownable {
     mapping(bytes32 => bytes32) public _waterAccountIdToIdentifier;
     mapping(address => mapping(bytes32 => bytes32)) public _addressToZoneToWaterAccountId;
 
-    constructor() Ownable() {
+    OrderBook private immutable _orderbook;
+
+    constructor(address orderbook) Ownable() {
         _authorities[msg.sender] = true;
+        _orderbook = OrderBook(orderbook);
     }
 
-    function grantAuthority(address who) public onlyOwner() {
+    function grantAuthority(address who) public onlyOwner {
         _authorities[who] = true;
     }
 
-    function revokeAuthority(address who) public onlyOwner() {
+    function revokeAuthority(address who) public onlyOwner {
         _authorities[who] = false;
     }
 
@@ -61,15 +65,23 @@ contract Licences is Ownable {
 
         _addressToIdentifier[who] = identifier;
 
-        emit LicenceAdded(identifier, who);
+        _orderbook.triggerLicenceAdded(identifier, who);
     }
 
-    function revoke(address who) public onlyAuthority() {
+    function revoke(address who) public onlyAuthority {
         _licences[_addressToIdentifier[who]].licenceExists = false;
-        _licences[_addressToIdentifier[who]].identifier = '';
+        _licences[_addressToIdentifier[who]].identifier = "";
     }
 
-    function getLicence(bytes32 identifier) public view returns (address, bytes32, bytes32[] memory) {
+    function getLicence(bytes32 identifier)
+        public
+        view
+        returns (
+            address,
+            bytes32,
+            bytes32[] memory
+        )
+    {
         Licence storage licence = _licences[identifier];
         return (licence.ethAccount, licence.identifier, licence.waterAccountIds);
     }
@@ -95,7 +107,7 @@ contract Licences is Ownable {
         _licences[identifier].waterAccountIds.push(waterAccountId);
         _waterAccountIdToIdentifier[waterAccountId] = identifier;
         _addressToZoneToWaterAccountId[_licences[identifier].ethAccount][zoneIdentifier] = waterAccountId;
-        emit WaterAccountAdded(identifier, _licences[identifier].ethAccount);
+        _orderbook.triggerWaterAccountAdded(identifier, _licences[identifier].ethAccount);
     }
 
     function addAllLicenceWaterAccounts(
@@ -112,7 +124,7 @@ contract Licences is Ownable {
             _waterAccountIdToIdentifier[waterAccountIds[i]] = identifier;
             _addressToZoneToWaterAccountId[licence.ethAccount][zoneIdentifiers[i]] = waterAccountIds[i];
         }
-        emit LicenceCompleted(identifier, licence.ethAccount);
+        _orderbook.triggerLicenceCompleted(identifier, licence.ethAccount);
     }
 
     function purchase() public payable {
@@ -128,7 +140,7 @@ contract Licences is Ownable {
     }
 
     function getIdentifierForWaterAccountId(bytes32 waterAccountId) public view returns (bytes32) {
-        require(_waterAccountIdToIdentifier[waterAccountId] != '', 'There is no matching water account id');
+        require(_waterAccountIdToIdentifier[waterAccountId] != "", "There is no matching water account id");
         return _waterAccountIdToIdentifier[waterAccountId];
     }
 
@@ -153,9 +165,4 @@ contract Licences is Ownable {
         require(hasAuthority(msg.sender), "Only an authority can perform this function");
         _;
     }
-
-    event LicenceAdded(bytes32 indexed identifier, address indexed ethAccount);
-    event WaterAccountAdded(bytes32 indexed identifier, address indexed ethAccount);
-    event WaterAccountsAdded(bytes32[] identifiers, address[] ethAccount);
-    event LicenceCompleted(bytes32 indexed identifier, address indexed ethAccount);
 }

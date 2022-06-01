@@ -31,18 +31,13 @@ contract("History", function (accounts) {
       const beforeAmount = new BN(await web3.eth.getBalance(accounts[0]));
       orderbookInstance = await OrderBook.new("Test Scheme", 2021);
       const afterAmount = new BN(await web3.eth.getBalance(accounts[0]));
-      console.log(orderbookInstance.transaction);
-      console.log(afterAmount);
-      console.log(beforeAmount.sub(afterAmount).toString());
-      console.log(await web3.eth.getGasPrice());
-      // console.log(web3.utils.fromWei(`${beforeAmount - afterAmount}`, "ether") + " ETH");
       contractInstance = await History.new(orderbookInstance.address);
     });
 
     const historyPrice = 500;
     const historyQuantity = 500;
 
-    it.only("Should return a list of history", async () => {
+    it("Should return a list of history", async () => {
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
@@ -103,7 +98,7 @@ contract("History", function (accounts) {
       assert.equal(history.length, 0, "Random user should have no history but get no error");
     });
 
-    it("triggers HistoryAdded event", async () => {
+    xit("triggers HistoryAdded event", async () => {
       const receipt = await contractInstance.addHistory(BOB, ALICE, 1, 3, demoaHex, demoaHex, ID1);
 
       const [{ id }] = await contractInstance.getHistory(1);
