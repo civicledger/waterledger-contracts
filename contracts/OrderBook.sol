@@ -28,6 +28,11 @@ contract OrderBook is Ownable {
         Buy
     }
 
+    enum OrderStatus {
+        Accepted,
+        Deleted
+    }
+
     struct Order {
         bytes16 id;
         OrderType orderType;
@@ -186,7 +191,7 @@ contract OrderBook is Ownable {
 
         _history.addHistory(buyer, seller, order.price, order.quantity, fromZone, toZone, order.id);
 
-        emit OrderAccepted(id, msg.sender);
+        emit OrderStatusUpdated(id, OrderStatus.Accepted);
     }
 
     function getOrderBookSells() public view returns (Order[] memory) {
@@ -224,7 +229,7 @@ contract OrderBook is Ownable {
             removeUnmatchedBuyId(order.id);
         }
 
-        emit OrderDeleted(order.id);
+        emit OrderStatusUpdated(order.id, OrderStatus.Deleted);
     }
 
     function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
@@ -258,9 +263,7 @@ contract OrderBook is Ownable {
     }
 
     // OrderBook Events
-    event OrderDeleted(bytes16 id);
-    event OrderUnmatched(bytes16 orderId);
-    event OrderAccepted(bytes16 orderId, address indexed buyer);
+    event OrderStatusUpdated(bytes16 id, OrderStatus status);
     event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 zone, OrderType orderType);
 
     // Zones events
