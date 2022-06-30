@@ -45,14 +45,14 @@ contract("OrderBook", function (accounts) {
   beforeEach(async () => createOrderBook(accounts));
 
   describe("Orderbook Setup", () => {
-    it("has a scheme string", async () => {
-      const scheme = await contractInstance.getScheme();
-      assert.equal(scheme, "Test Scheme", "Scheme string is not returned correctly");
+    it("has a level 1 resource string", async () => {
+      const level1Resource = await contractInstance.getLevel1Resource();
+      assert.equal(level1Resource, "Test Level 1 Resource", "Level 1 Resource string is not returned correctly");
     });
 
     it("has a year string", async () => {
       const year = await contractInstance.getYear();
-      assert.equal(Number(year), 2021, "Scheme year is not returned correctly");
+      assert.equal(Number(year), 2021, "Level 1 Resource year is not returned correctly");
     });
   });
 
@@ -435,7 +435,7 @@ contract("OrderBook", function (accounts) {
 });
 
 const createOrderBook = async accounts => {
-  contractInstance = await OrderBook.new("Test Scheme", 2021);
+  contractInstance = await OrderBook.new("Test Level 1 Resource", 2021);
   zonesInstance = await Zones.new(contractInstance.address);
 
   const zoneIdentifiers = [toHex("barron-a"), toHex("barron-b"), toHex("barron-c"), toHex("barron-d")];
