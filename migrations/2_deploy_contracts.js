@@ -22,8 +22,13 @@ module.exports = async deployer => {
   const licencesInstance = await deployer.deploy(Licences, orderBookInstance.address);
   const level0ResourcesInstance = await deployer.deploy(Level0Resources, orderBookInstance.address);
 
-  level0Resources.forEach(asynclevel0Resource => {
-    await level0ResourcesInstance.addLevel0Resource(web3.utils.toHex(level0Resource.name),level0Resource.supply,level0Resource.min,level0Resource.max);
+  level0Resources.forEach(async level0Resource => {
+    await level0ResourcesInstance.addLevel0Resource(
+      web3.utils.toHex(level0Resource.name),
+      level0Resource.supply,
+      level0Resource.min,
+      level0Resource.max
+    );
   });
 
   await orderBookInstance.addHistoryContract(historyInstance.address);

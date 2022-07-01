@@ -29,7 +29,7 @@ contract Level0Resources is Ownable {
         return level0ResourceList;
     }
 
-    function getLevel0Resrouces() public view returns (Level0Resource[] memory) {
+    function getLevel0Resources() public view returns (Level0Resource[] memory) {
         Level0Resource[] memory level0ResourcesArray = new Level0Resource[](level0ResourceList.length);
         uint256 count = level0ResourceList.length;
         for (uint8 i = 0; i < count; i++) {
@@ -97,7 +97,7 @@ contract Level0Resources is Ownable {
         require(isValid, "Debit transfer not valid");
         require(balances[identifier][waterAccountId] >= quantity, "Balance not available");
 
-        Level0Resources[identifier].supply -= quantity;
+        level0Resources[identifier].supply -= quantity;
         balances[identifier][waterAccountId] -= quantity;
         _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }

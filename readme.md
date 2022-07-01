@@ -36,7 +36,7 @@ The orderbook is the primary listing of unmatched orders. It is the contract tha
 
 `addSellLimitOrder(uint256 price, uint256 quantity, uint8 level0ResourceIndex)`
 
-Add a sell order with a price and a quantity in a given level 0 water resource system. Level0Resource details can be retrieved from the `Level0Resources` contract.
+Add a sell order with a price and a quantity in a given level 0 water resource system. Level 0 water resource system details can be retrieved from the `Level0Resources` contract.
 
 The quantity provided is in kilolitres rather than the more typical megalitres so that fractional units such as `4.25 ML` are able to be stored.
 

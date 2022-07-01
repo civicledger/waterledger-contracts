@@ -196,7 +196,7 @@ contract("OrderBook", function (accounts) {
     });
   });
 
-  describe("Cross-level0-resource transfers", () => {
+  describe("Cross level0Resource transfers", () => {
     it("can match across level0Resources", async () => {
       await level0ResourcesInstance.allocate(demoaHex, ALICE_WA0, 100);
       await contractInstance.addSellLimitOrder(buyLimitPrice, defaultBuyQuantity, demoaHex, { from: ALICE });
