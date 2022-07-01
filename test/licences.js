@@ -76,7 +76,7 @@ contract("Licences", function (accounts) {
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(toHex("WL0000003"));
 
-      const waterAccountIdFromMapping = await contract.getWaterAccountIdByAddressAndZone(user2Address, demobHex);
+      const waterAccountIdFromMapping = await contract.getWaterAccountIdByAddressAndLevel0Resource(user2Address, demobHex);
 
       assert.equal(fromHex(waterAccount.waterAccountId), "WL0000003");
       assert.equal(fromHex(waterAccountIdFromMapping), "WL0000003");

@@ -21,8 +21,8 @@ contract History is QuickSort, Ownable {
         uint256 averagePrice;
         uint256 quantity;
         uint256 timeStamp;
-        bytes32 fromZone;
-        bytes32 toZone;
+        bytes32 fromLevel0Resource;
+        bytes32 toLevel0Resource;
         bytes16 orderId;
         Status status;
     }
@@ -64,7 +64,7 @@ contract History is QuickSort, Ownable {
         )
     {
         Trade memory trade = _history[_idToIndex[id].index];
-        return (trade.orderId, trade.buyer, trade.seller, trade.averagePrice, trade.quantity, trade.fromZone, trade.toZone);
+        return (trade.orderId, trade.buyer, trade.seller, trade.averagePrice, trade.quantity, trade.fromLevel0Resource, trade.toLevel0Resource);
     }
 
     function getHistory(uint256 numberOfTrades) public view returns (Trade[] memory) {
@@ -136,17 +136,17 @@ contract History is QuickSort, Ownable {
         address seller,
         uint256 price,
         uint256 quantity,
-        bytes32 fromZone,
-        bytes32 toZone,
+        bytes32 fromLevel0Resource,
+        bytes32 toLevel0Resource,
         bytes16 orderId
     ) external onlyWriters("Only writers can add history") {
         bytes16 id = createId(block.timestamp, price, quantity, buyer);
 
-        _history.push(Trade(id, buyer, seller, price, quantity, block.timestamp, fromZone, toZone, orderId, Status.Pending));
+        _history.push(Trade(id, buyer, seller, price, quantity, block.timestamp, fromLevel0Resource, toLevel0Resource, orderId, Status.Pending));
 
         _idToIndex[id] = IndexPosition(_history.length - 1, true);
 
-        _orderbook.triggerHistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
+        _orderbook.triggerHistoryAdded(id, buyer, seller, price, quantity, fromLevel0Resource, toLevel0Resource, orderId);
     }
 
     function createId(
@@ -191,7 +191,7 @@ contract History is QuickSort, Ownable {
         _;
     }
 
-    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromZone, bytes32 toZone, bytes16 orderId);
+    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromLevel0Resource, bytes32 toLevel0Resource, bytes16 orderId);
     event ManualHistoryAdded(bytes16 id);
     event TradeCompleted(bytes16 id);
     event TradeInvalidated(bytes16 id);

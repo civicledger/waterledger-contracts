@@ -5,19 +5,19 @@ pragma solidity 0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./OrderBook.sol";
 
-contract Zones is Ownable {
-    struct Zone {
+contract Level0Resources is Ownable {
+    struct Level0Resource {
         bytes32 identifier;
-        bool zoneExists;
+        bool level0ResourceExists;
         uint256 supply;
         uint256 min;
         uint256 max;
     }
 
-    mapping(bytes32 => Zone) private zones;
+    mapping(bytes32 => Level0Resource) private level0Resources;
     OrderBook private immutable _orderbook;
 
-    bytes32[] private zoneList;
+    bytes32[] private level0ResourceList;
 
     mapping(bytes32 => mapping(bytes32 => uint256)) private balances;
 
@@ -25,30 +25,30 @@ contract Zones is Ownable {
         _orderbook = OrderBook(orderbook);
     }
 
-    function getZoneList() public view returns (bytes32[] memory) {
-        return zoneList;
+    function getLevel0ResourceList() public view returns (bytes32[] memory) {
+        return level0ResourceList;
     }
 
-    function getZones() public view returns (Zone[] memory) {
-        Zone[] memory zonesArray = new Zone[](zoneList.length);
-        uint256 count = zoneList.length;
+    function getLevel0Resrouces() public view returns (Level0Resource[] memory) {
+        Level0Resource[] memory level0ResourcesArray = new Level0Resource[](level0ResourceList.length);
+        uint256 count = level0ResourceList.length;
         for (uint8 i = 0; i < count; i++) {
-            zonesArray[i] = zones[zoneList[i]];
+            level0ResourcesArray[i] = level0Resources[level0ResourceList[i]];
         }
-        return zonesArray;
+        return level0ResourcesArray;
     }
 
-    function addZone(
+    function addLevel0Resource(
         bytes32 identifier,
         uint256 supply,
         uint256 min,
         uint256 max
     ) public onlyOwner {
-        zones[identifier] = Zone(identifier, true, supply, min, max);
-        zoneList.push(identifier);
+        level0Resources[identifier] = Level0Resource(identifier, true, supply, min, max);
+        level0ResourceList.push(identifier);
     }
 
-    function addAllZones(
+    function addAllLevel0Resources(
         bytes32[] memory identifiers,
         uint256[] memory supplies,
         uint256[] memory mins,
@@ -56,10 +56,10 @@ contract Zones is Ownable {
     ) public onlyOwner {
         uint256 count = identifiers.length;
         for (uint8 i = 0; i < count; i++) {
-            zones[identifiers[i]] = Zone(identifiers[i], true, supplies[i], mins[i], maxes[i]);
-            zoneList.push(identifiers[i]);
+            level0Resources[identifiers[i]] = Level0Resource(identifiers[i], true, supplies[i], mins[i], maxes[i]);
+            level0ResourceList.push(identifiers[i]);
         }
-        _orderbook.triggerZonesAdded();
+        _orderbook.triggerLevel0ResourcesAdded();
     }
 
     function allocate(
@@ -67,7 +67,7 @@ contract Zones is Ownable {
         bytes32 waterAccountId,
         uint256 quantity
     ) public onlyOwner {
-        require(zones[identifier].zoneExists, "This zone is not valid");
+        require(level0Resources[identifier].level0ResourceExists, "This level0Resource is not valid");
         balances[identifier][waterAccountId] = quantity;
         _orderbook.triggerAllocation(identifier, waterAccountId, quantity);
         _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
@@ -93,11 +93,11 @@ contract Zones is Ownable {
     ) public onlyOrderBook {
         bool isValid = isFromTransferValid(identifier, quantity);
 
-        require(zones[identifier].zoneExists, "This zone is not valid");
+        require(level0Resources[identifier].level0ResourceExists, "This level0Resource is not valid");
         require(isValid, "Debit transfer not valid");
         require(balances[identifier][waterAccountId] >= quantity, "Balance not available");
 
-        zones[identifier].supply -= quantity;
+        Level0Resources[identifier].supply -= quantity;
         balances[identifier][waterAccountId] -= quantity;
         _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
@@ -109,29 +109,29 @@ contract Zones is Ownable {
     ) public onlyOrderBook {
         bool isValid = isToTransferValid(identifier, quantity);
 
-        require(zones[identifier].zoneExists, "This zone is not valid");
+        require(level0Resources[identifier].level0ResourceExists, "This level0Resource is not valid");
         require(isValid, "Credit transfer not valid");
 
-        zones[identifier].supply += quantity;
+        level0Resources[identifier].supply += quantity;
         balances[identifier][waterAccountId] += quantity;
         _orderbook.triggerBalanceUpdated(waterAccountId, balances[identifier][waterAccountId]);
     }
 
     function restoreSupply(bytes32 identifier, uint256 quantity) public onlyOrderBook {
-        zones[identifier].supply += quantity;
+        level0Resources[identifier].supply += quantity;
     }
 
     function isToTransferValid(bytes32 identifier, uint256 value) public view returns (bool) {
-        Zone memory zone = zones[identifier];
-        return (zone.supply + value) <= zone.max;
+        Level0Resource memory level0Resource = level0Resources[identifier];
+        return (level0Resource.supply + value) <= level0Resource.max;
     }
 
     function isFromTransferValid(bytes32 identifier, uint256 value) public view returns (bool) {
-        Zone memory zone = zones[identifier];
-        return (zone.supply - value) >= zone.min;
+        Level0Resource memory level0Resource = level0Resources[identifier];
+        return (level0Resource.supply - value) >= level0Resource.min;
     }
 
-    function getBalanceForZone(bytes32 waterAccountId, bytes32 identifier) public view returns (uint256) {
+    function getBalanceForLevel0Resource(bytes32 waterAccountId, bytes32 identifier) public view returns (uint256) {
         return balances[identifier][waterAccountId];
     }
 

@@ -3,15 +3,15 @@
 pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Zones.sol";
+import "./Level0Resources.sol";
 import "./History.sol";
 import "./Licences.sol";
 
 contract OrderBook is Ownable {
-    string[] private _zoneNames;
+    string[] private _level0ResourceNames;
     History private _history;
     Licences private _licences;
-    Zones private _zones;
+    Level0Resources private _level0Resources;
     uint256 private immutable _year;
 
     uint256 private _lastTradedPrice;
@@ -41,7 +41,7 @@ contract OrderBook is Ownable {
         uint256 quantity;
         uint256 timeStamp;
         uint256 matchedTimeStamp;
-        bytes32 zone;
+        bytes32 level0Resource;
     }
 
     Order[] private _orders;
@@ -68,17 +68,17 @@ contract OrderBook is Ownable {
         _licences = Licences(licencesContract);
     }
 
-    function addZonesContract(address zonesContract) public onlyOwner {
-        _zones = Zones(zonesContract);
+    function addLevel0ResourcesContract(address level0ResourcesContract) public onlyOwner {
+        _level0Resources = Level0Resources(level0ResourcesContract);
     }
 
     function completeTrade(bytes16 tradeId) public onlyOwner {
-        (, address buyer, , , uint256 quantity, , bytes32 toZone) = _history.getTradeDetails(tradeId);
+        (, address buyer, , , uint256 quantity, , bytes32 toLevel0Resource) = _history.getTradeDetails(tradeId);
 
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(buyer, toZone);
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(buyer, toLevel0Resource);
 
         _history.completeTrade(tradeId);
-        _zones.credit(toZone, waterAccountId, quantity);
+        _level0Resources.credit(toLevel0Resource, waterAccountId, quantity);
     }
 
     function getLastTradedPrice() public view returns (uint256) {
@@ -129,41 +129,41 @@ contract OrderBook is Ownable {
     function addSellLimitOrder(
         uint256 price,
         uint256 quantity,
-        bytes32 zone
+        bytes32 level0Resource
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(msg.sender, zone);
-        require(_zones.getBalanceForZone(waterAccountId, zone) >= quantity, "Insufficient water allocation");
-        bytes16 id = addOrder(price, quantity, zone, OrderType.Sell);
-        _zones.debit(zone, waterAccountId, quantity);
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(msg.sender, level0Resource);
+        require(_level0Resources.getBalanceForLevel0Resource(waterAccountId, level0Resource) >= quantity, "Insufficient water allocation");
+        bytes16 id = addOrder(price, quantity, level0Resource, OrderType.Sell);
+        _level0Resources.debit(level0Resource, waterAccountId, quantity);
         _unmatchedSells.push(id);
     }
 
     function addBuyLimitOrder(
         uint256 price,
         uint256 quantity,
-        bytes32 zone
+        bytes32 level0Resource
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        bytes16 id = addOrder(price, quantity, zone, OrderType.Buy);
+        bytes16 id = addOrder(price, quantity, level0Resource, OrderType.Buy);
         _unmatchedBuys.push(id);
     }
 
     function addOrder(
         uint256 price,
         uint256 quantity,
-        bytes32 zone,
+        bytes32 level0Resource,
         OrderType orderType
     ) internal returns (bytes16) {
         require(_licences.hasValid(msg.sender), "Sender has no valid licence");
         bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
-        _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, zone));
+        _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, level0Resource));
         _idToIndex[id] = IndexPosition(_orders.length - 1, true);
-        emit OrderAdded(id, msg.sender, price, quantity, zone, orderType);
+        emit OrderAdded(id, msg.sender, price, quantity, level0Resource, orderType);
         return id;
     }
 
-    function acceptOrder(bytes16 id, bytes32 zone) public guardId(id) {
+    function acceptOrder(bytes16 id, bytes32 level0Resource) public guardId(id) {
         require(_licences.hasValid(msg.sender), "Sender has no valid licence");
         Order storage order = _orders[_idToIndex[id].index];
         require(order.owner != msg.sender, "You cannot accept your own order");
@@ -172,16 +172,16 @@ contract OrderBook is Ownable {
 
         _lastTradedPrice = order.price;
 
-        bytes32 toZone = order.orderType == OrderType.Sell ? zone : order.zone;
-        bytes32 fromZone = order.orderType == OrderType.Sell ? order.zone : zone;
+        bytes32 toLevel0Resource = order.orderType == OrderType.Sell ? level0Resource : order.level0Resource;
+        bytes32 fromLevel0Resource = order.orderType == OrderType.Sell ? order.level0Resource : level0Resource;
 
         address buyer = order.orderType == OrderType.Sell ? msg.sender : order.owner;
         address seller = order.orderType == OrderType.Sell ? order.owner : msg.sender;
 
-        bool isToValid = _zones.isToTransferValid(toZone, order.quantity);
-        bool isFromValid = _zones.isToTransferValid(fromZone, order.quantity);
+        bool isToValid = _level0Resources.isToTransferValid(toLevel0Resource, order.quantity);
+        bool isFromValid = _level0Resources.isToTransferValid(fromLevel0Resource, order.quantity);
 
-        require(toZone == fromZone || (isToValid && isFromValid), "Transfer volumes are not valid");
+        require(toLevel0Resource == fromLevel0Resource || (isToValid && isFromValid), "Transfer volumes are not valid");
 
         if (order.orderType == OrderType.Sell) {
             removeUnmatchedSellId(id);
@@ -189,7 +189,7 @@ contract OrderBook is Ownable {
             removeUnmatchedBuyId(id);
         }
 
-        _history.addHistory(buyer, seller, order.price, order.quantity, fromZone, toZone, order.id);
+        _history.addHistory(buyer, seller, order.price, order.quantity, fromLevel0Resource, toLevel0Resource, order.id);
 
         emit OrderStatusUpdated(id, OrderStatus.Accepted);
     }
@@ -220,11 +220,11 @@ contract OrderBook is Ownable {
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _orders[_idToIndex[id].index];
 
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndZone(order.owner, order.zone);
+        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(order.owner, order.level0Resource);
 
         if (order.orderType == OrderType.Sell) {
             removeUnmatchedSellId(order.id);
-            _zones.credit(order.zone, waterAccountId, order.quantity);
+            _level0Resources.credit(order.level0Resource, waterAccountId, order.quantity);
         } else {
             removeUnmatchedBuyId(order.id);
         }
@@ -264,20 +264,20 @@ contract OrderBook is Ownable {
 
     // OrderBook Events
     event OrderStatusUpdated(bytes16 id, OrderStatus status);
-    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 zone, OrderType orderType);
+    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 level0Resource, OrderType orderType);
 
-    // Zones events
+    // Level0Resources events
     event BalanceUpdated(bytes32 waterAccountId, uint256 balance);
     event BalancesUpdated(bytes32[] waterAccountIds, uint256[] balances);
     event Allocation(bytes32 identifier, bytes32 waterAccountId, uint256 quantity);
     event AllocationsComplete();
-    event ZonesAdded();
+    event Level0ResourcesAdded();
 
-    function triggerBalanceUpdated(bytes32 waterAccountId, uint256 balance) external onlyZonesContract {
+    function triggerBalanceUpdated(bytes32 waterAccountId, uint256 balance) external onlyLevel0ResourcesContract {
         emit BalanceUpdated(waterAccountId, balance);
     }
 
-    function triggerBalancesUpdated(bytes32[] memory waterAccountIds, uint256[] memory balances) external onlyZonesContract {
+    function triggerBalancesUpdated(bytes32[] memory waterAccountIds, uint256[] memory balances) external onlyLevel0ResourcesContract {
         emit BalancesUpdated(waterAccountIds, balances);
     }
 
@@ -285,16 +285,16 @@ contract OrderBook is Ownable {
         bytes32 identifier,
         bytes32 waterAccountId,
         uint256 quantity
-    ) external onlyZonesContract {
+    ) external onlyLevel0ResourcesContract {
         emit Allocation(identifier, waterAccountId, quantity);
     }
 
-    function triggerAllocationsComplete() external onlyZonesContract {
+    function triggerAllocationsComplete() external onlyLevel0ResourcesContract {
         emit AllocationsComplete();
     }
 
-    function triggerZonesAdded() external onlyZonesContract {
-        emit ZonesAdded();
+    function triggerLevel0ResourcesAdded() external onlyLevel0ResourcesContract {
+        emit Level0ResourcesAdded();
     }
 
     event LicenceAdded(bytes32 indexed identifier, address indexed ethAccount);
@@ -318,7 +318,7 @@ contract OrderBook is Ownable {
         emit LicenceCompleted(identifier, ethAccount);
     }
 
-    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromZone, bytes32 toZone, bytes16 orderId);
+    event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromLevel0Resource, bytes32 toLevel0Resource, bytes16 orderId);
     event TradeStatusUpdated(bytes16 id, History.Status status);
 
     function triggerHistoryAdded(
@@ -327,19 +327,19 @@ contract OrderBook is Ownable {
         address seller,
         uint256 price,
         uint256 quantity,
-        bytes32 fromZone,
-        bytes32 toZone,
+        bytes32 fromLevel0Resource,
+        bytes32 toLevel0Resource,
         bytes16 orderId
     ) external {
-        emit HistoryAdded(id, buyer, seller, price, quantity, fromZone, toZone, orderId);
+        emit HistoryAdded(id, buyer, seller, price, quantity, fromLevel0Resource, toLevel0Resource, orderId);
     }
 
     function triggerTradeStatusUpdated(bytes16 id, History.Status status) external {
         emit TradeStatusUpdated(id, status);
     }
 
-    modifier onlyZonesContract() {
-        // require(msg.sender == _zones, "Only Zones Contract can trigger");
+    modifier onlyLevel0ResourcesContract() {
+        // require(msg.sender == _level0Resources, "Only Level0Resources Contract can trigger");
         _;
     }
 }
