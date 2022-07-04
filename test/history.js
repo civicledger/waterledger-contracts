@@ -29,7 +29,7 @@ contract("History", function (accounts) {
 
     beforeEach(async () => {
       const beforeAmount = new BN(await web3.eth.getBalance(accounts[0]));
-      orderbookInstance = await OrderBook.new("Test Scheme", 2021);
+      orderbookInstance = await OrderBook.new("Test Level 1 Resource", 2021);
       const afterAmount = new BN(await web3.eth.getBalance(accounts[0]));
       contractInstance = await History.new(orderbookInstance.address);
     });

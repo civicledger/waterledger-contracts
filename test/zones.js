@@ -25,7 +25,7 @@ contract("Zones Contract", function (accounts) {
   // const AMOUNT = 2000;
 
   beforeEach(async () => {
-    orderbookInstance = await OrderBook.new("Test Scheme", 2001);
+    orderbookInstance = await OrderBook.new("Test Level 1 Resource", 2001);
     contractInstance = await Zones.new(orderbookInstance.address);
     const zoneIdentifiers = [demoaHex, demobHex, democHex, demodHex];
     const zoneSupplies = [1000000, 1000000, 1000000, 1000000];

@@ -49,10 +49,10 @@ contract OrderBook is Ownable {
     bytes16[] private _unmatchedBuys;
     bytes16[] private _unmatchedSells;
 
-    string private _scheme;
+    string private _level1Resource;
 
-    constructor(string memory scheme, uint256 year) Ownable() {
-        _scheme = scheme;
+    constructor(string memory level1Resource, uint256 year) Ownable() {
+        _level1Resource = level1Resource;
         _year = year;
     }
 
@@ -85,8 +85,8 @@ contract OrderBook is Ownable {
         return _lastTradedPrice;
     }
 
-    function getScheme() external view returns (string memory) {
-        return _scheme;
+    function getLevel1Resource() external view returns (string memory) {
+        return _level1Resource;
     }
 
     function getYear() external view returns (uint256) {
