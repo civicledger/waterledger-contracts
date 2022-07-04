@@ -25,7 +25,7 @@ contract("Level0Resources Contract", function (accounts) {
   // const AMOUNT = 2000;
 
   beforeEach(async () => {
-    orderbookInstance = await OrderBook.new("Test Scheme", 2001);
+    orderbookInstance = await OrderBook.new("Test Level 1 Resource", 2001);
     contractInstance = await Level0Resources.new(orderbookInstance.address);
     const level0ResourceIdentifiers = [demoaHex, demobHex, democHex, demodHex];
     const level0ResourceSupplies = [1000000, 1000000, 1000000, 1000000];

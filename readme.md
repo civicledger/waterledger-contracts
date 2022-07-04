@@ -1,6 +1,6 @@
 # WaterLedger Smart Contracts
 
-The WaterLedger platform is a water trading platform across four smart contracts. These contracts have a life of a single financial year, and the scope of a given water scheme.
+The WaterLedger platform is a water trading platform across four smart contracts. These contracts have a life of a single financial year, and the scope of a given level 1 water resource.
 
 Ethereum Smart Contracts are used as the primary method of data input for a number of reasons.
 
@@ -10,7 +10,7 @@ The data stored is also a matter of public record, and as it is stored immutably
 
 The Ethereum Virtual Machine emits events on the executed functionality, which allows distributed systems or interested parties to subscribe for updates in realtime. This facilitates integration with existing water trading platforms or regulatory systems.
 
-The stored log provided by these events creates an audit log, that clearly shows all events and actions undertaken within the scheme on any contract. This has value both for reconciliation and as a non-realtime source of event projections.
+The stored log provided by these events creates an audit log, that clearly shows all events and actions undertaken within the level 1 water resource on any contract. This has value both for reconciliation and as a non-realtime source of event projections.
 
 # Usage
 
@@ -93,7 +93,7 @@ A public `view` method that returns a given number of trades. The trades returne
 
 ## Level0Resources
 
-The Level0Resources contract stores balances for each licence, and the details (such as minimum and maximum balances) of each level 0 water resource system. The pattern for deployment of this differs from most contracts, as the contract is deployed and then each level 0 water resource system in the Scheme needs to be added.
+The Level0Resources contract stores balances for each licence, and the details (such as minimum and maximum balances) of each level 0 water resource system. The pattern for deployment of this differs from most contracts, as the contract is deployed and then each level 0 water resource system in the Level1Resource needs to be added.
 
 The Level0Resources smart contract enforces two key rules. One is the storage of the balances of individual water accounts in each level 0 water resource system. The other is the balance of the level 0 water resource system itself - the total hydrological capacity of the catchment. This comes with minimum and maximum capacities which may not be overrun by any trade.
 
@@ -101,7 +101,7 @@ Note that these rules only apply to _cross-level0-resource_ trades. A trade with
 
 ### Methods
 
-The Level0Resources smart contract has no data-modifying methods that are accessed publicly. They are mostly called by the API during the onboarding process or during scheme setup.
+The Level0Resources smart contract has no data-modifying methods that are accessed publicly. They are mostly called by the API during the onboarding process or during level 1 water resource setup.
 
 `isToTransferValid(uint8 level0ResourceIndex, uint256 value)`
 
@@ -143,13 +143,13 @@ Check if the licence for a given address is valid. This is a public `view` metho
 
 ## Relationships
 
-A single scheme requires a collection of the four smart contracts as documented above. The relationships are documented in ERD format below.
+A single level 1 water resource requires a collection of the four smart contracts as documented above. The relationships are documented in ERD format below.
 
-The primary smart contract is the OrderBook. There is one for the scheme. The OrderBook stores the location of other smart contracts. The secondary smart contracts are stored as part of it.
+The primary smart contract is the OrderBook. There is one for the level 1 water resource. The OrderBook stores the location of other smart contracts. The secondary smart contracts are stored as part of it.
 
 The main "flow" of data is the addition of Orders to the OrderBook, and the accepting of them in the OrderBook, which then creates a new Trade in the History contract.
 
-The Level0Resources and Licences contracts are used to validate this process by providing confirmation that the trade (or initial order) fulfils the scheme requirements.
+The Level0Resources and Licences contracts are used to validate this process by providing confirmation that the trade (or initial order) fulfils the level 1 water resource requirements.
 
 ![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/smart-contract-final.png)
 

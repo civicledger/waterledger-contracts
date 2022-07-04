@@ -32,7 +32,7 @@ contract("Licences", function (accounts) {
   const demodHex = toHex(demodString);
 
   beforeEach(async () => {
-    orderbookContract = await OrderBook.new("Test Scheme", 2001);
+    orderbookContract = await OrderBook.new("Test Level 1 Resource", 2001);
     contract = await Licences.new(orderbookContract.address);
   });
 
