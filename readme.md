@@ -34,20 +34,20 @@ The orderbook is the primary listing of unmatched orders. It is the contract tha
 
 ### Public Methods
 
-`addSellLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex)`
+`addSellLimitOrder(uint256 price, uint256 quantity, uint8 level0ResourceIndex)`
 
-Add a sell order with a price and a quantity in a given zone. Zone details can be retrieved from the `Zones` contract.
+Add a sell order with a price and a quantity in a given level 0 water resource system. Level 0 water resource system details can be retrieved from the `Level0Resources` contract.
 
 The quantity provided is in kilolitres rather than the more typical megalitres so that fractional units such as `4.25 ML` are able to be stored.
 
 - Placing sell orders requires a valid licence.
-- The account placing the sell orders require sufficient water balance in the zone.
+- The account placing the sell orders require sufficient water balance in the level 0 water resource system.
 
-`addBuyLimitOrder(uint256 price, uint256 quantity, uint8 zoneIndex)`
+`addBuyLimitOrder(uint256 price, uint256 quantity, uint8 level0ResourceIndex)`
 
 - Placing buy orders requires a valid licence.
 
-`acceptOrder(bytes16 id, uint8 zone)`
+`acceptOrder(bytes16 id, uint8 level0Resource)`
 
 Allows a user licence to accept a given outstanding order.
 
@@ -91,29 +91,29 @@ A public `view` function that returns the details of a trade with a given id. Th
 
 A public `view` method that returns a given number of trades. The trades returned are the most recent. The data returned is an array of `Trade` structs.
 
-## Zones
+## Level0Resources
 
-The Zones contract stores balances for each licence, and the details (such as minimum and maximum balances) of each zone. The pattern for deployment of this differs from most contracts, as the contract is deployed and then each zone in the Level1Resource needs to be added.
+The Level0Resources contract stores balances for each licence, and the details (such as minimum and maximum balances) of each level 0 water resource system. The pattern for deployment of this differs from most contracts, as the contract is deployed and then each level 0 water resource system in the Level1Resource needs to be added.
 
-The Zones smart contract enforces two key rules. One is the storage of the balances of individual water accounts in each zone. The other is the balance of the zone itself - the total hydrological capacity of the catchment. This comes with minimum and maximum capacities which may not be overrun by any trade.
+The Level0Resources smart contract enforces two key rules. One is the storage of the balances of individual water accounts in each level 0 water resource system. The other is the balance of the level 0 water resource system itself - the total hydrological capacity of the catchment. This comes with minimum and maximum capacities which may not be overrun by any trade.
 
-Note that these rules only apply to _cross-zone_ trades. A trade within a zone doesn't trigger these checks.
+Note that these rules only apply to _cross-level0-resource_ trades. A trade within a level 0 water resource system doesn't trigger these checks.
 
 ### Methods
 
-The Zones smart contract has no data-modifying methods that are accessed publicly. They are mostly called by the API during the onboarding process or during level 1 water resource setup.
+The Level0Resources smart contract has no data-modifying methods that are accessed publicly. They are mostly called by the API during the onboarding process or during level 1 water resource setup.
 
-`isToTransferValid(uint8 zoneIndex, uint256 value)`
+`isToTransferValid(uint8 level0ResourceIndex, uint256 value)`
 
-Checks whether a transfer of a certain amount of water into a zone would be permitted under cross-zone transit rules. Note that this method is primarily used internally to validate trades.
+Checks whether a transfer of a certain amount of water into a level 0 water resource system would be permitted under cross-level0-resource transit rules. Note that this method is primarily used internally to validate trades.
 
-`isFromTransferValid(uint8 zoneIndex, uint256 value)`
+`isFromTransferValid(uint8 level0ResourceIndex, uint256 value)`
 
-Checks whether removing a certain amount of water from a zone would be permitted under cross-zone transit rules. As above this is used to validate trades.
+Checks whether removing a certain amount of water from a level 0 water resource system would be permitted under cross-level0-resource transit rules. As above this is used to validate trades.
 
-`getBalanceForZone(bytes32 waterAccountId, uint8 zoneIndex)`
+`getBalanceForLevel0Resource(bytes32 waterAccountId, uint8 level0ResourceIndex)`
 
-Check the balance that a water account has in any zone. It is necessary to pass in both the `waterAccountId` and the `zoneIndex` due to the way balance mappings are keyed.
+Check the balance that a water account has in any level 0 water resource system. It is necessary to pass in both the `waterAccountId` and the `level0ResourceIndex` due to the way balance mappings are keyed.
 
 The `waterAccountId` in this method call is the water authority's string identifier (converted to bytes32 for storage). It is not an id generated by the contract as that is not necessary.
 
@@ -131,7 +131,7 @@ Issue a licence to a given Ethereum address from a start time to an end time. No
 
 - Requires the user to have been assigned water authority access
 
-`addLicenceWaterAccount(uint256 licenceIndex, bytes32 waterAccountId, uint8 zoneIndex)`
+`addLicenceWaterAccount(uint256 licenceIndex, bytes32 waterAccountId, uint8 level0ResourceIndex)`
 
 Adds a water trading account to a licence. The licenceIndex can be retrived fromt he event triggered on issuing a licence. See events below.
 
@@ -149,7 +149,7 @@ The primary smart contract is the OrderBook. There is one for the level 1 water 
 
 The main "flow" of data is the addition of Orders to the OrderBook, and the accepting of them in the OrderBook, which then creates a new Trade in the History contract.
 
-The Zones and Licences contracts are used to validate this process by providing confirmation that the trade (or initial order) fulfils the level 1 water resource requirements.
+The Level0Resources and Licences contracts are used to validate this process by providing confirmation that the trade (or initial order) fulfils the level 1 water resource requirements.
 
 ![Waterledger Contracts ERD](https://waterledger-wp.sgp1.digitaloceanspaces.com/smart-contract-final.png)
 
@@ -175,9 +175,9 @@ The given order has been deleted and should be removed from any projection.
 
 The given order has been accepted by a specific buyer (the buyer address corresponds to a licence) any any projection should list it as "matched" or otherwise remove it from the list of open orders.
 
-`OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 zone, OrderType orderType)`
+`OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, uint8 level0Resource, OrderType orderType)`
 
-An order has been added. The licence is provided along with price, quantity, and zone. The `orderType` returned is 0 for Sell, and 1 for a Buy.
+An order has been added. The licence is provided along with price, quantity, and level 0 water resource system. The `orderType` returned is 0 for Sell, and 1 for a Buy.
 
 Note that the quantity is output in **kilolitres** to allow display as decimals of megalitres.
 
@@ -191,25 +191,25 @@ An authority has added a valid licence at the following address.
 
 An authority has added a Water Account to the licence.
 
-### Zones
+### Level0Resources
 
 `BalanceUpdated(bytes32 waterAccountId, uint256 balance)`
 
 A water account's balance has been changed to the output value. Note tha this is in kilolitres, not megalitres.
 
-`Allocation(uint8 zoneIndex, bytes32 waterAccountId, uint256 quantity)`
+`Allocation(uint8 level0ResourceIndex, bytes32 waterAccountId, uint256 quantity)`
 
-An allocation has been assigned to a waterAccount in a zone.
+An allocation has been assigned to a waterAccount in a level 0 water resource system.
 
-`ZoneAdded(bytes16 id, uint8 zoneIndex)`
+`Level0ResourceAdded(bytes16 id, uint8 level0ResourceIndex)`
 
-A zone has been added
+A level 0 water resource system has been added
 
 ### History
 
-`HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromZone, uint8 toZone, bytes16 orderId)`
+`HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, uint8 fromLevel0Resource, uint8 toLevel0Resource, bytes16 orderId)`
 
-A trade has been created from accepting an order, listed as the orderId. The address of the buyer and seller are returned, and with the zones can be used to find the correct water account.
+A trade has been created from accepting an order, listed as the orderId. The address of the buyer and seller are returned, and with the level0Resources can be used to find the correct water account.
 
 `TradeCompleted(bytes16 id)`
 
@@ -226,23 +226,29 @@ In order to obtain a valid instance of all of the contracts, there are several s
 The following deployment steps from Truffle's deployment system demonstrate the required approach.
 
 ```javascript
-const zones = ["Barron Zone A", "Barron Zone B", "Barron Zone C", "Barron Zone D", "Barron Zone E"];
+const level0Resources = [
+  "Barron Level0Resource A",
+  "Barron Level0Resource B",
+  "Barron Level0Resource C",
+  "Barron Level0Resource D",
+  "Barron Level0Resource E",
+];
 
 const orderBookInstance = await deployer.deploy(OrderBook);
 const historyInstance = await deployer.deploy(History, orderBookInstance.address);
 const licenceInstance = await deployer.deploy(Licences);
 
-const zonesInstance = await deployer.deploy(Zones, orderBookInstance.address);
+const level0ResourcesInstance = await deployer.deploy(Level0Resources, orderBookInstance.address);
 
-zones.forEach(async zoneName => {
-  await zonesInstance.addZone(web3.utils.toHex(zoneName), 100000, 0, 100000);
+Level0Resources.forEach(async level0ResourceName => {
+  await Level0ResourcesInstance.addLevel0Resource(web3.utils.toHex(level0ResourceName), 100000, 0, 100000);
 });
 
 await orderBookInstance.addHistoryContract(historyInstance.address);
 await orderBookInstance.addLicencesContract(licenceInstance.address);
 ```
 
-The unit tests provided with this repository demonstrate a clear process of the setup necessary for individual users. Most notably, it is important that the `allocate` function in the Zones contract is run to provide the user with an amount of water to trade.
+The unit tests provided with this repository demonstrate a clear process of the setup necessary for individual users. Most notably, it is important that the `allocate` function in the Level0Resources contract is run to provide the user with an amount of water to trade.
 
 ## Testing
 

@@ -47,7 +47,7 @@ contract("History", function (accounts) {
     });
 
     it("Should allow partial returning of history", async () => {
-      // buyer, seller, price, quantity, fromZone, toZone, buyIndex, sellIndex
+      // buyer, seller, price, quantity, fromLevel0Resource, toLevel0Resource, buyIndex, sellIndex
       await contractInstance.addHistory(BOB, ALICE, 1, 3, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(BOB, ALICE, 2, 2, demoaHex, demobHex, ID1);
       await contractInstance.addHistory(BOB, ALICE, 3, 5, demobHex, demodHex, ID1);
