@@ -1,7 +1,7 @@
 const History = artifacts.require("History");
 const OrderBook = artifacts.require("OrderBook");
 const Level0Resources = artifacts.require("Level0Resources");
-const Licences = artifacts.require("Licences");
+const ExtractionRights = artifacts.require("ExtractionRights");
 const { BN, expectEvent, expectRevert } = require("@openzeppelin/test-helpers");
 const { subHours, addYears, getUnixTime } = require("date-fns");
 
@@ -21,7 +21,7 @@ const demodHex = toHex(demodString);
 var contractInstance;
 var level0ResourcesInstance;
 var historyInstance;
-var licencesInstance;
+var extractionRightsInstance;
 
 const ALICE_WA0 = toHex("AL-000");
 const ALICE_WA1 = toHex("AL-001");
@@ -296,7 +296,7 @@ contract("OrderBook", function (accounts) {
 
       expectEvent(receipt, "OrderAdded", {
         id,
-        licenceAddress: BOB,
+        extractionRightAddress: BOB,
         price: new BN(buyLimitPrice),
         quantity: new BN(defaultBuyQuantity),
       });
@@ -309,7 +309,7 @@ contract("OrderBook", function (accounts) {
 
       expectEvent(receipt, "OrderAdded", {
         id,
-        licenceAddress: ALICE,
+        extractionRightAddress: ALICE,
         price: new BN(100),
         quantity: new BN(20),
       });
@@ -446,21 +446,29 @@ const createOrderBook = async accounts => {
   await level0ResourcesInstance.addAllLevel0Resources(level0ResourceIdentifiers, level0ResourceSupplies, level0ResourceMins, level0ResourceMaxes);
 
   historyInstance = await History.new(contractInstance.address);
-  licencesInstance = await Licences.new(contractInstance.address);
+  extractionRightsInstance = await ExtractionRights.new(contractInstance.address);
   const start = getUnixTime(subHours(new Date(), 2));
   const end = getUnixTime(addYears(new Date(), 1));
 
-  await licencesInstance.issue(accounts[1], toHex("WL-000001234"), start, end);
+  await extractionRightsInstance.issue(accounts[1], toHex("WL-000001234"), start, end);
 
-  await licencesInstance.addAllLicenceWaterAccounts(toHex("WL-000001234"), [ALICE_WA0, ALICE_WA1, ALICE_WA2], [demoaHex, demobHex, democHex]);
+  await extractionRightsInstance.addAllExtractionRightWaterAccounts(
+    toHex("WL-000001234"),
+    [ALICE_WA0, ALICE_WA1, ALICE_WA2],
+    [demoaHex, demobHex, democHex]
+  );
 
-  await licencesInstance.issue(accounts[2], toHex("WL-000054321"), start, end);
+  await extractionRightsInstance.issue(accounts[2], toHex("WL-000054321"), start, end);
 
-  await licencesInstance.addAllLicenceWaterAccounts(toHex("WL-000054321"), [BOB_WA0, BOB_WA1, BOB_WA2], [demoaHex, demobHex, democHex]);
+  await extractionRightsInstance.addAllExtractionRightWaterAccounts(
+    toHex("WL-000054321"),
+    [BOB_WA0, BOB_WA1, BOB_WA2],
+    [demoaHex, demobHex, democHex]
+  );
 
   await contractInstance.addHistoryContract(historyInstance.address);
   await contractInstance.addLevel0ResourcesContract(level0ResourcesInstance.address);
-  await contractInstance.addLicencesContract(licencesInstance.address);
+  await contractInstance.addExtractionRightsContract(extractionRightsInstance.address);
 };
 
 const getGasCostInEth = tx => {

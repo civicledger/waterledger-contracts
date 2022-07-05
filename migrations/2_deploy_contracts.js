@@ -1,6 +1,6 @@
 const Level0Resources = artifacts.require("Level0Resources");
 const OrderBook = artifacts.require("OrderBook");
-const Licences = artifacts.require("Licences");
+const ExtractionRights = artifacts.require("ExtractionRights");
 const History = artifacts.require("History");
 
 const level0Resources = [
@@ -19,7 +19,7 @@ module.exports = async deployer => {
   orderBookInstance = await deployer.deploy(OrderBook, "Test Level 1 Resource", 2022);
 
   const historyInstance = await deployer.deploy(History, orderBookInstance.address);
-  const licencesInstance = await deployer.deploy(Licences, orderBookInstance.address);
+  const extractionRightsInstance = await deployer.deploy(ExtractionRights, orderBookInstance.address);
   const level0ResourcesInstance = await deployer.deploy(Level0Resources, orderBookInstance.address);
 
   level0Resources.forEach(async level0Resource => {
@@ -33,5 +33,5 @@ module.exports = async deployer => {
 
   await orderBookInstance.addHistoryContract(historyInstance.address);
   await orderBookInstance.addLevel0ResourcesContract(level0ResourcesInstance.address);
-  await orderBookInstance.addLicencesContract(licencesInstance.address);
+  await orderBookInstance.addExtractionRightsContract(extractionRightsInstance.address);
 };
