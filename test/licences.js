@@ -1,4 +1,4 @@
-const Licences = artifacts.require("Licences");
+const ExtractionRights = artifacts.require("ExtractionRights");
 const OrderBook = artifacts.require("OrderBook");
 const { expectRevert } = require("@openzeppelin/test-helpers");
 const { addYears, startOfYear, getUnixTime } = require("date-fns");
@@ -6,14 +6,14 @@ const { addYears, startOfYear, getUnixTime } = require("date-fns");
 const toHex = web3.utils.toHex;
 const fromHex = web3.utils.hexToUtf8;
 
-contract("Licences", function (accounts) {
+contract("ExtractionRights", function (accounts) {
   let contract;
   let orderbookContract;
   let user1Address = accounts[1];
   let user2Address = accounts[2];
 
-  const defaultLicenceString = "WL-000001234";
-  const defaultLicenceHex = toHex(defaultLicenceString);
+  const defaultExtractionRightString = "WL-000001234";
+  const defaultExtractionRightHex = toHex(defaultExtractionRightString);
 
   const defaultAccountString = "WA-0001";
   const defaultAccountHex = toHex(defaultAccountString);
@@ -33,46 +33,46 @@ contract("Licences", function (accounts) {
 
   beforeEach(async () => {
     orderbookContract = await OrderBook.new("Test Level 1 Resource", 2001);
-    contract = await Licences.new(orderbookContract.address);
+    contract = await ExtractionRights.new(orderbookContract.address);
   });
 
-  describe("Licences", function () {
-    it("can add and retrieve a licence", async function () {
-      await contract.issue(user2Address, defaultLicenceHex, fromDate, toDate);
-      const licence = await contract.getLicence(defaultLicenceHex);
-      assert.equal(licence[0], user2Address, "Address is not saved successfully");
+  describe("ExtractionRights", function () {
+    it("can add and retrieve an extraction right", async function () {
+      await contract.issue(user2Address, defaultExtractionRightHex, fromDate, toDate);
+      const extractionRight = await contract.getExtractionRight(defaultExtractionRightHex);
+      assert.equal(extractionRight[0], user2Address, "Address is not saved successfully");
     });
 
-    it("can check a licence", async function () {
-      await contract.issue(user2Address, defaultLicenceHex, fromDate, toDate);
-      const hasValidLicence = await contract.hasValid(user2Address);
+    it("can check an extraction right", async function () {
+      await contract.issue(user2Address, defaultExtractionRightHex, fromDate, toDate);
+      const hasValidExtractionRight = await contract.hasValid(user2Address);
 
-      assert.ok(hasValidLicence, "Address not returning as valid licence");
+      assert.ok(hasValidExtractionRight, "Address not returning as valid extraction right");
     });
   });
 
   describe("water accounts", function () {
-    beforeEach(async () => await contract.issue(user2Address, defaultLicenceHex, fromDate, toDate));
+    beforeEach(async () => await contract.issue(user2Address, defaultExtractionRightHex, fromDate, toDate));
 
-    it("can add a water account to a licence", async function () {
-      await contract.addLicenceWaterAccount(defaultLicenceHex, defaultAccountHex, demobHex);
+    it("can add a water account to an extraction right", async function () {
+      await contract.addExtractionRightWaterAccount(defaultExtractionRightHex, defaultAccountHex, demobHex);
       const waterAccount = await contract.getWaterAccountForWaterAccountId(defaultAccountHex);
       assert.equal(web3.utils.hexToUtf8(waterAccount.waterAccountId), defaultAccountString);
     });
 
-    it("can add multiple water accounts to a licence", async function () {
+    it("can add multiple water accounts to an extraction right", async function () {
       const testAccount = "WA-0003";
-      await contract.addLicenceWaterAccount(defaultLicenceHex, toHex("WA-0000"), demoaHex);
-      await contract.addLicenceWaterAccount(defaultLicenceHex, toHex("WA-0001"), demobHex);
-      await contract.addLicenceWaterAccount(defaultLicenceHex, toHex(testAccount), demodHex);
+      await contract.addExtractionRightWaterAccount(defaultExtractionRightHex, toHex("WA-0000"), demoaHex);
+      await contract.addExtractionRightWaterAccount(defaultExtractionRightHex, toHex("WA-0001"), demobHex);
+      await contract.addExtractionRightWaterAccount(defaultExtractionRightHex, toHex(testAccount), demodHex);
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(toHex(testAccount));
 
       assert.equal(fromHex(waterAccount.waterAccountId), testAccount);
     });
 
-    it("can add multiple water accounts to a licence in one step", async function () {
-      await contract.addAllLicenceWaterAccounts(defaultLicenceHex, [toHex("WL0000002"), toHex("WL0000003")], [demobHex, democHex]);
+    it("can add multiple water accounts to an extraction right in one step", async function () {
+      await contract.addAllExtractionRightWaterAccounts(defaultExtractionRightHex, [toHex("WL0000002"), toHex("WL0000003")], [demobHex, democHex]);
 
       const waterAccount = await contract.getWaterAccountForWaterAccountId(toHex("WL0000003"));
 
@@ -82,14 +82,14 @@ contract("Licences", function (accounts) {
       assert.equal(fromHex(waterAccountIdFromMapping), "WL0000003");
     });
 
-    it("can get all the waterAccountIds for a licence", async function () {
-      await contract.addAllLicenceWaterAccounts(
-        defaultLicenceHex,
+    it("can get all the waterAccountIds for an extraction right", async function () {
+      await contract.addAllExtractionRightWaterAccounts(
+        defaultExtractionRightHex,
         [toHex("WL0000002"), toHex("WL0000003"), toHex("WL0000004")],
         [demobHex, democHex, demodHex]
       );
 
-      const waterAccounts = await contract.getWaterAccountsForLicence(defaultLicenceHex);
+      const waterAccounts = await contract.getWaterAccountsForExtractionRight(defaultExtractionRightHex);
 
       assert.equal(waterAccounts.length, 3, "Water Accounts array is the wrong length");
       assert.equal(fromHex(waterAccounts[1].waterAccountId), "WL0000003");
@@ -97,40 +97,43 @@ contract("Licences", function (accounts) {
 
     it("cannot add multiple accounts with different array lengths", async () => {
       await expectRevert(
-        contract.addAllLicenceWaterAccounts(defaultLicenceHex, [toHex("WL0000002"), toHex("WL0000003")], [demobHex]),
+        contract.addAllExtractionRightWaterAccounts(defaultExtractionRightHex, [toHex("WL0000002"), toHex("WL0000003")], [demobHex]),
         "Input arrays must be the same length"
       );
     });
 
     it("cannot get the water accounts from an invalid waterAccountID", async () => {
-      await expectRevert(contract.getWaterAccountsForLicence(defaultLicenceHex), "There are no water accounts for this licence");
+      await expectRevert(
+        contract.getWaterAccountsForExtractionRight(defaultExtractionRightHex),
+        "There are no water accounts for this extraction right"
+      );
     });
 
-    it("cannot get the licence from an invalid waterAccountID", async () => {
+    it("cannot get the extraction right from an invalid waterAccountID", async () => {
       await expectRevert(contract.getIdentifierForWaterAccountId(web3.utils.toHex("NONEXISTENT")), "There is no matching water account id");
     });
   });
 
-  describe("can issue enhanced licence", async () => {
-    it("can issue a licence", async () => {
+  describe("can issue enhanced extraction right", async () => {
+    it("can issue an extraction right", async () => {
       await contract.issue(user1Address, toHex("WL0000001"), fromDate, toDate);
 
-      const licence = await contract.getLicence(toHex("WL0000001"));
+      const extractionRight = await contract.getExtractionRight(toHex("WL0000001"));
 
-      const [ethAccount, identifier] = Object.values(licence);
+      const [ethAccount, identifier] = Object.values(extractionRight);
 
-      assert.equal(ethAccount, user1Address, "Incorrect eth account on licence");
-      assert.equal(fromHex(identifier), "WL0000001", "Incorrect identifier on licence");
+      assert.equal(ethAccount, user1Address, "Incorrect eth account on extraction right");
+      assert.equal(fromHex(identifier), "WL0000001", "Incorrect identifier on extraction right");
     });
 
-    it("can add water accounts even without an existing licence", async () => {
-      await contract.addLicenceWaterAccount(defaultLicenceHex, toHex("WA-0001"), demoaHex);
+    it("can add water accounts even without an existing extraction right", async () => {
+      await contract.addExtractionRightWaterAccount(defaultExtractionRightHex, toHex("WA-0001"), demoaHex);
 
-      const [ethAccount, identifier, waterAccounts] = Object.values(await contract.getLicence(defaultLicenceHex));
+      const [ethAccount, identifier, waterAccounts] = Object.values(await contract.getExtractionRight(defaultExtractionRightHex));
 
-      assert.equal(ethAccount, 0, "Incorrect eth account on licence");
-      assert.equal(fromHex(identifier), "", "Incorrect identifier on licence");
-      assert.equal(waterAccounts.length, 1, "Incorrect number of water accounts on licence");
+      assert.equal(ethAccount, 0, "Incorrect eth account on extraction right");
+      assert.equal(fromHex(identifier), "", "Incorrect identifier on extraction right");
+      assert.equal(waterAccounts.length, 1, "Incorrect number of water accounts on extraction right");
     });
   });
 });

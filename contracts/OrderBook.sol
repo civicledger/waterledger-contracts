@@ -5,12 +5,12 @@ pragma solidity 0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Level0Resources.sol";
 import "./History.sol";
-import "./Licences.sol";
+import "./ExtractionRights.sol";
 
 contract OrderBook is Ownable {
     string[] private _level0ResourceNames;
     History private _history;
-    Licences private _licences;
+    ExtractionRights private _extractionRights;
     Level0Resources private _level0Resources;
     uint256 private immutable _year;
 
@@ -64,8 +64,8 @@ contract OrderBook is Ownable {
         return _orders[_idToIndex[id].index];
     }
 
-    function addLicencesContract(address licencesContract) public onlyOwner {
-        _licences = Licences(licencesContract);
+    function addExtractionRightsContract(address extractionRightsContract) public onlyOwner {
+        _extractionRights = ExtractionRights(extractionRightsContract);
     }
 
     function addLevel0ResourcesContract(address level0ResourcesContract) public onlyOwner {
@@ -75,7 +75,7 @@ contract OrderBook is Ownable {
     function completeTrade(bytes16 tradeId) public onlyOwner {
         (, address buyer, , , uint256 quantity, , bytes32 toLevel0Resource) = _history.getTradeDetails(tradeId);
 
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(buyer, toLevel0Resource);
+        bytes32 waterAccountId = _extractionRights.getWaterAccountIdByAddressAndLevel0Resource(buyer, toLevel0Resource);
 
         _history.completeTrade(tradeId);
         _level0Resources.credit(toLevel0Resource, waterAccountId, quantity);
@@ -132,7 +132,7 @@ contract OrderBook is Ownable {
         bytes32 level0Resource
     ) external {
         require(quantity > 0 && price > 0, "Values must be greater than 0");
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(msg.sender, level0Resource);
+        bytes32 waterAccountId = _extractionRights.getWaterAccountIdByAddressAndLevel0Resource(msg.sender, level0Resource);
         require(_level0Resources.getBalanceForLevel0Resource(waterAccountId, level0Resource) >= quantity, "Insufficient water allocation");
         bytes16 id = addOrder(price, quantity, level0Resource, OrderType.Sell);
         _level0Resources.debit(level0Resource, waterAccountId, quantity);
@@ -155,7 +155,7 @@ contract OrderBook is Ownable {
         bytes32 level0Resource,
         OrderType orderType
     ) internal returns (bytes16) {
-        require(_licences.hasValid(msg.sender), "Sender has no valid licence");
+        require(_extractionRights.hasValid(msg.sender), "Sender has no valid extraction right");
         bytes16 id = createId(block.timestamp, price, quantity, msg.sender);
         _orders.push(Order(id, orderType, msg.sender, price, quantity, block.timestamp, 0, level0Resource));
         _idToIndex[id] = IndexPosition(_orders.length - 1, true);
@@ -164,7 +164,7 @@ contract OrderBook is Ownable {
     }
 
     function acceptOrder(bytes16 id, bytes32 level0Resource) public guardId(id) {
-        require(_licences.hasValid(msg.sender), "Sender has no valid licence");
+        require(_extractionRights.hasValid(msg.sender), "Sender has no valid extraction right");
         Order storage order = _orders[_idToIndex[id].index];
         require(order.owner != msg.sender, "You cannot accept your own order");
 
@@ -220,7 +220,7 @@ contract OrderBook is Ownable {
         require(order.matchedTimeStamp == 0, "This order has been matched");
         delete _orders[_idToIndex[id].index];
 
-        bytes32 waterAccountId = _licences.getWaterAccountIdByAddressAndLevel0Resource(order.owner, order.level0Resource);
+        bytes32 waterAccountId = _extractionRights.getWaterAccountIdByAddressAndLevel0Resource(order.owner, order.level0Resource);
 
         if (order.orderType == OrderType.Sell) {
             removeUnmatchedSellId(order.id);
@@ -232,24 +232,24 @@ contract OrderBook is Ownable {
         emit OrderStatusUpdated(order.id, OrderStatus.Deleted);
     }
 
-    function getLicenceUnmatchedSellsCount(address licenceAddress) internal view returns (uint256) {
+    function getExtractionRightUnmatchedSellsCount(address extractionRightAddress) internal view returns (uint256) {
         uint256 count = 0;
         uint256 sellsLength = _unmatchedSells.length;
         for (uint256 i = 0; i < sellsLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedSells[i]].index];
-            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+            if (order.matchedTimeStamp == 0 && order.owner == extractionRightAddress) {
                 count++;
             }
         }
         return count;
     }
 
-    function getLicenceUnmatchedBuysCount(address licenceAddress) internal view returns (uint256) {
+    function getExtractionRightUnmatchedBuysCount(address extractionRightAddress) internal view returns (uint256) {
         uint256 count = 0;
         uint256 buysLength = _unmatchedBuys.length;
         for (uint256 i = 0; i < buysLength; i++) {
             Order memory order = _orders[_idToIndex[_unmatchedBuys[i]].index];
-            if (order.matchedTimeStamp == 0 && order.owner == licenceAddress) {
+            if (order.matchedTimeStamp == 0 && order.owner == extractionRightAddress) {
                 count++;
             }
         }
@@ -264,7 +264,7 @@ contract OrderBook is Ownable {
 
     // OrderBook Events
     event OrderStatusUpdated(bytes16 id, OrderStatus status);
-    event OrderAdded(bytes16 id, address indexed licenceAddress, uint256 price, uint256 quantity, bytes32 level0Resource, OrderType orderType);
+    event OrderAdded(bytes16 id, address indexed extractionRightAddress, uint256 price, uint256 quantity, bytes32 level0Resource, OrderType orderType);
 
     // Level0Resources events
     event BalanceUpdated(bytes32 waterAccountId, uint256 balance);
@@ -297,13 +297,13 @@ contract OrderBook is Ownable {
         emit Level0ResourcesAdded();
     }
 
-    event LicenceAdded(bytes32 indexed identifier, address indexed ethAccount);
+    event ExtractionRightAdded(bytes32 indexed identifier, address indexed ethAccount);
     event WaterAccountAdded(bytes32 indexed identifier, address indexed ethAccount);
     event WaterAccountsAdded(bytes32[] identifiers, address[] ethAccount);
-    event LicenceCompleted(bytes32 indexed identifier, address indexed ethAccount);
+    event ExtractionRightCompleted(bytes32 indexed identifier, address indexed ethAccount);
 
-    function triggerLicenceAdded(bytes32 identifier, address ethAccount) external {
-        emit LicenceAdded(identifier, ethAccount);
+    function triggerExtractionRightAdded(bytes32 identifier, address ethAccount) external {
+        emit ExtractionRightAdded(identifier, ethAccount);
     }
 
     function triggerWaterAccountAdded(bytes32 identifier, address ethAccount) external {
@@ -314,8 +314,8 @@ contract OrderBook is Ownable {
         emit WaterAccountsAdded(identifiers, ethAccount);
     }
 
-    function triggerLicenceCompleted(bytes32 identifier, address ethAccount) external {
-        emit LicenceCompleted(identifier, ethAccount);
+    function triggerExtractionRightCompleted(bytes32 identifier, address ethAccount) external {
+        emit ExtractionRightCompleted(identifier, ethAccount);
     }
 
     event HistoryAdded(bytes16 id, address buyer, address seller, uint256 price, uint256 quantity, bytes32 fromLevel0Resource, bytes32 toLevel0Resource, bytes16 orderId);

@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./IEIP1753.sol";
 import "./OrderBook.sol";
 
-contract Licences is Ownable {
-    string public name = "Water Ledger Licences";
+contract ExtractionRights is Ownable {
+    string public name = "Water Ledger ExtractionRights";
 
     mapping(address => bool) private _authorities;
 
-    struct Licence {
-        bool licenceExists;
+    struct ExtractionRight {
+        bool extractionRightExists;
         bytes32 identifier;
         address ethAccount;
         uint256 validFrom;
@@ -26,7 +26,7 @@ contract Licences is Ownable {
         bytes32 level0ResourceIdentifier;
     }
 
-    mapping(bytes32 => Licence) public _licences;
+    mapping(bytes32 => ExtractionRight) public _extractionRights;
     mapping(address => bytes32) public _addressToIdentifier;
     mapping(bytes32 => bytes32) public _waterAccountIdToIdentifier;
     mapping(address => mapping(bytes32 => bytes32)) public _addressToLevel0ResourceToWaterAccountId;
@@ -56,24 +56,24 @@ contract Licences is Ownable {
         uint256 from,
         uint256 to
     ) public onlyAuthority {
-        _licences[identifier].identifier = identifier;
-        _licences[identifier].licenceExists = true;
-        _licences[identifier].identifier = identifier;
-        _licences[identifier].ethAccount = who;
-        _licences[identifier].validFrom = from;
-        _licences[identifier].validTo = to;
+        _extractionRights[identifier].identifier = identifier;
+        _extractionRights[identifier].extractionRightExists = true;
+        _extractionRights[identifier].identifier = identifier;
+        _extractionRights[identifier].ethAccount = who;
+        _extractionRights[identifier].validFrom = from;
+        _extractionRights[identifier].validTo = to;
 
         _addressToIdentifier[who] = identifier;
 
-        _orderbook.triggerLicenceAdded(identifier, who);
+        _orderbook.triggerExtractionRightAdded(identifier, who);
     }
 
     function revoke(address who) public onlyAuthority {
-        _licences[_addressToIdentifier[who]].licenceExists = false;
-        _licences[_addressToIdentifier[who]].identifier = "";
+        _extractionRights[_addressToIdentifier[who]].extractionRightExists = false;
+        _extractionRights[_addressToIdentifier[who]].identifier = "";
     }
 
-    function getLicence(bytes32 identifier)
+    function getExtractionRight(bytes32 identifier)
         public
         view
         returns (
@@ -82,61 +82,61 @@ contract Licences is Ownable {
             bytes32[] memory
         )
     {
-        Licence storage licence = _licences[identifier];
-        return (licence.ethAccount, licence.identifier, licence.waterAccountIds);
+        ExtractionRight storage extractionRight = _extractionRights[identifier];
+        return (extractionRight.ethAccount, extractionRight.identifier, extractionRight.waterAccountIds);
     }
 
     function isValid(bytes32 identifier) public view returns (bool) {
-        return checkValidity(_licences[identifier]);
+        return checkValidity(_extractionRights[identifier]);
     }
 
     function hasValid(address who) public view returns (bool) {
-        return checkValidity(_licences[_addressToIdentifier[who]]);
+        return checkValidity(_extractionRights[_addressToIdentifier[who]]);
     }
 
-    function checkValidity(Licence storage licence) internal view returns (bool) {
-        return licence.licenceExists && block.timestamp >= licence.validFrom && block.timestamp <= licence.validTo;
+    function checkValidity(ExtractionRight storage extractionRight) internal view returns (bool) {
+        return extractionRight.extractionRightExists && block.timestamp >= extractionRight.validFrom && block.timestamp <= extractionRight.validTo;
     }
 
-    function addLicenceWaterAccount(
+    function addExtractionRightWaterAccount(
         bytes32 identifier,
         bytes32 waterAccountId,
         bytes32 level0ResourceIdentifier
     ) public onlyAuthority {
-        _licences[identifier].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, level0ResourceIdentifier);
-        _licences[identifier].waterAccountIds.push(waterAccountId);
+        _extractionRights[identifier].waterAccounts[waterAccountId] = WaterAccount(waterAccountId, level0ResourceIdentifier);
+        _extractionRights[identifier].waterAccountIds.push(waterAccountId);
         _waterAccountIdToIdentifier[waterAccountId] = identifier;
-        _addressToLevel0ResourceToWaterAccountId[_licences[identifier].ethAccount][level0ResourceIdentifier] = waterAccountId;
-        _orderbook.triggerWaterAccountAdded(identifier, _licences[identifier].ethAccount);
+        _addressToLevel0ResourceToWaterAccountId[_extractionRights[identifier].ethAccount][level0ResourceIdentifier] = waterAccountId;
+        _orderbook.triggerWaterAccountAdded(identifier, _extractionRights[identifier].ethAccount);
     }
 
-    function addAllLicenceWaterAccounts(
+    function addAllExtractionRightWaterAccounts(
         bytes32 identifier,
         bytes32[] memory waterAccountIds,
         bytes32[] memory level0ResourceIdentifiers
     ) public onlyAuthority {
         require(waterAccountIds.length == level0ResourceIdentifiers.length, "Input arrays must be the same length");
 
-        Licence storage licence = _licences[identifier];
+        ExtractionRight storage extractionRight = _extractionRights[identifier];
         for (uint8 i = 0; i < waterAccountIds.length; i++) {
-            licence.waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], level0ResourceIdentifiers[i]);
-            licence.waterAccountIds.push(waterAccountIds[i]);
+            extractionRight.waterAccounts[waterAccountIds[i]] = WaterAccount(waterAccountIds[i], level0ResourceIdentifiers[i]);
+            extractionRight.waterAccountIds.push(waterAccountIds[i]);
             _waterAccountIdToIdentifier[waterAccountIds[i]] = identifier;
-            _addressToLevel0ResourceToWaterAccountId[licence.ethAccount][level0ResourceIdentifiers[i]] = waterAccountIds[i];
+            _addressToLevel0ResourceToWaterAccountId[extractionRight.ethAccount][level0ResourceIdentifiers[i]] = waterAccountIds[i];
         }
-        _orderbook.triggerLicenceCompleted(identifier, licence.ethAccount);
+        _orderbook.triggerExtractionRightCompleted(identifier, extractionRight.ethAccount);
     }
 
     function purchase() public payable {
-        revert("Licence purchase is not supported");
+        revert("Extraction right purchase is not supported");
     }
 
     function getWaterAccountIds(bytes32 identifier) public view returns (bytes32[] memory) {
-        return _licences[identifier].waterAccountIds;
+        return _extractionRights[identifier].waterAccountIds;
     }
 
     function getWaterAccountForWaterAccountId(bytes32 waterAccountId) public view returns (WaterAccount memory) {
-        return _licences[_waterAccountIdToIdentifier[waterAccountId]].waterAccounts[waterAccountId];
+        return _extractionRights[_waterAccountIdToIdentifier[waterAccountId]].waterAccounts[waterAccountId];
     }
 
     function getIdentifierForWaterAccountId(bytes32 waterAccountId) public view returns (bytes32) {
@@ -144,14 +144,14 @@ contract Licences is Ownable {
         return _waterAccountIdToIdentifier[waterAccountId];
     }
 
-    function getWaterAccountsForLicence(bytes32 identifier) public view returns (WaterAccount[] memory) {
-        uint256 waterAccountsLength = _licences[identifier].waterAccountIds.length;
-        require(waterAccountsLength > 0, "There are no water accounts for this licence");
+    function getWaterAccountsForExtractionRight(bytes32 identifier) public view returns (WaterAccount[] memory) {
+        uint256 waterAccountsLength = _extractionRights[identifier].waterAccountIds.length;
+        require(waterAccountsLength > 0, "There are no water accounts for this extraction right");
 
         WaterAccount[] memory waterAccountArray = new WaterAccount[](waterAccountsLength);
 
         for (uint256 i = 0; i < waterAccountsLength; i++) {
-            waterAccountArray[i] = _licences[identifier].waterAccounts[_licences[identifier].waterAccountIds[i]];
+            waterAccountArray[i] = _extractionRights[identifier].waterAccounts[_extractionRights[identifier].waterAccountIds[i]];
         }
 
         return waterAccountArray;

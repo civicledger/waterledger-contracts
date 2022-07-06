@@ -75,7 +75,7 @@ contract("History", function (accounts) {
       assert.equal(history.length, 0, "An incorrect number of history items is being returned");
     });
 
-    it("should get the history for a specified licence address", async () => {
+    it("should get the history for a specified extraction right address", async () => {
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(ALICE, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
@@ -84,17 +84,17 @@ contract("History", function (accounts) {
       await contractInstance.addHistory(BOB, accounts[2], historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(accounts[2], accounts[3], historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
 
-      const history = await contractInstance.getLicenceHistory(ALICE);
+      const history = await contractInstance.getExtractionRightHistory(ALICE);
       assert.equal(history.length, 5, "Alice should have 5 history items");
     });
 
-    it("should allow specified licence address", async () => {
+    it("should allow specified extraction right address", async () => {
       await contractInstance.addHistory(BOB, ALICE, historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(ALICE, accounts[2], historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(BOB, accounts[2], historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
       await contractInstance.addHistory(accounts[2], accounts[3], historyPrice, historyQuantity, demoaHex, demoaHex, ID1);
 
-      const history = await contractInstance.getLicenceHistory(accounts[4]);
+      const history = await contractInstance.getExtractionRightHistory(accounts[4]);
       assert.equal(history.length, 0, "Random user should have no history but get no error");
     });
 
